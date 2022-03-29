@@ -4,10 +4,10 @@ from matplotlib import pyplot as plt
 
 # 分類器の指定
 # cascade = cv2.CascadeClassifier("/Users/toshikifukui/Downloads/opencv-4.3.0/data/haarcascades/haarcascade_eye.xml")
-cascade = cv2.CascadeClassifier("/Users/toshikifukui/Downloads/opencv-4.3.0/data/haarcascades/haarcascade_frontalface_alt2.xml")
+cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml")
 # read images
-imgR = cv2.imread('/Users/toshikifukui/Desktop/image.png')
-imgL = cv2.imread('/Users/toshikifukui/Desktop/image2.png')
+imgR = cv2.imread('image.png')
+imgL = cv2.imread('image2.png')
 
 imgR = np.array(imgR)
 imgL = np.array(imgL)
