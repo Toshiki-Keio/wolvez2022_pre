@@ -64,7 +64,7 @@ def detect_blue_color(img):
 
 
 # 入力画像の読み込み
-img = cv2.imread("C:\prog\python\\test\input.png")
+img = cv2.imread("/Users/hayashidekazuyuki/Desktop/wolvez2022/main_l.jpeg")
 
 # 色検出（赤、緑、青）
 red_mask, red_masked_img = detect_red_color(img)
