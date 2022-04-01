@@ -64,7 +64,7 @@ def detect_blue_color(img):
 
 
 # 入力画像の読み込み
-img = cv2.imread("/Users/hayashidekazuyuki/Desktop/wolvez2022/main_l.jpeg")
+img = cv2.imread("wolvez2022/red_detection_data/main_l.jpeg")
 
 # 色検出（赤、緑、青）
 red_mask, red_masked_img = detect_red_color(img)
@@ -72,9 +72,9 @@ green_mask, green_masked_img = detect_green_color(img)
 blue_mask, blue_masked_img = detect_blue_color(img)
 
 # 結果を出力
-cv2.imwrite("C:\prog\python\\test\\red_mask.png", red_mask)
-cv2.imwrite("C:\prog\python\\test\\red_masked_img.png", red_masked_img)
-cv2.imwrite("C:\prog\python\\test\green_mask.png", green_mask)
-cv2.imwrite("C:\prog\python\\test\green_masked_img.png", green_masked_img)
-cv2.imwrite("C:\prog\python\\test\\blue_mask.png", blue_mask)
-cv2.imwrite("C:\prog\python\\test\\blue_masked_img.png", blue_masked_img)
+cv2.imwrite("wolvez2022/red_detection_data/red_mask.png", red_mask)
+cv2.imwrite("wolvez2022/red_detection_data/red_masked_img.png", red_masked_img)
+cv2.imwrite("wolvez2022/red_detection_data/green_mask.png", green_mask)
+cv2.imwrite("wolvez2022/red_detection_data/green_masked_img.png", green_masked_img)
+cv2.imwrite("wolvez2022/red_detection_data/blue_mask.png", blue_mask)
+cv2.imwrite("wolvez2022/red_detection_data/blue_masked_img.png", blue_masked_img)
