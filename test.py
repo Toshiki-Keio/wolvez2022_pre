@@ -17,6 +17,7 @@ facerect = cascade.detectMultiScale(imgL)
 
 #print(facerect)
 
+#updated by Hayashide
 
 # 検出した場合
 #物体認識（顔認識）の実行
