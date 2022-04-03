@@ -48,5 +48,6 @@ git clone https://github.com/Hi-kimu/wolvez2021.git
   ★Toshiki Fukui, Takafumi Fujii, Masato Inoue, Kazuyuki Hayashide
 - Hardware (★: Part leader)  
   ★Moeka Yoshinari, Miyu Konishi, Arisa Shindo, Shingo Murayama
-  
+- Circuit (★: Part leader)  
+  ★Toshiki Fukui, Shingo Murayama
 
