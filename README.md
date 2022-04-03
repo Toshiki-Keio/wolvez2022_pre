@@ -1,5 +1,5 @@
 # wolvez2022
-Mission code in Python for Keio Wolve'Z CaSat project 2022
+Mission code in Python for Keio Wolve'Z CanSat project 2022
 
 ## Hardware Requirements
 - Microcomputer
@@ -43,9 +43,10 @@ git clone https://github.com/Hi-kimu/wolvez2021.git
 
 ## Project Member
 - Project manager   
-  Miyuki Nakamura 
+  Mitsuhiro Takahashi
 - Software (★: Part leader)  
-  ★Hikaru Kimura, Takuma Okubo, Yuno Inoue, Toshiki Fukui, Mitsuhiro Takahashi
+  ★Toshiki Fukui, Takafumi Fujii, Masato Inoue, Kazuyuki Hayashide
 - Hardware (★: Part leader)  
-  ★Shinichiro Kaji, Sakumi Okamoto, Moeka Yoshinari, Fumiya Onishi
+  ★Moeka Yoshinari, Miyu Konishi, Arisa Shindo, Shingo Murayama
   
+
