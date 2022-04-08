@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
+hayashide
+
 # 分類器の指定
 # cascade = cv2.CascadeClassifier("/Users/toshikifukui/Downloads/opencv-4.3.0/data/haarcascades/haarcascade_eye.xml")
 cascade = cv2.CascadeClassifier("haarcascade_frontalface_alt2.xml")
