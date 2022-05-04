@@ -8,33 +8,23 @@ from spmimage.feature_extraction.image import extract_simple_patches_2d, reconst
 
 
 # スパースモデリングを用いた画像の再構成
+# 正常画像を読み込み
+ok_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
 
-# 画像の読み込み
-print("# 画像の読み込み")
-img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
 
-# 画像はパッチに細分化され、観測値として学習に使用される。まずパッチサイズを指定
-print("# 画像はパッチに細分化され、観測値として学習に使用される。まずパッチサイズを指定")
+# 正常画像は再構成できるようにしたいが、それ以外は再構成できないように、表現力を小さく設定する
 patch_size = (5, 5)
-# パッチの切り出し
-print("# パッチの切り出し")
-patches = extract_simple_patches_2d(img, patch_size)
-# パッチのベクトル化
-print("# パッチのベクトル化")
-patches = patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
-# 過学習防止に必須な標準化をパッチに施し、パッチの集合をYとする
-print("# 過学習防止に必須な標準化をパッチに施し、パッチの集合をYとする")
+n_components = 10
+transform_n_nonzero_coefs = 3
+max_iter=15
+
+# 学習用データの用意
 scl = StandardScaler()
+patches = extract_simple_patches_2d(ok_img, patch_size)
+patches = patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
 Y = scl.fit_transform(patches)
-"""
-ここから、スパースモデリングの要の辞書学習。
-辞書学習とは、いくつか集めてきた観測値Yに対し、Y=DXなるDとXを求めること。
-DはYを構成する'要素'の集合。これを辞書という。
-Xは、Dの中から本質的なものを選び出すための行列。（前回はalphaとしていたものに相当。）
-"""
-print("ksvdスタート")
-ksvd = KSVD(n_components=50, transform_n_nonzero_coefs=5)
-print("calculate X")
+
+# 辞書学習
+ksvd = KSVD(n_components=n_components, transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
 X = ksvd.fit_transform(Y)
-print("calculate D")
 D = ksvd.components_
