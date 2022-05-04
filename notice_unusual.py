@@ -54,7 +54,9 @@ reconstructed_img = reconstruct_from_simple_patches_2d(reconstructed_patches, ok
 reconstructed_img[reconstructed_img < 0] = 0
 reconstructed_img[reconstructed_img > 255] = 255
 reconstructed_img = reconstructed_img.astype(np.uint8)
-ng_image=reconstructed_img
+ng_img_recon=reconstructed_img
 reconstructed_img=Image.fromarray(reconstructed_img)
 reconstructed_img.show()
 
+diff=ng_img-ng_img_recon
+diff=abs(diff)
