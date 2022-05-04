@@ -28,3 +28,33 @@ Y = scl.fit_transform(patches)
 ksvd = KSVD(n_components=n_components, transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
 X = ksvd.fit_transform(Y)
 D = ksvd.components_
+reconstructed_patches = np.dot(X, D)
+reconstructed_patches = scl.inverse_transform(reconstructed_patches)
+reconstructed_patches = reconstructed_patches.reshape(-1, patch_size[0], patch_size[1])
+reconstructed_img = reconstruct_from_simple_patches_2d(reconstructed_patches, ok_img.shape)
+reconstructed_img[reconstructed_img < 0] = 0
+reconstructed_img[reconstructed_img > 255] = 255
+reconstructed_img = reconstructed_img.astype(np.uint8)
+train_data=reconstructed_img
+reconstructed_img=Image.fromarray(reconstructed_img)
+reconstructed_img.show()
+
+# 異常画像を読み込み
+ng_img = np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
+
+# 異常画像に対するスパースコードを求める
+patches = extract_simple_patches_2d(ng_img, patch_size)
+patches = patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
+Y = scl.transform(patches)
+X = ksvd.transform(Y)
+reconstructed_patches = np.dot(X, D)
+reconstructed_patches = scl.inverse_transform(reconstructed_patches)
+reconstructed_patches = reconstructed_patches.reshape(-1, patch_size[0], patch_size[1])
+reconstructed_img = reconstruct_from_simple_patches_2d(reconstructed_patches, ok_img.shape)
+reconstructed_img[reconstructed_img < 0] = 0
+reconstructed_img[reconstructed_img > 255] = 255
+reconstructed_img = reconstructed_img.astype(np.uint8)
+ng_image=reconstructed_img
+reconstructed_img=Image.fromarray(reconstructed_img)
+reconstructed_img.show()
+
