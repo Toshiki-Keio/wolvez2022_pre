@@ -121,16 +121,19 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size):
     plt.title("test_img_ng (reconstruct)")
     plt.subplot(337)
     plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
+    plt.ylim(0,50000)
     plt.title("difference")
     plt.subplot(338)
     plt.hist(abs(Y_rec_ok-Y).reshape(-1,),bins=100,range=(0,10))
-    print(max(abs(Y_rec_ok-Y).reshape(-1,)))
+    plt.ylim(0,50000)
     plt.title("difference")
     plt.subplot(339)
     plt.hist(abs(Y_rec_ng-Y).reshape(-1,),bins=100,range=(0,10))
-    print(max(abs(Y_rec_ng-Y).reshape(-1,)))
+    plt.ylim(0,50000)
     plt.title("difference")
     plt.show()
+    print(max(np.average(Y_rec_ok-Y).reshape(-1,)))
+    print(max(np.average(Y_rec_ng-Y).reshape(-1,)))
 
 """
 （学習に関するパラメータについて）
@@ -139,7 +142,7 @@ n_components : 生成する基底ベクトルの本数
 transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
 max_iter : 詳細未詳。学習の反復回数の上限？
 """
-patch_size=(25,25)
+patch_size=(5,5)
 n_components=10
 transform_n_nonzero_coefs=3
 max_iter=15
@@ -153,9 +156,15 @@ test_img_ng : スタック「する」状況(=異常)のためのテスト用画
 ＊全てモノクロに直して処理。
 """
 # 画像を導入
-train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
-test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
-test_img_ng=np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
+edge_mode=True
+if edge_mode:
+    train_img = np.asarray(Image.open("img_data/img_train_edge.jpg").convert('L'))
+    test_img_ok=np.asarray(Image.open("img_data/img_test_ok_edge.jpg").convert('L'))
+    test_img_ng=np.asarray(Image.open("img_data/img_test_ng_edge.jpg").convert('L'))
+else:
+    train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
+    test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
+    test_img_ng=np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
 
 # 学習用画像データ群Yを準備
 Y=image_to_Y(train_img,patch_size,fit=True)
