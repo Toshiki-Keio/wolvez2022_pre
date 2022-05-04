@@ -87,8 +87,6 @@ def Y_to_image(Y_rec,patch_size,original_img_size):
     img_rec[img_rec>255]=255
     # 型の指定
     img_rec=img_rec.astype(np.uint8)
-    # 可視化
-    img_rec=Image.fromarray(img_rec)
     return img_rec
 
 def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
@@ -122,61 +120,30 @@ def reconstruct_img(Y,D,ksvd):
     Y_rec=np.dot(X,D)
     return Y_rec
 
-def evaluate(Y,Y_rec):
-    
-    pass
-
-# 正常画像(訓練データとは別物)を上記で作ったDを用いて再構成してみる
-# スパースコードX_okを求める
-patches = extract_simple_patches_2d(test_img_ok, patch_size)
-patches = patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
-Y_ok= scl.transform(patches)
-X_ok = ksvd.transform(Y_ok)# Xだけ作る
-
-# 直前で作ったX_okと、あらかじめ学習で作ったDを用いて画像を再構成する
-
-reconstructed_patches = np.dot(X_ok, D)
-reconstructed_patches = scl.inverse_transform(reconstructed_patches)
-reconstructed_patches = reconstructed_patches.reshape(-1, patch_size[0], patch_size[1])
-reconstructed_img = reconstruct_from_simple_patches_2d(reconstructed_patches, test_img_ok.shape)
-reconstructed_img[reconstructed_img < 0] = 0
-reconstructed_img[reconstructed_img > 255] = 255
-reconstructed_img = reconstructed_img.astype(np.uint8)
-diff=test_img_ok-reconstructed_img
-diff=abs(diff)
-print(diff)
-print(diff.shape)
-diff=diff.reshape(-1,)
-plt.hist(diff)
-plt.show()
-train_data=reconstructed_img
-reconstructed_img=Image.fromarray(reconstructed_img)
-reconstructed_img.show()
-
-# 正常画像(訓練データとは別物)を上記で作ったDを用いて再構成してみる
-# スパースコードX_okを求める
-patches = extract_simple_patches_2d(test_img_ng, patch_size)
-patches = patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
-Y_ng= scl.transform(patches)
-X_ng = ksvd.transform(Y_ng)# Xだけ作る
-
-# 直前で作ったX_ngと、あらかじめ学習で作ったDを用いて画像を再構成する
-print(D)
-print(X_ng)
-reconstructed_patches = np.dot(X_ng, D)
-reconstructed_patches = scl.inverse_transform(reconstructed_patches)
-reconstructed_patches = reconstructed_patches.reshape(-1, patch_size[0], patch_size[1])
-reconstructed_img = reconstruct_from_simple_patches_2d(reconstructed_patches, test_img_ng.shape)
-reconstructed_img[reconstructed_img < 0] = 0
-reconstructed_img[reconstructed_img > 255] = 255
-reconstructed_img = reconstructed_img.astype(np.uint8)
-diff=test_img_ng-reconstructed_img
-diff=abs(diff)
-print(diff)
-print(diff.shape)
-diff=diff.reshape(-1,)
-plt.hist(diff)
-plt.show()
-train_data=reconstructed_img
-reconstructed_img=Image.fromarray(reconstructed_img)
-reconstructed_img.show()
+def evaluate(Y,Y_rec_ok,Y_rec_ng):
+    """
+    学習画像・正常画像・異常画像それぞれについて、
+    ・元画像
+    ・再構成画像
+    ・画素値の偏差のヒストグラム
+    を出力
+    """
+    global train_img,test_img_ok,test_img_ng
+    plt.subplot(331)
+    plt.imshow(train_img)
+    plt.subplot(332)
+    plt.imshow(test_img_ok)
+    plt.subplot(333)
+    plt.imshow(test_img_ng)
+    plt.subplot(334)
+    plt.imshow(Y_to_image(Y))
+    plt.subplot(335)
+    plt.imshow(Y_to_image(Y_rec_ok))
+    plt.subplot(336)
+    plt.imshow(Y_to_image(Y_rec_ng))
+    plt.subplot(337)
+    plt.hist(abs(Y-Y).reshape(-1,))
+    plt.subplot(338)
+    plt.hist(abs(Y_rec_ok-Y).reshape(-1,))
+    plt.subplot(339)
+    plt.hist(abs(Y_rec_ng-Y).reshape(-1,))
