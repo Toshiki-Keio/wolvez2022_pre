@@ -28,6 +28,8 @@ Y = scl.fit_transform(patches)
 ksvd = KSVD(n_components=n_components, transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
 X = ksvd.fit_transform(Y)
 D = ksvd.components_
+print(D.shape,X.shape)
+print(X)
 reconstructed_patches = np.dot(X, D)
 reconstructed_patches = scl.inverse_transform(reconstructed_patches)
 reconstructed_patches = reconstructed_patches.reshape(-1, patch_size[0], patch_size[1])
@@ -37,8 +39,6 @@ reconstructed_img[reconstructed_img > 255] = 255
 reconstructed_img = reconstructed_img.astype(np.uint8)
 diff=ok_img-reconstructed_img
 diff=abs(diff)
-print(diff)
-print(diff.shape)
 diff=diff.reshape(-1,)
 plt.hist(diff)
 plt.show()
@@ -67,8 +67,6 @@ reconstructed_img.show()
 
 diff=ng_img-ng_img_recon
 diff=abs(diff)
-print(diff)
-print(diff.shape)
 diff=diff.reshape(-1,)
 plt.hist(diff)
 plt.show()
