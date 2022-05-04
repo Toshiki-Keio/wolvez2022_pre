@@ -5,7 +5,7 @@ from spmimage.decomposition import KSVD
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
 from spmimage.feature_extraction.image import extract_simple_patches_2d, reconstruct_from_simple_patches_2d
-
+import matplotlib.pyplot as plt
 
 # スパースモデリングを用いた画像の再構成
 # 正常画像を読み込み
@@ -13,7 +13,7 @@ ok_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
 
 
 # 正常画像は再構成できるようにしたいが、それ以外は再構成できないように、表現力を小さく設定する
-patch_size = (5, 5)
+patch_size = (25,25)
 n_components = 10
 transform_n_nonzero_coefs = 3
 max_iter=15
@@ -35,6 +35,13 @@ reconstructed_img = reconstruct_from_simple_patches_2d(reconstructed_patches, ok
 reconstructed_img[reconstructed_img < 0] = 0
 reconstructed_img[reconstructed_img > 255] = 255
 reconstructed_img = reconstructed_img.astype(np.uint8)
+diff=ok_img-reconstructed_img
+diff=abs(diff)
+print(diff)
+print(diff.shape)
+diff=diff.reshape(-1,)
+plt.hist(diff)
+plt.show()
 train_data=reconstructed_img
 reconstructed_img=Image.fromarray(reconstructed_img)
 reconstructed_img.show()
@@ -60,3 +67,8 @@ reconstructed_img.show()
 
 diff=ng_img-ng_img_recon
 diff=abs(diff)
+print(diff)
+print(diff.shape)
+diff=diff.reshape(-1,)
+plt.hist(diff)
+plt.show()
