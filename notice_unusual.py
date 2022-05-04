@@ -52,6 +52,7 @@ ng_img = np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
 # 異常画像に対するスパースコードを求める
 patches = extract_simple_patches_2d(ng_img, patch_size)
 patches = patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
+print(patches)
 Y = scl.transform(patches)
 X = ksvd.transform(Y)
 reconstructed_patches = np.dot(X, D)

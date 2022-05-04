@@ -6,18 +6,6 @@ from spmimage.feature_extraction.image import extract_simple_patches_2d, reconst
 import matplotlib.pyplot as plt
 
 """
-（用いる画像について）
-train_img   : 学習に用いる画像（１枚のみ）。スタック「しない」状況の画像
-test_img_ok : スタック「しない」状況のためのテスト用画像
-test_img_ng : スタック「する」状況(=異常)のためのテスト用画像
-
-＊全てモノクロに直して処理。
-"""
-train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
-test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
-test_img_ng=np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
-
-"""
 （学習の原理について）
 与えられたモノクロ画像（正常な時の画像）を幾つにも分割してpatchを作る。
 学習に使えるよう、patchに標準化等を施したものがY。
@@ -34,23 +22,7 @@ patch全てに共通する基底ベクトルを求め、それを２次元配列
 逆に、ヒストグラムが右に寄っていれば、元画像と再構成後の画像が似ていないことを意味する。つまり異常。
 """
 
-"""
-学習に関するパラメータについて
-patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
-n_components : 生成する基底ベクトルの本数
-transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
-max_iter : 詳細未詳。学習の反復回数の上限？
-"""
-patch_size=(25,25)
-n_components=100
-transform_n_nonzero_coefs=10
-max_iter=15
-# 学習
-"""
-学習材料
-1枚(or数枚?)のtrain_img(正常時の画像)を分割して、patchesを作る
-patchesは最初2次元画像がたくさん集まった集合だが、これを一次元化・正規化してベクトルにしている。
-"""
+scl=StandardScaler()
 
 def image_to_Y(img,patch_size,fit=False):
     """
@@ -61,12 +33,12 @@ def image_to_Y(img,patch_size,fit=False):
     備考 : 取り込む画像が1枚である必要はないと思う。何枚か（撮影方向を変えるなどして）撮影しておくと、ロバスト性が上がるかもしれません
     注意 : fitは学習の時にTrue、推論の時にFalseとする
     """
-    patches=extract_simple_patches_2d(train_img,patch_size=patch_size)
+    patches=extract_simple_patches_2d(img,patch_size=patch_size)
     patches=patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
     if fit:
-        Y=StandardScaler().fit_transform(patches)
+        Y=scl.fit_transform(patches)
     else:
-        Y=StandardScaler().transform(patches)
+        Y=scl.transform(patches)
     return Y
 
 def Y_to_image(Y_rec,patch_size,original_img_size):
@@ -77,7 +49,7 @@ def Y_to_image(Y_rec,patch_size,original_img_size):
     機能 : image_to_Y()で行われた処理の逆
     """
     # 標準化処理の解除
-    Y_rec=StandardScaler().inverse_transform(Y_rec)
+    Y_rec=scl.inverse_transform(Y_rec)
     # 配列の整形
     Y_rec=Y_rec.reshape(-1,patch_size[0],patch_size[1])
     # 画像の復元
@@ -120,7 +92,7 @@ def reconstruct_img(Y,D,ksvd):
     Y_rec=np.dot(X,D)
     return Y_rec
 
-def evaluate(Y,Y_rec_ok,Y_rec_ng):
+def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size):
     """
     学習画像・正常画像・異常画像それぞれについて、
     ・元画像
@@ -131,19 +103,72 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng):
     global train_img,test_img_ok,test_img_ng
     plt.subplot(331)
     plt.imshow(train_img)
+    plt.title("train_img (original)")
     plt.subplot(332)
     plt.imshow(test_img_ok)
+    plt.title("test_img_ok (original)")
     plt.subplot(333)
     plt.imshow(test_img_ng)
+    plt.title("test_img_ng (original)")
     plt.subplot(334)
-    plt.imshow(Y_to_image(Y))
+    plt.imshow(Y_to_image(Y,patch_size,original_img_size))
+    plt.title("train_img (reconstruct)")
     plt.subplot(335)
-    plt.imshow(Y_to_image(Y_rec_ok))
+    plt.imshow(Y_to_image(Y_rec_ok,patch_size,original_img_size))
+    plt.title("test_img_ng (reconstruct)")
     plt.subplot(336)
-    plt.imshow(Y_to_image(Y_rec_ng))
+    plt.imshow(Y_to_image(Y_rec_ng,patch_size,original_img_size))
+    plt.title("test_img_ng (reconstruct)")
     plt.subplot(337)
-    plt.hist(abs(Y-Y).reshape(-1,))
+    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
+    plt.title("difference")
     plt.subplot(338)
-    plt.hist(abs(Y_rec_ok-Y).reshape(-1,))
+    plt.hist(abs(Y_rec_ok-Y).reshape(-1,),bins=100,range=(0,10))
+    print(max(abs(Y_rec_ok-Y).reshape(-1,)))
+    plt.title("difference")
     plt.subplot(339)
-    plt.hist(abs(Y_rec_ng-Y).reshape(-1,))
+    plt.hist(abs(Y_rec_ng-Y).reshape(-1,),bins=100,range=(0,10))
+    print(max(abs(Y_rec_ng-Y).reshape(-1,)))
+    plt.title("difference")
+    plt.show()
+
+"""
+（学習に関するパラメータについて）
+patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
+n_components : 生成する基底ベクトルの本数
+transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
+max_iter : 詳細未詳。学習の反復回数の上限？
+"""
+patch_size=(25,25)
+n_components=10
+transform_n_nonzero_coefs=3
+max_iter=15
+
+"""
+（用いる画像について）
+train_img   : 学習に用いる画像（１枚のみ）。スタック「しない」状況の画像
+test_img_ok : スタック「しない」状況のためのテスト用画像
+test_img_ng : スタック「する」状況(=異常)のためのテスト用画像
+
+＊全てモノクロに直して処理。
+"""
+# 画像を導入
+train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
+test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
+test_img_ng=np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
+
+# 学習用画像データ群Yを準備
+Y=image_to_Y(train_img,patch_size,fit=True)
+Y_ok=image_to_Y(test_img_ok,patch_size,fit=False)
+Y_ng=image_to_Y(test_img_ng,patch_size,fit=False)
+
+
+# 学習
+D,X,ksvd=generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter)
+
+# 推論・画像再構成
+Y_rec_ok=reconstruct_img(Y_ok,D,ksvd)
+Y_rec_ng=reconstruct_img(Y_ng,D,ksvd)
+
+# 結果表示
+evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,train_img.shape)
