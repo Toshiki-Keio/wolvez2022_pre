@@ -1,6 +1,6 @@
 import cv2 as cv
 dirname="img_data"
-filename="img_test_ng.jpg"
+filename="tochigi7.jpg"
 path=dirname+"/"+filename
 img = cv.imread(path)
 img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)

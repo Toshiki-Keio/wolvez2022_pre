@@ -132,8 +132,8 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size):
     plt.ylim(0,50000)
     plt.title("difference")
     plt.show()
-    print(max(np.average(Y_rec_ok-Y).reshape(-1,)))
-    print(max(np.average(Y_rec_ng-Y).reshape(-1,)))
+    print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
+    print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
 
 """
 （学習に関するパラメータについて）
@@ -142,8 +142,8 @@ n_components : 生成する基底ベクトルの本数
 transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
 max_iter : 詳細未詳。学習の反復回数の上限？
 """
-patch_size=(5,5)
-n_components=10
+patch_size=(15,15)
+n_components=5
 transform_n_nonzero_coefs=3
 max_iter=15
 
@@ -156,11 +156,11 @@ test_img_ng : スタック「する」状況(=異常)のためのテスト用画
 ＊全てモノクロに直して処理。
 """
 # 画像を導入
-edge_mode=True
+edge_mode=False
 if edge_mode:
-    train_img = np.asarray(Image.open("img_data/img_train_edge.jpg").convert('L'))
-    test_img_ok=np.asarray(Image.open("img_data/img_test_ok_edge.jpg").convert('L'))
-    test_img_ng=np.asarray(Image.open("img_data/img_test_ng_edge.jpg").convert('L'))
+    train_img = np.asarray(Image.open("img_data/tochigi4_edge.jpg").convert('L'))
+    test_img_ok=np.asarray(Image.open("img_data/tochigi5_edge.jpg").convert('L'))
+    test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
 else:
     train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
     test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
