@@ -42,6 +42,7 @@ def image_to_Y(img,patch_size,fit=False):
         Y=scl.transform(patches)
     return Y
 
+
 def Y_to_image(Y_rec,patch_size,original_img_size):
     """
     入力 : 再構成で生成された画像データ群Y_rec (reconstructed)
@@ -62,6 +63,7 @@ def Y_to_image(Y_rec,patch_size,original_img_size):
     img_rec=img_rec.astype(np.uint8)
     return img_rec
 
+
 def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
     """
     入力 : 学習画像データ群Y
@@ -81,6 +83,7 @@ def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
     
     return D,X,ksvd
 
+
 def reconstruct_img(Y,D,ksvd):
     """
     入力 : 画像のデータ群Y
@@ -92,6 +95,7 @@ def reconstruct_img(Y,D,ksvd):
     X=ksvd.transform(Y)
     Y_rec=np.dot(X,D)
     return Y_rec
+
 
 def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     """
@@ -159,20 +163,6 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
 
 
-
-"""
-（学習に関するパラメータについて）
-patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
-n_components : 生成する基底ベクトルの本数
-transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
-max_iter : 詳細未詳。学習の反復回数の上限？
-"""
-patch_size=(5,5)
-n_components=6
-transform_n_nonzero_coefs=3
-max_iter=15
-
-
 def img_window(train_img:np.ndarray, test_img_ok:np.ndarray, test_img_ng:np.ndarray, shape:list=(3, 3)):
     """画像探査領域分割関数
 
@@ -231,6 +221,19 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
 
 
 # 本編
+"""
+（学習に関するパラメータについて）
+patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
+n_components : 生成する基底ベクトルの本数
+transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
+max_iter : 詳細未詳。学習の反復回数の上限？
+"""
+patch_size=(5,5)
+n_components=6
+transform_n_nonzero_coefs=3
+max_iter=15
+
+
 """
 （用いる画像について）
 train_img   : 学習に用いる画像（１枚のみ）。スタック「しない」状況の画像
