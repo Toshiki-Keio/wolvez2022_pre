@@ -1,4 +1,5 @@
 import numpy as np
+from math import prod
 from spmimage.decomposition import KSVD
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
@@ -92,7 +93,7 @@ def reconstruct_img(Y,D,ksvd):
     Y_rec=np.dot(X,D)
     return Y_rec
 
-def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size):
+def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     """
     学習画像・正常画像・異常画像それぞれについて、
     ・元画像
@@ -100,60 +101,64 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size):
     ・画素値の偏差のヒストグラム
     を出力
     """
-    global train_img,test_img_ok,test_img_ng
+    pxcels = prod(original_img_size)
     fs = 10
-    plt.subplot(431)
-    plt.imshow(train_img)
+    plt.subplot(331)
+    plt.imshow(img_list[0])
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("train_img (original)", fontsize=fs)
-    plt.subplot(432)
-    plt.imshow(test_img_ok)
+    plt.subplot(332)
+    plt.imshow(img_list[1])
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ok (original)", fontsize=fs)
-    plt.subplot(433)
-    plt.imshow(test_img_ng)
+    plt.subplot(333)
+    plt.imshow(img_list[2])
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ng (original)", fontsize=fs)
-    plt.subplot(434)
+    plt.subplot(334)
     plt.imshow(Y_to_image(Y,patch_size,original_img_size))
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("train_img (reconstruct)", fontsize=fs)
-    plt.subplot(435)
+    plt.subplot(335)
     plt.imshow(Y_to_image(Y_rec_ok,patch_size,original_img_size))
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
-    plt.title("test_img_ng (reconstruct)", fontsize=fs)
-    plt.subplot(436)
+    plt.title("test_img_ok (reconstruct)", fontsize=fs)
+    plt.subplot(336)
     plt.imshow(Y_to_image(Y_rec_ng,patch_size,original_img_size))
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ng (reconstruct)", fontsize=fs)
-    plt.subplot(437)
+    plt.subplot(337)
     plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
-    plt.ylim(0,50000)
+    plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
-    plt.subplot(438)
+    plt.subplot(338)
     plt.hist(abs(Y_rec_ok-Y).reshape(-1,),bins=100,range=(0,10))
-    plt.ylim(0,50000)
+    plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
-    plt.subplot(439)
+    plt.subplot(339)
     plt.hist(abs(Y_rec_ng-Y).reshape(-1,),bins=100,range=(0,10))
-    plt.ylim(0,50000)
+    plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
+    plt.savefig(f"results_data/part_{d_num}")
     
-    plt.show()
+    # plt.show()
+    plt.close()
     print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
     print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
+
+
 
 """
 （学習に関するパラメータについて）
@@ -162,11 +167,70 @@ n_components : 生成する基底ベクトルの本数
 transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
 max_iter : 詳細未詳。学習の反復回数の上限？
 """
-patch_size=(15,15)
-n_components=5
+patch_size=(5,5)
+n_components=6
 transform_n_nonzero_coefs=3
 max_iter=15
 
+
+def img_window(train_img:np.ndarray, test_img_ok:np.ndarray, test_img_ng:np.ndarray, shape:list=(3, 3)):
+    """画像探査領域分割関数
+
+    Args:
+        train_img (np.ndarray): 画像
+        test_img_ok (np.ndarray): 正解テスト用画像
+        test_img_ng (np.ndarray): 異常テスト用画像
+        shape (list, optional): 所望の領域のシェイプ. Defaults to [3, 3].
+
+    Returns:
+        list: 3 lists of separated img.
+    """
+    train_img_list, test_img_ok_list, test_img_ng_list = [], [], []
+    height = train_img.shape[0]
+    width = train_img.shape[1]
+    
+    # 指定の大きさの探査領域を設定
+    partial_height = int(height/shape[0])
+    partial_width = int(width/shape[1])
+    # 探査領域を抽出
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            train_img_part = train_img[i*partial_height:(i+1)*partial_height, j*partial_width:(j+1)*partial_width]
+            test_img_ok_part = test_img_ok[i*partial_height:(i+1)*partial_height, j*partial_width:(j+1)*partial_width]
+            test_img_ng_part = test_img_ng[i*partial_height:(i+1)*partial_height, j*partial_width:(j+1)*partial_width]
+            
+            # まとめて返すためのリストに追加
+            train_img_list.append(train_img_part)
+            test_img_ok_list.append(test_img_ok_part)
+            test_img_ng_list.append(test_img_ng_part)
+    
+    return train_img_list, test_img_ok_list, test_img_ng_list, (partial_height, partial_width)
+    
+
+def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num):
+    # 使用画像リスト
+    img_list = [train_img_part, test_img_ok_part, test_img_ng_part]
+    
+    # 学習用画像データ群Yを準備
+    Y=image_to_Y(train_img_part,patch_size,fit=True)
+    Y_ok=image_to_Y(test_img_ok_part,patch_size,fit=False)
+    Y_ng=image_to_Y(test_img_ng_part,patch_size,fit=False)
+
+
+    # 学習
+    D,X,ksvd=generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter)
+
+    # 推論・画像再構成
+    Y_rec_ok=reconstruct_img(Y_ok,D,ksvd)
+    Y_rec_ng=reconstruct_img(Y_ng,D,ksvd)
+
+    # 結果表示
+    evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,img_size, img_list, d_num)
+
+
+
+
+# 本編
 """
 （用いる画像について）
 train_img   : 学習に用いる画像（１枚のみ）。スタック「しない」状況の画像
@@ -182,27 +246,21 @@ if edge_mode:
     test_img_ok=np.asarray(Image.open("img_data/tochigi5_edge.jpg").convert('L'))
     test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
 else:
+    # 一旦二分の一で画像上部排除
     train_img = np.asarray(Image.open("img_data/img_train_RPC.jpg").convert('L'))
     train_img = train_img[int(0.5*train_img.shape[0]):]
-    print(train_img.shape)
     test_img_ok=np.asarray(Image.open("img_data/img_test_ok_RPC.jpg").convert('L'))
     test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
     test_img_ng=np.asarray(Image.open("img_data/img_1.jpg").convert('L'))
     test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
-    print(test_img_ng.shape)
 
-# 学習用画像データ群Yを準備
-Y=image_to_Y(train_img,patch_size,fit=True)
-Y_ok=image_to_Y(test_img_ok,patch_size,fit=False)
-Y_ng=image_to_Y(test_img_ng,patch_size,fit=False)
+# 探査領域の分割数を指定
+detect_shape = (2, 3)
 
+# 各画像を探査領域に分割してリストに収納
+train_img_list, test_img_ok_list, test_img_ng_list, partial_size = img_window(train_img, test_img_ok, test_img_ng, detect_shape)
 
-# 学習
-D,X,ksvd=generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter)
-
-# 推論・画像再構成
-Y_rec_ok=reconstruct_img(Y_ok,D,ksvd)
-Y_rec_ng=reconstruct_img(Y_ng,D,ksvd)
-
-# 結果表示
-evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,train_img.shape)
+# 各探査領域に対して異常検出を行う
+for k in range(prod(detect_shape)):
+    estimate(train_img_list[k], test_img_ok_list[k], test_img_ng_list[k], partial_size, d_num=k+1)
+    # plt.show()
