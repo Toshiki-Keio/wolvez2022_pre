@@ -20,6 +20,9 @@ patch全てに共通する基底ベクトルを求め、それを２次元配列
 元画像の配列と再構成後の画像の配列の差分diffをとり、そのdiffの成分の値をヒストグラムにしてみる。
 ヒストグラムが左に寄っていれば、元画像と再構成後の画像がよく似ていることを意味する。つまり正常。
 逆に、ヒストグラムが右に寄っていれば、元画像と再構成後の画像が似ていないことを意味する。つまり異常。
+
+https://codezine.jp/article/detail/11823
+https://codezine.jp/article/detail/12433
 """
 
 scl=StandardScaler()
@@ -80,7 +83,7 @@ def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
     
     return D,X,ksvd
 
-def reconstruct_img(Y,D,ksvd):
+def reconstruct_img(Y,D,ksvd,trans=False):
     """
     入力 : 画像のデータ群Y
           学習済みの辞書D
@@ -88,7 +91,8 @@ def reconstruct_img(Y,D,ksvd):
     出力 : Dを用いて再構成された画像のデータ群Y_rec (reconstructed)
     機能 : Y~=DXとなるようなXを求める -> Y_rec=DXを求める
     """
-    X=ksvd.transform(Y)
+    if trans:
+        X=ksvd.transform(Y)
     Y_rec=np.dot(X,D)
     return Y_rec
 
@@ -158,9 +162,9 @@ test_img_ng : スタック「する」状況(=異常)のためのテスト用画
 # 画像を導入
 edge_mode=False
 if edge_mode:
-    train_img = np.asarray(Image.open("img_data/tochigi4_edge.jpg").convert('L'))
-    test_img_ok=np.asarray(Image.open("img_data/tochigi5_edge.jpg").convert('L'))
-    test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
+    train_img = np.asarray(Image.open("img_data/img_train_edge.jpg").convert('L'))
+    test_img_ok=np.asarray(Image.open("img_data/img_test_ok_edge.jpg").convert('L'))
+    test_img_ng=np.asarray(Image.open("img_data/img_test_ng_edge.jpg").convert('L'))
 else:
     train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
     test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
@@ -176,8 +180,8 @@ Y_ng=image_to_Y(test_img_ng,patch_size,fit=False)
 D,X,ksvd=generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter)
 
 # 推論・画像再構成
-Y_rec_ok=reconstruct_img(Y_ok,D,ksvd)
-Y_rec_ng=reconstruct_img(Y_ng,D,ksvd)
+Y_rec_ok=reconstruct_img(Y_ok,D,ksvd,trans=True)
+Y_rec_ng=reconstruct_img(Y_ng,D,ksvd,trans=True)
 
 # 結果表示
 evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,train_img.shape)

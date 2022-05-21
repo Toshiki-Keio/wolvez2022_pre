@@ -251,8 +251,13 @@ max_iter=15
 
 
 
+<<<<<<< HEAD
 # OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
 
+=======
+# OpenCVによるエッジ強調（現在は標準入力でカーネルパラ
+# メータ指定）
+>>>>>>> 9557646bfcb1907897a2c5f02d4e25912d4c0526
 edge_enphasis = sys.argv
 if len(edge_enphasis)<2:
     print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
