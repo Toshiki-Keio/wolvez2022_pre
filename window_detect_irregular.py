@@ -152,15 +152,16 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     
     # 2乗の値を使うことでヒストグラムの差を顕著にしてみました
     plt.subplot(337)
-    plt.hist(abs(Y-Y).reshape(-1,)**2,bins=100,range=(0,10))
+    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.subplot(338)
-    plt.hist(abs(Y_rec_ok-Y).reshape(-1,)**2,bins=100,range=(0,10))
+    plt.hist(abs(Y_rec_ok-Y).reshape(-1,),bins=100,range=(0,10))
+    print(Y)
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.subplot(339)
-    plt.hist(abs(Y_rec_ng-Y).reshape(-1,)**2,bins=100,range=(0,10))
+    plt.hist(abs(Y_rec_ng-Y).reshape(-1,),bins=100,range=(0,10))
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.savefig(f"results_data/part_{d_num}")
@@ -251,12 +252,13 @@ max_iter=15
 
 
 # OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
+
 edge_enphasis = sys.argv
 if len(edge_enphasis)<2:
     print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
     sys.exit()
 
-if bool(edge_enphasis[1]):
+if edge_enphasis[1]=="true":
     img = cv2.imread("img_data/img_train_RPC.jpg")
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     try:
@@ -269,9 +271,12 @@ if bool(edge_enphasis[1]):
     plt.figure(figsize=(10,8))
     plt.imshow(img)
     plt.show()
-else:
+elif edge_enphasis[1]=="false":
     img = cv2.imread("img_data/img_train_RPC.jpg")
     cv2.imwrite("results_data/img_train_RPC.jpg", img)
+else:
+    print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
+    sys.exit()
 
 
 """
