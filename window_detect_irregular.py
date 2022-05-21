@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from math import prod
 from spmimage.decomposition import KSVD
@@ -5,6 +6,11 @@ from PIL import Image
 from sklearn.preprocessing import StandardScaler
 from spmimage.feature_extraction.image import extract_simple_patches_2d, reconstruct_from_simple_patches_2d
 import matplotlib.pyplot as plt
+import sys
+
+
+
+
 
 """
 （学習の原理について）
@@ -157,7 +163,7 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     plt.title("difference", fontsize=fs)
     plt.savefig(f"results_data/part_{d_num}")
     
-    # plt.show()
+    plt.show()
     plt.close()
     print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
     print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
@@ -218,6 +224,13 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
     evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,img_size, img_list, d_num)
 
 
+def make_sharp_kernel(k: int):
+      return np.array([
+    [-k / 9, -k / 9, -k / 9],
+    [-k / 9, 1 + 8 * k / 9, k / 9],
+    [-k / 9, -k / 9, -k / 9]
+  ], np.float32)
+
 
 
 # 本編
@@ -232,6 +245,31 @@ patch_size=(5,5)
 n_components=6
 transform_n_nonzero_coefs=3
 max_iter=15
+
+
+
+# OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
+edge_enphasis = sys.argv
+if len(edge_enphasis)<2:
+    print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
+    sys.exit()
+
+if bool(edge_enphasis[1]):
+    img = cv2.imread("img_data/img_train_RPC.jpg")
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    try:
+        kernel = make_sharp_kernel(int(edge_enphasis[2]))
+    except:
+        print(f'"kernel-param" should be given as int:python {edge_enphasis[0]} true;str kernel-param;int or false;str')
+        sys.exit()
+    img = cv2.filter2D(img, -1, kernel)
+    cv2.imwrite("results_data/img_train_RPC.jpg", img)
+    plt.figure(figsize=(10,8))
+    plt.imshow(img)
+    plt.show()
+else:
+    img = cv2.imread("img_data/img_train_RPC.jpg")
+    cv2.imwrite("results_data/img_train_RPC.jpg", img)
 
 
 """
@@ -250,12 +288,13 @@ if edge_mode:
     test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
 else:
     # 一旦二分の一で画像上部排除
-    train_img = np.asarray(Image.open("img_data/img_train_RPC.jpg").convert('L'))
+    train_img = np.asarray(Image.open("results_data/img_train_RPC.jpg").convert('L'))
     train_img = train_img[int(0.5*train_img.shape[0]):]
     test_img_ok=np.asarray(Image.open("img_data/img_test_ok_RPC.jpg").convert('L'))
     test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
     test_img_ng=np.asarray(Image.open("img_data/img_1.jpg").convert('L'))
     test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
+
 
 # 探査領域の分割数を指定
 detect_shape = (2, 3)
@@ -266,4 +305,3 @@ train_img_list, test_img_ok_list, test_img_ng_list, partial_size = img_window(tr
 # 各探査領域に対して異常検出を行う
 for k in range(prod(detect_shape)):
     estimate(train_img_list[k], test_img_ok_list[k], test_img_ng_list[k], partial_size, d_num=k+1)
-    # plt.show()
