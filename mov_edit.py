@@ -1,7 +1,7 @@
 import cv2
 
 def pickup_frame():
-    mv=cv2.VideoCapture("img_data/exp_mov2.mov")
+    mv=cv2.VideoCapture("img_data/exp_mov1.mov")
     frame_rate = int(mv.get(cv2.CAP_PROP_FPS))
     frame_count = int(mv.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -12,7 +12,7 @@ def pickup_frame():
                         fourcc, frame_rate, (int(size[0]),int(size[1])))
 
     for i in range(0, frame_count-1, 2):
-        ch, frame = mv.read()  # 2フレームずつ取り出す
+        ch, frame = mv.read()  # 1フレームずつ取り出す
         if ch:
             print(frame.shape)
             #for mov1
@@ -25,4 +25,5 @@ def pickup_frame():
     save.release()
     mv.release()
 
-pickup_frame()
+if __name__ == "__main__":
+    pickup_frame()

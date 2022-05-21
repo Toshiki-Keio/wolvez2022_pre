@@ -150,7 +150,6 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ng (reconstruct)", fontsize=fs)
     
-    # 2乗の値を使うことでヒストグラムの差を顕著にしてみました
     plt.subplot(337)
     plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
     plt.ylim(0,pxcels/3)
@@ -251,13 +250,8 @@ max_iter=15
 
 
 
-<<<<<<< HEAD
 # OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
 
-=======
-# OpenCVによるエッジ強調（現在は標準入力でカーネルパラ
-# メータ指定）
->>>>>>> 9557646bfcb1907897a2c5f02d4e25912d4c0526
 edge_enphasis = sys.argv
 if len(edge_enphasis)<2:
     print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
@@ -302,9 +296,9 @@ else:
     # 一旦二分の一で画像上部排除
     train_img = np.asarray(Image.open("results_data/img_train_RPC.jpg").convert('L'))
     train_img = train_img[int(0.5*train_img.shape[0]):]
-    test_img_ok=np.asarray(Image.open("img_data/img_test_ok_RPC.jpg").convert('L'))
+    test_img_ok=np.asarray(Image.open("img_data/data_old/img_test_ok_RPC.jpg").convert('L'))
     test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
-    test_img_ng=np.asarray(Image.open("img_data/img_1.jpg").convert('L'))
+    test_img_ng=np.asarray(Image.open("img_data/data_old/img_1.jpg").convert('L'))
     test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
 
 
