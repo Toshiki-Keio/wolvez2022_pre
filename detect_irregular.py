@@ -161,7 +161,6 @@ test_img_ng : スタック「する」状況(=異常)のためのテスト用画
 """
 # 画像を導入
 
-############################################ デバッグここまでやりました ############################################
 """
 ### 変更履歴 ###
 """
@@ -184,6 +183,7 @@ Y=image_to_Y(train_img,patch_size,fit=True)
 Y_ok=image_to_Y(test_img_ok,patch_size,fit=False)
 Y_ng=image_to_Y(test_img_ng,patch_size,fit=False)
 
+############################################ デバッグここまでやりました ############################################
 
 # 学習
 D,X,ksvd=generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter)

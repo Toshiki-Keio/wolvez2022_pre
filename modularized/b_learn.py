@@ -2,7 +2,7 @@ import numpy as np
 from spmimage.decomposition import KSVD
 
 
-def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
+def generate_dict(Y, n_components, transform_n_nonzero_coefs, max_iter):
     """
     入力 : 学習画像データ群Y
     出力 : 辞書D・スパースコード（=抽出行列α）X・学習したモデルksvd
@@ -12,11 +12,19 @@ def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
           また、各画素の再構成に使える基底ベクトルの本数をtransform_n_nonzero_coefsで指定できる
           max_iterは詳細不明
     """
+    print("===== func generate_dict starts =====")
     # 学習モデルの定義
-    ksvd = KSVD(n_components=n_components, transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
+    ksvd = KSVD(n_components=n_components,
+                transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
+    print("model established. Parameters are:")
+    print("n_components: ", n_components)
+    print("transform_n_nonzero_coefs: ", transform_n_nonzero_coefs)
+    print("max_iter: ", max_iter)
     # 抽出行列を求める
     X = ksvd.fit_transform(Y)
+    print("X shape: ", X.shape)
     # 辞書を求める
     D = ksvd.components_
-    
-    return D,X,ksvd
+    print("D shape: ", D.shape)
+
+    return D, X, ksvd
