@@ -160,6 +160,11 @@ test_img_ng : スタック「する」状況(=異常)のためのテスト用画
 ＊全てモノクロに直して処理。
 """
 # 画像を導入
+
+############################################ デバッグここまでやりました ############################################
+"""
+### 変更履歴 ###
+"""
 edge_mode=False
 if edge_mode:
     train_img = np.asarray(Image.open("img_data/img_train_edge.jpg").convert('L'))
@@ -169,6 +174,10 @@ else:
     train_img = np.asarray(Image.open("img_data/img_train.jpg").convert('L'))
     test_img_ok=np.asarray(Image.open("img_data/img_test_ok.jpg").convert('L'))
     test_img_ng=np.asarray(Image.open("img_data/img_test_ng.jpg").convert('L'))
+train_img = np.asarray(Image.open("img_data/img_train_edge.jpg").convert('L'))
+test_img_ok=np.asarray(Image.open("img_data/img_test_ok_edge.jpg").convert('L'))
+test_img_ng=np.asarray(Image.open("img_data/img_test_ng_edge.jpg").convert('L'))
+print(type(train_img))
 
 # 学習用画像データ群Yを準備
 Y=image_to_Y(train_img,patch_size,fit=True)
