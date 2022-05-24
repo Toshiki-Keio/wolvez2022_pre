@@ -8,6 +8,8 @@ from spmimage.feature_extraction.image import extract_simple_patches_2d, reconst
 import matplotlib.pyplot as plt
 import sys
 
+from FEATURE import Feature_img
+
 
 
 
@@ -235,79 +237,121 @@ def make_sharp_kernel(k: int):
 
 
 
-# 本編
-"""
-（学習に関するパラメータについて）
-patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
-n_components : 生成する基底ベクトルの本数
-transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
-max_iter : 詳細未詳。学習の反復回数の上限？
-"""
+
+
+
+
+# OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
+def edge_Enphasis():
+    edge_enphasis = sys.argv
+    if len(edge_enphasis)<2:
+        print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
+        sys.exit()
+
+    if edge_enphasis[1]=="true":
+        img = cv2.imread("img_data/data_old/img_train_RPC.jpg")
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        k = 1
+        kernel = np.array([[0, 1, 0],
+                           [1, -4, 1],
+                           [0, 1, 0]], np.float32)
+        img = cv2.filter2D(img, -1, kernel)
+        cv2.imwrite("img_data/use_img/img_train_RPC.jpg", img)
+    elif edge_enphasis[1]=="false":
+        img = cv2.imread("img_data/data_old/img_train_RPC.jpg")
+        cv2.imwrite("img_data/use_img/img_train_RPC.jpg", img)
+    else:
+        print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
+        sys.exit()
+
+
+def read_img(path_list):
+    treat = Feature_img(path_list)
+    feature = sys.argv
+    if len(feature)<2:
+        pass
+    
+    elif feature[1]=="vari":
+        treat.vari()
+        path_list = treat.output()
+    
+    elif feature[1]=="enphasis":
+        treat.enphasis()
+        path_list = treat.output()
+    else:
+        print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, or nothing as normal.")
+        sys.exit()
+        
+    # 一旦二分の一で画像上部排除
+    train_img = np.asarray(Image.open(path_list[0]).convert('L'))
+    test_img_ok=np.asarray(Image.open(path_list[1]).convert('L'))
+    test_img_ng=np.asarray(Image.open(path_list[2]).convert('L'))
+    train_img = train_img[int(0.5*train_img.shape[0]):]
+    test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
+    test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
+    
+    # 画像を導入
+    """
+    edge_mode=False
+    if edge_mode:
+        train_img = np.asarray(Image.open("img_data/tochigi4_edge.jpg").convert('L'))
+        test_img_ok=np.asarray(Image.open("img_data/tochigi5_edge.jpg").convert('L'))
+        test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
+    else:
+        # 一旦二分の一で画像上部排除
+        train_img = np.asarray(Image.open("img_data/use_img/img_train_RPC.jpg").convert('L'))
+        train_img = train_img[int(0.5*train_img.shape[0]):]
+        test_img_ok=np.asarray(Image.open("img_data/data_old/img_test_ok_RPC.jpg").convert('L'))
+        test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
+        test_img_ng=np.asarray(Image.open("img_data/data_old/img_1.jpg").convert('L'))
+        test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
+    """
+    return train_img, test_img_ok, test_img_ng    
+    
+
+def window_detect(train_img, test_img_ok, test_img_ng):
+    # 探査領域の分割数を指定
+    detect_shape = (2, 3)
+
+    # 各画像を探査領域に分割してリストに収納
+    train_img_list, test_img_ok_list, test_img_ng_list, partial_size = img_window(train_img, test_img_ok, test_img_ng, detect_shape)
+
+    # 各探査領域に対して異常検出を行う
+    for k in range(prod(detect_shape)):
+        estimate(train_img_list[k], test_img_ok_list[k], test_img_ng_list[k], partial_size, d_num=k+1)
+
+
+def main():
+    # 本編
+    """
+    （学習に関するパラメータについて）
+    patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
+    n_components : 生成する基底ベクトルの本数
+    transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
+    max_iter : 詳細未詳。学習の反復回数の上限？
+    """
+    """
+    （用いる画像について）
+    train_img   : 学習に用いる画像（１枚のみ）。スタック「しない」状況の画像
+    test_img_ok : スタック「しない」状況のためのテスト用画像
+    test_img_ng : スタック「する」状況(=異常)のためのテスト用画像
+
+    ＊全てモノクロに直して処理。
+    """
+    path_list = ["img_data/data_old/img_train_RPC.jpg", 
+                "img_data/data_old/img_test_ok_RPC.jpg",
+                "img_data/data_old/img_1.jpg"]
+    # edge_Enphasis()
+    train_img, test_img_ok, test_img_ng = read_img(path_list)
+    window_detect(train_img, test_img_ok, test_img_ng)
+    
+    
 patch_size=(5,5)
 n_components=6
 transform_n_nonzero_coefs=3
 max_iter=15
 
 
-
-# OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
-
-edge_enphasis = sys.argv
-if len(edge_enphasis)<2:
-    print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
-    sys.exit()
-
-if edge_enphasis[1]=="true":
-    img = cv2.imread("img_data/img_train_RPC.jpg")
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    try:
-        kernel = make_sharp_kernel(int(edge_enphasis[2]))
-    except:
-        print(f'"kernel-param" should be given as int:python {edge_enphasis[0]} true;str kernel-param;int or false;str')
-        sys.exit()
-    img = cv2.filter2D(img, -1, kernel)
-    cv2.imwrite("results_data/img_train_RPC.jpg", img)
-    plt.figure(figsize=(10,8))
-    plt.imshow(img)
-    plt.show()
-elif edge_enphasis[1]=="false":
-    img = cv2.imread("img_data/img_train_RPC.jpg")
-    cv2.imwrite("results_data/img_train_RPC.jpg", img)
-else:
-    print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
-    sys.exit()
-
-
-"""
-（用いる画像について）
-train_img   : 学習に用いる画像（１枚のみ）。スタック「しない」状況の画像
-test_img_ok : スタック「しない」状況のためのテスト用画像
-test_img_ng : スタック「する」状況(=異常)のためのテスト用画像
-
-＊全てモノクロに直して処理。
-"""
-# 画像を導入
-edge_mode=False
-if edge_mode:
-    train_img = np.asarray(Image.open("img_data/tochigi4_edge.jpg").convert('L'))
-    test_img_ok=np.asarray(Image.open("img_data/tochigi5_edge.jpg").convert('L'))
-    test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
-else:
-    # 一旦二分の一で画像上部排除
-    train_img = np.asarray(Image.open("results_data/img_train_RPC.jpg").convert('L'))
-    train_img = train_img[int(0.5*train_img.shape[0]):]
-    test_img_ok=np.asarray(Image.open("img_data/data_old/img_test_ok_RPC.jpg").convert('L'))
-    test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
-    test_img_ng=np.asarray(Image.open("img_data/data_old/img_1.jpg").convert('L'))
-    test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
-
-
-# 探査領域の分割数を指定
-detect_shape = (2, 3)
-
-# 各画像を探査領域に分割してリストに収納
-train_img_list, test_img_ok_list, test_img_ng_list, partial_size = img_window(train_img, test_img_ok, test_img_ng, detect_shape)
-
-# 各探査領域に対して異常検出を行う
-for k in range(prod(detect_shape)):
-    estimate(train_img_list[k], test_img_ok_list[k], test_img_ng_list[k], partial_size, d_num=k+1)
+if __name__ == "__main__":
+    main()
+    
