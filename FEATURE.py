@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+
 from PIL import Image
 from matplotlib import pyplot as plt
 from time import time
@@ -8,6 +9,26 @@ class Feature_img():
     output_img_list = None
     def __init__(self, path_list):
         self.path_list = path_list
+
+    def red(self):
+        self.output_img_list = []
+        for i in range(len(self.path_list)):
+            self.org_img = np.asarray(Image.open(self.path_list[i]))
+            print(self.org_img)
+            self.org_img[2][1][:][:] = 0
+            print(self.org_img)
+            self.org_img[2][2][:][:] = 0
+            print(self.org_img)
+            #self.img_hsv = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2HSV_FULL)
+            #self.img_mask0 = cv2.inRange(self.img_hsv, np.array([0, 127,0]), np.array([7, 255, 255]))
+            #self.img_mask1 = cv2.inRange(self.img_hsv, np.array([238, 127,0]), np.array([255, 255, 255]))
+            #self.img_mask = self.img_mask0 | self.img_mask1
+            #self.output_img = cv2.bitwise_and(self.org_img, self.org_img, mask=self.img_mask) # 元画像とマスクを合成
+            self.save_name = f"img_data/use_img/red_{i+1}.jpg"
+            self.output_img = Image.fromarray(self.org_img)
+            self.output_img.save(self.save_name)
+            #cv2.imwrite(self.save_name, self.output_img)
+            self.output_img_list.append(self.save_name)
 
     def vari(self):
         self.output_img_list = []
@@ -23,7 +44,7 @@ class Feature_img():
                     b = float(self.org_img[i][j][0])
                     g = float(self.org_img[i][j][1])
                     r = float(self.org_img[i][j][2])
-                    if b < 125:
+                    if b < 200:
                         vari_d = g+r-b
                         if vari_d != 0:
                             vari = (g-r)/(g+r-b)
@@ -58,21 +79,29 @@ class Feature_img():
             self.save_name = f"img_data/use_img/vari_{i}.jpg"
             cv2.imwrite(self.save_name, self.output_img)
             self.output_img_list.append(self.save_name)
-        self.output()
     
     def enphasis(self):
         self.output_img_list = []
         for i in range(len(self.path_list)):
             self.org_img = cv2.imread(self.path_list[i], 1)
             self.org_img = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2RGB)
-            kernel = np.array([[0, 1, 0],
-                            [1, -4, 1],
-                            [0, 1, 0]], np.float32)
+            kernel = np.array([[0, 2, 0],
+                            [2, -8, 2],
+                            [0, 2, 0]], np.float32)
             self.output_img = cv2.filter2D(self.org_img, -1, kernel)
             self.save_name = f"img_data/use_img/edge_enphasis_{i+1}.jpg"
             cv2.imwrite(self.save_name, self.output_img)
             self.output_img_list.append(self.save_name)
-            self.output()
+    
+    def edge(self):
+        self.output_img_list = []
+        for i in range(len(self.path_list)):
+            self.org_img = cv2.imread(self.path_list[i])
+            self.img_gray = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2GRAY)
+            self.gray=cv2.Canny(self.img_gray,100,200)
+            self.save_name = f"img_data/use_img/edge_{i+1}.jpg"
+            cv2.imwrite(self.save_name,self.gray)
+            self.output_img_list.append(self.save_name)
     
     def output(self):
         return self.output_img_list

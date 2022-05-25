@@ -106,6 +106,7 @@ def reconstruct_img(Y,D,ksvd):
 
 
 def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
+    global feature_name
     """
     学習画像・正常画像・異常画像それぞれについて、
     ・元画像
@@ -165,9 +166,9 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     plt.hist(abs(Y_rec_ng-Y).reshape(-1,),bins=100,range=(0,10))
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
-    plt.savefig(f"results_data/part_{d_num}")
+    plt.savefig(f"results_data/{feature_name}_part_{d_num}")
     
-    plt.show()
+    #plt.show()
     plt.close()
     print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
     print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
@@ -228,58 +229,42 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
     evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,img_size, img_list, d_num)
 
 
-def make_sharp_kernel(k: int):
-      return np.array([
-    [-k / 9, -k / 9, -k / 9],
-    [-k / 9, 1 + 8 * k / 9, k / 9],
-    [-k / 9, -k / 9, -k / 9]
-  ], np.float32)
-
-
-
-
-
-
-
-# OpenCVによるエッジ強調（現在は標準入力でカーネルパラメータ指定）
-def edge_Enphasis():
-    edge_enphasis = sys.argv
-    if len(edge_enphasis)<2:
-        print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
-        sys.exit()
-
-    if edge_enphasis[1]=="true":
-        img = cv2.imread("img_data/data_old/img_train_RPC.jpg")
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        k = 1
-        kernel = np.array([[0, 1, 0],
-                           [1, -4, 1],
-                           [0, 1, 0]], np.float32)
-        img = cv2.filter2D(img, -1, kernel)
-        cv2.imwrite("img_data/use_img/img_train_RPC.jpg", img)
-    elif edge_enphasis[1]=="false":
-        img = cv2.imread("img_data/data_old/img_train_RPC.jpg")
-        cv2.imwrite("img_data/use_img/img_train_RPC.jpg", img)
-    else:
-        print(f'No argument "edge_enphasis" :python {edge_enphasis[0]} true;str kernel-param;int or false;str')
-        sys.exit()
-
-
 def read_img(path_list):
+    """画像読込関数
+    
+    Args:
+        path_list (list): 変換希望画像パス一覧
+    
+    Returns:
+        list: 3 paths of featured img.
+    """
+    global feature_name
     treat = Feature_img(path_list)
     feature = sys.argv
     if len(feature)<2:
         pass
     
     elif feature[1]=="vari":
+        feature_name = feature[1]
         treat.vari()
         path_list = treat.output()
     
     elif feature[1]=="enphasis":
-        treat.enphasis()
+        feature_name = feature[1]
+        path_list = treat.enphasis()
+        path_list = treat.output()
+        
+    elif feature[1]=="edge":
+        feature_name = feature[1]
+        path_list = treat.edge()
+        path_list = treat.output()
+        
+    elif feature[1]=="red":
+        feature_name = feature[1]
+        path_list = treat.red()
         path_list = treat.output()
     else:
-        print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, or nothing as normal.")
+        print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, edge, red, or nothing as normal.")
         sys.exit()
         
     # 一旦二分の一で画像上部排除
@@ -338,8 +323,8 @@ def main():
 
     ＊全てモノクロに直して処理。
     """
-    path_list = ["img_data/data_old/img_train_RPC.jpg", 
-                "img_data/data_old/img_test_ok_RPC.jpg",
+    path_list = ["img_data/data_old/img_test_ok_RPC.jpg",
+                "img_data/data_old/img_train_RPC.jpg", 
                 "img_data/data_old/img_1.jpg"]
     # edge_Enphasis()
     train_img, test_img_ok, test_img_ng = read_img(path_list)
@@ -350,7 +335,7 @@ patch_size=(5,5)
 n_components=6
 transform_n_nonzero_coefs=3
 max_iter=15
-
+feature_name = "normal_RGB"
 
 if __name__ == "__main__":
     main()
