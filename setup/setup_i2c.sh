@@ -17,7 +17,7 @@ sudo apt-get update -qq
 
 #i2cのtoolをインストール
 sudo apt-get install -y python-smbus i2c-tools -qq
-
+sudo pip3 install smbus
 #設定完了の喜びの舞
 echo -e "<<設定完了のおしらせ>>\nおめでとう！設定完了だ！ともに高みへゆこう\n10秒後にラズパイを再起動します。"
 

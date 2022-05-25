@@ -17,6 +17,7 @@ class GPS(object):
     def rungps(self): # GPSモジュールを読み、GPSオブジェクトを更新する
         #ラズパイ3で使うときはserial0
         #ラズパイ4で使うときはttyAMA1
+        #maybe you can use "dev/ttyAMA0"
         s = serial.Serial('/dev/ttyAMA0', 9600, timeout=10)
         s.readline() # 最初の1行は中途半端なデーターが読めることがあるので、捨てる
         while True:
