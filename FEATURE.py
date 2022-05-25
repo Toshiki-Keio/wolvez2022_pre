@@ -14,17 +14,36 @@ class Feature_img():
         self.output_img_list = []
         for i in range(len(self.path_list)):
             self.org_img = np.asarray(Image.open(self.path_list[i]))
-            print(self.org_img)
-            self.org_img[2][1][:][:] = 0
-            print(self.org_img)
-            self.org_img[2][2][:][:] = 0
-            print(self.org_img)
-            #self.img_hsv = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2HSV_FULL)
-            #self.img_mask0 = cv2.inRange(self.img_hsv, np.array([0, 127,0]), np.array([7, 255, 255]))
-            #self.img_mask1 = cv2.inRange(self.img_hsv, np.array([238, 127,0]), np.array([255, 255, 255]))
-            #self.img_mask = self.img_mask0 | self.img_mask1
-            #self.output_img = cv2.bitwise_and(self.org_img, self.org_img, mask=self.img_mask) # 元画像とマスクを合成
+            print(self.org_img.shape)
+            self.org_img[:, :, 1] = 0
+            self.org_img[:, :, 2] = 0
             self.save_name = f"img_data/use_img/red_{i+1}.jpg"
+            self.output_img = Image.fromarray(self.org_img)
+            self.output_img.save(self.save_name)
+            #cv2.imwrite(self.save_name, self.output_img)
+            self.output_img_list.append(self.save_name)
+
+    def blue(self):
+        self.output_img_list = []
+        for i in range(len(self.path_list)):
+            self.org_img = np.asarray(Image.open(self.path_list[i]))
+            print(self.org_img.shape)
+            self.org_img[:, :, 0] = 0
+            self.org_img[:, :, 1] = 0
+            self.save_name = f"img_data/use_img/blue_{i+1}.jpg"
+            self.output_img = Image.fromarray(self.org_img)
+            self.output_img.save(self.save_name)
+            #cv2.imwrite(self.save_name, self.output_img)
+            self.output_img_list.append(self.save_name)
+
+    def green(self):
+        self.output_img_list = []
+        for i in range(len(self.path_list)):
+            self.org_img = np.asarray(Image.open(self.path_list[i]))
+            print(self.org_img.shape)
+            self.org_img[:, :, 0] = 0
+            self.org_img[:, :, 2] = 0
+            self.save_name = f"img_data/use_img/green_{i+1}.jpg"
             self.output_img = Image.fromarray(self.org_img)
             self.output_img.save(self.save_name)
             #cv2.imwrite(self.save_name, self.output_img)
@@ -44,7 +63,7 @@ class Feature_img():
                     b = float(self.org_img[i][j][0])
                     g = float(self.org_img[i][j][1])
                     r = float(self.org_img[i][j][2])
-                    if b < 200:
+                    if b < 125:
                         vari_d = g+r-b
                         if vari_d != 0:
                             vari = (g-r)/(g+r-b)

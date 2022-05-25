@@ -263,8 +263,18 @@ def read_img(path_list):
         feature_name = feature[1]
         path_list = treat.red()
         path_list = treat.output()
+        
+    elif feature[1]=="blue":
+        feature_name = feature[1]
+        path_list = treat.blue()
+        path_list = treat.output()
+        
+    elif feature[1]=="green":
+        feature_name = feature[1]
+        path_list = treat.green()
+        path_list = treat.output()
     else:
-        print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, edge, red, or nothing as normal.")
+        print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, edge, red, blue, green, or nothing as normal.")
         sys.exit()
         
     # 一旦二分の一で画像上部排除
