@@ -10,11 +10,10 @@ class Feature_img():
     def __init__(self, path_list):
         self.path_list = path_list
 
-    def red(self):
+    def r(self):
         self.output_img_list = []
         for i in range(len(self.path_list)):
             self.org_img = np.asarray(Image.open(self.path_list[i]))
-            print(self.org_img.shape)
             self.org_img[:, :, 1] = 0
             self.org_img[:, :, 2] = 0
             self.save_name = f"img_data/use_img/red_{i+1}.jpg"
@@ -23,11 +22,10 @@ class Feature_img():
             #cv2.imwrite(self.save_name, self.output_img)
             self.output_img_list.append(self.save_name)
 
-    def blue(self):
+    def b(self):
         self.output_img_list = []
         for i in range(len(self.path_list)):
             self.org_img = np.asarray(Image.open(self.path_list[i]))
-            print(self.org_img.shape)
             self.org_img[:, :, 0] = 0
             self.org_img[:, :, 1] = 0
             self.save_name = f"img_data/use_img/blue_{i+1}.jpg"
@@ -36,11 +34,10 @@ class Feature_img():
             #cv2.imwrite(self.save_name, self.output_img)
             self.output_img_list.append(self.save_name)
 
-    def green(self):
+    def g(self):
         self.output_img_list = []
         for i in range(len(self.path_list)):
             self.org_img = np.asarray(Image.open(self.path_list[i]))
-            print(self.org_img.shape)
             self.org_img[:, :, 0] = 0
             self.org_img[:, :, 2] = 0
             self.save_name = f"img_data/use_img/green_{i+1}.jpg"
@@ -49,17 +46,48 @@ class Feature_img():
             #cv2.imwrite(self.save_name, self.output_img)
             self.output_img_list.append(self.save_name)
 
-    def vari(self):
+    def rb(self):
         self.output_img_list = []
         for i in range(len(self.path_list)):
-            self.org_img = cv2.imread(self.path_list[i],1)
+            self.org_img = np.asarray(Image.open(self.path_list[i]))
+            self.org_img[:, :, 1] = 0
+            self.save_name = f"img_data/use_img/purple_{i+1}.jpg"
+            self.output_img = Image.fromarray(self.org_img)
+            self.output_img.save(self.save_name)
+            #cv2.imwrite(self.save_name, self.output_img)
+            self.output_img_list.append(self.save_name)
 
+    def gb(self):
+        self.output_img_list = []
+        for i in range(len(self.path_list)):
+            self.org_img = np.asarray(Image.open(self.path_list[i]))
+            self.org_img[:, :, 0] = 0
+            self.save_name = f"img_data/use_img/emerald_{i+1}.jpg"
+            self.output_img = Image.fromarray(self.org_img)
+            self.output_img.save(self.save_name)
+            #cv2.imwrite(self.save_name, self.output_img)
+            self.output_img_list.append(self.save_name)
+
+    def rg(self):
+        self.output_img_list = []
+        for i in range(len(self.path_list)):
+            self.org_img = np.asarray(Image.open(self.path_list[i]))
+            self.org_img[:, :, 2] = 0
+            self.save_name = f"img_data/use_img/yellow_{i+1}.jpg"
+            self.output_img = Image.fromarray(self.org_img)
+            self.output_img.save(self.save_name)
+            #cv2.imwrite(self.save_name, self.output_img)
+            self.output_img_list.append(self.save_name)
+
+    def vari(self):
+        self.output_img_list = []
+        for k in range(len(self.path_list)):
+            self.org_img = cv2.imread(self.path_list[k],1)
             self.vari_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
             self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
             for i in range(self.org_img.shape[0]):
                 for j in range(self.org_img.shape[1]):
                     vari = 0.0
-                    img_num = 0
                     b = float(self.org_img[i][j][0])
                     g = float(self.org_img[i][j][1])
                     r = float(self.org_img[i][j][2])
@@ -95,7 +123,7 @@ class Feature_img():
             #cv2.imshow("self.org_img", cv2.resize(self.org_img,dsize=(534,400)))
             #cv2.imshow("VARI_img",cv2.resize(self.output_img,dsize=(534,460)))
 
-            self.save_name = f"img_data/use_img/vari_{i}.jpg"
+            self.save_name = f"img_data/use_img/vari_{k+1}.jpg"
             cv2.imwrite(self.save_name, self.output_img)
             self.output_img_list.append(self.save_name)
     
@@ -105,8 +133,8 @@ class Feature_img():
             self.org_img = cv2.imread(self.path_list[i], 1)
             self.org_img = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2RGB)
             kernel = np.array([[0, 2, 0],
-                            [2, -8, 2],
-                            [0, 2, 0]], np.float32)
+                               [2, -8, 2],
+                               [0, 2, 0]], np.float32)
             self.output_img = cv2.filter2D(self.org_img, -1, kernel)
             self.save_name = f"img_data/use_img/edge_enphasis_{i+1}.jpg"
             cv2.imwrite(self.save_name, self.output_img)

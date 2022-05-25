@@ -159,7 +159,7 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     plt.title("difference", fontsize=fs)
     plt.subplot(338)
     plt.hist(abs(Y_rec_ok-Y).reshape(-1,),bins=100,range=(0,10))
-    print(Y)
+    #print(Y)
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.subplot(339)
@@ -170,8 +170,8 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     
     #plt.show()
     plt.close()
-    print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
-    print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
+    #print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
+    #print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
 
 
 def img_window(train_img:np.ndarray, test_img_ok:np.ndarray, test_img_ng:np.ndarray, shape:list=(3, 3)):
@@ -251,28 +251,44 @@ def read_img(path_list):
     
     elif feature[1]=="enphasis":
         feature_name = feature[1]
-        path_list = treat.enphasis()
+        treat.enphasis()
         path_list = treat.output()
         
     elif feature[1]=="edge":
         feature_name = feature[1]
-        path_list = treat.edge()
+        treat.edge()
         path_list = treat.output()
         
-    elif feature[1]=="red":
+    elif feature[1]=="r":
         feature_name = feature[1]
-        path_list = treat.red()
+        treat.r()
         path_list = treat.output()
         
-    elif feature[1]=="blue":
+    elif feature[1]=="b":
         feature_name = feature[1]
-        path_list = treat.blue()
+        treat.b()
         path_list = treat.output()
         
-    elif feature[1]=="green":
+    elif feature[1]=="g":
         feature_name = feature[1]
-        path_list = treat.green()
+        treat.g()
         path_list = treat.output()
+        
+    elif feature[1]=="rb":
+        feature_name = feature[1]
+        treat.rb()
+        path_list = treat.output()
+        
+    elif feature[1]=="gb":
+        feature_name = feature[1]
+        treat.gb()
+        path_list = treat.output()
+        
+    elif feature[1]=="rg":
+        feature_name = feature[1]
+        treat.rg()
+        path_list = treat.output()
+        
     else:
         print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, edge, red, blue, green, or nothing as normal.")
         sys.exit()
@@ -342,10 +358,11 @@ def main():
     
     
 patch_size=(5,5)
-n_components=6
+n_components=7
 transform_n_nonzero_coefs=3
 max_iter=15
 feature_name = "normal_RGB"
+
 
 if __name__ == "__main__":
     main()
