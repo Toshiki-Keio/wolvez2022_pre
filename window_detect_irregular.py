@@ -88,7 +88,7 @@ def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
     X = ksvd.fit_transform(Y)
     # 辞書を求める
     D = ksvd.components_
-    
+        
     return D,X,ksvd
 
 
@@ -153,8 +153,19 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ng (reconstruct)", fontsize=fs)
     
+    var_org = 0
+    var_ok = 0
+    var_ng = 0
+    for i in range(Y.shape[0]):
+        for j in range(Y.shape[1]):
+            var_org = var_org + ((abs(Y[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
+            var_ok = var_ok + ((abs(Y_rec_ok[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
+            var_ng = var_ng + ((abs(Y_rec_ng[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
+    print(f"元画像分散：{var_org}\nOK画像分散：{var_ok}\nNG画像分散：{var_ng}")
+    
     plt.subplot(337)
-    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
+    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,1
+                                                   0))
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.subplot(338)
