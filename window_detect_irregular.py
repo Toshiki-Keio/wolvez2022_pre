@@ -12,6 +12,7 @@ from FEATURE import Feature_img
 from modularized.a_read import read_img, img_to_Y
 from modularized.b_learn import generate_dict
 from modularized.c_reconstruct import reconstruct_img
+from modularized.d_analyze import evaluate
 
 
 
@@ -110,7 +111,8 @@ def reconstruct_img(Y,D,ksvd):
     return Y_rec
 '''
 
-def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
+'''
+def evaluate(Y_rec_img,Y_rec_ok_img,Y_rec_ng_img,patch_size,original_img_size, img_list, d_num):
     global feature_name
     """
     学習画像・正常画像・異常画像それぞれについて、
@@ -140,19 +142,19 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ng (original)", fontsize=fs)
     plt.subplot(334)
-    plt.imshow(Y_to_image(Y,patch_size,original_img_size))
+    plt.imshow(Y_rec_img)
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("train_img (reconstruct)", fontsize=fs)
     plt.subplot(335)
-    plt.imshow(Y_to_image(Y_rec_ok,patch_size,original_img_size))
+    plt.imshow(Y_rec_ok_img)
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
     plt.title("test_img_ok (reconstruct)", fontsize=fs)
     plt.subplot(336)
-    plt.imshow(Y_to_image(Y_rec_ng,patch_size,original_img_size))
+    plt.imshow(Y_rec_ng_img)
     ax = plt.gca()
     ax.axes.xaxis.set_visible(False)
     ax.axes.yaxis.set_visible(False)
@@ -163,13 +165,13 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     var_ng = 0
     for i in range(Y.shape[0]):
         for j in range(Y.shape[1]):
-            var_org = var_org + ((abs(Y[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
-            var_ok = var_ok + ((abs(Y_rec_ok[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
-            var_ng = var_ng + ((abs(Y_rec_ng[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
+            var_org = var_org + ((abs(Y[i][j]-Y_rec_img[i][j])**2)-(np.average(Y_rec_img)**2))*1/Y.size
+            var_ok = var_ok + ((abs(Y_rec_ok_img[i][j]-Y[i][j])**2)-(np.average(Y_rec_ok_img)**2))*1/Y.size
+            var_ng = var_ng + ((abs(Y_rec_ng_img[i][j]-Y[i][j])**2)-(np.average(Y_rec_ng_img)**2))*1/Y.size
     print(f"元画像分散：{var_org}\nOK画像分散：{var_ok}\nNG画像分散：{var_ng}\n")
     
     plt.subplot(337)
-    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
+    plt.hist(abs(-Y).reshape(-1,),bins=100,range=(0,10))
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.subplot(338)
@@ -187,7 +189,7 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     plt.close()
     #print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
     #print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
-
+'''
 
 def img_window(train_img:np.ndarray, test_img_ok:np.ndarray, test_img_ng:np.ndarray, shape:list=(3, 3)):
     """画像探査領域分割関数
@@ -221,9 +223,38 @@ def img_window(train_img:np.ndarray, test_img_ok:np.ndarray, test_img_ng:np.ndar
             test_img_ng_list.append(test_img_ng_part)
     
     return train_img_list, test_img_ok_list, test_img_ng_list, (partial_height, partial_width)
+ 
+def evaluate(img,img_rec,d_num, ok_or_ng):
+    """
+    学習画像・正常画像・異常画像それぞれについて、
+    ・元画像
+    ・再構成画像
+    ・画素値の偏差のヒストグラム
+    を出力
+    """
     
+    ax1 = plt.subplot2grid((2,2), (0,0))
+    ax2 = plt.subplot2grid((2,2), (0,1))
+    ax3 = plt.subplot2grid((2,2), (1,0))
+    ax4 = plt.subplot2grid((2,2), (1,1))
+    ax1.imshow(img, cmap='gray')
+    ax1.set_title("original img")
+    ax2.imshow(img_rec, cmap='gray')
+    ax2.set_title("reconstructed img")
+    diff=abs(img-img_rec)
+    ax3.imshow(diff*255,cmap='gray')
+    ax3.set_title("difference")
+    ax4.hist(diff.reshape(-1,),bins=255,range=(0,255))
+    ax4.set_title("histgram")
+    #save_title=str(datetime.datetime.now()).replace(" ","_").replace(":","-")
+    #plt.savefig(os.getcwd()+"/img_result/"+save_title+".png")
+    plt.savefig(f"results_data/{ok_or_ng}_{feature_name}_part_{d_num}")
+    print("average: ",np.average(diff))
+    print("median: ",np.median(diff))
+    print("variance: ",np.var(diff))
+    return np.average(diff),np.median(diff),np.var(diff)   
 
-def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num):
+def estimate(train_img_part, test_img_ok_part:np.ndarray, test_img_ng_part:np.ndarray, img_size, d_num):
     # 使用画像リスト
     img_list = [train_img_part, test_img_ok_part, test_img_ng_part]
     
@@ -237,11 +268,15 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
     D,X,ksvd=generate_dict(Y,n_components=20,transform_n_nonzero_coefs=3,max_iter=15)
 
     # 推論・画像再構成
-    Y_rec_ok=reconstruct_img(Y_ok,D,ksvd,patch_size,img_size)
-    Y_rec_ng=reconstruct_img(Y_ng,D,ksvd,patch_size,img_size)
+    #Y_rec_img=reconstruct_img(Y,D,ksvd,patch_size,img_size)
+    Y_rec_ok_img=reconstruct_img(Y_ok,D,ksvd,patch_size,test_img_ok_part.shape)
+    Y_rec_ng_img=reconstruct_img(Y_ng,D,ksvd,patch_size,test_img_ng_part.shape)
 
     # 結果表示
-    evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,img_size, img_list, d_num)
+    img_set = [[test_img_ok_part, Y_rec_ok_img], [test_img_ng_part, Y_rec_ng_img]]
+    ok_or_ng = ["ok", "ng"]
+    for k in range(2):
+        evaluate(img_set[k][0], img_set[k][1], d_num, ok_or_ng[k])
 
 
 def feature_img(path_list):
@@ -371,23 +406,6 @@ def main():
     train_img, test_img_ok, test_img_ng = feature_img(path_list)
     window_detect(train_img, test_img_ok, test_img_ng)
     
-    img_path="../img_data/data_old/img_1.jpg"
-    img=read_img(img_path)
-
-    patch_size=(10,10)
-
-    # 画像をpatchに切り分けて、標準化
-    Y=img_to_Y(img,patch_size)
-
-    # 学習
-    D,X,ksvd=generate_dict(Y,n_components=20,transform_n_nonzero_coefs=3,max_iter=15)
-    """
-    n_components : 生成する基底ベクトルの本数
-    transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
-    max_iter : 詳細未詳。学習の反復回数の上限？
-    """
-
-    img_rec=reconstruct_img(Y,D,ksvd,patch_size,img.shape)
     
     
 patch_size=(5,5)
