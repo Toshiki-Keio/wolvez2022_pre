@@ -27,7 +27,7 @@ https://codezine.jp/article/detail/12433
 
 scl=StandardScaler()
 
-def image_to_Y(img,patch_size,fit=False):
+def img_to_Y(img,patch_size,fit=False):
     """
     入力 : 取り込んだ画像img
     出力 : 学習・評価に用いる際に用いる画像データ群Y
@@ -49,7 +49,7 @@ def Y_to_image(Y_rec,patch_size,original_img_size):
     入力 : 再構成で生成された画像データ群Y_rec (reconstructed)
           再現したい画像のサイズ(train_img.shape)
     出力 : 再構成画像img_rec
-    機能 : image_to_Y()で行われた処理の逆
+    機能 : img_to_Y()で行われた処理の逆
     """
     # 標準化処理の解除
     Y_rec=scl.inverse_transform(Y_rec)
@@ -179,9 +179,9 @@ test_img_ng=np.asarray(Image.open("img_data/img_test_ng_edge.jpg").convert('L'))
 print(type(train_img))
 
 # 学習用画像データ群Yを準備
-Y=image_to_Y(train_img,patch_size,fit=True)
-Y_ok=image_to_Y(test_img_ok,patch_size,fit=False)
-Y_ng=image_to_Y(test_img_ng,patch_size,fit=False)
+Y=img_to_Y(train_img,patch_size,fit=True)
+Y_ok=img_to_Y(test_img_ok,patch_size,fit=False)
+Y_ng=img_to_Y(test_img_ng,patch_size,fit=False)
 
 ############################################ デバッグここまでやりました ############################################
 

@@ -6,7 +6,7 @@ import cv2
 # 動画から画像を切り出す
 
 # 画像をndarrayに変換する
-img_path="wolvez2022/img_data/data_old/img_1.jpg"
+img_path="../img_data/data_old/img_1.jpg"
 img=read_img(img_path)
 
 patch_size=(10,10)

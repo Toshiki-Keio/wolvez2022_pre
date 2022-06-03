@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 import sys
 
 from FEATURE import Feature_img
+from modularized.a_read import read_img, img_to_Y
+from modularized.b_learn import generate_dict
+from modularized.c_reconstruct import reconstruct_img
 
 
 
@@ -33,7 +36,8 @@ patch全てに共通する基底ベクトルを求め、それを２次元配列
 
 scl=StandardScaler()
 
-def image_to_Y(img,patch_size,fit=False):
+'''
+def img_to_Y(img,patch_size,fit=False):
     """
     入力 : 取り込んだ画像img
     出力 : 学習・評価に用いる際に用いる画像データ群Y
@@ -49,14 +53,14 @@ def image_to_Y(img,patch_size,fit=False):
     else:
         Y=scl.transform(patches)
     return Y
-
+'''
 
 def Y_to_image(Y_rec,patch_size,original_img_size):
     """
     入力 : 再構成で生成された画像データ群Y_rec (reconstructed)
           再現したい画像のサイズ(train_img.shape)
     出力 : 再構成画像img_rec
-    機能 : image_to_Y()で行われた処理の逆
+    機能 : img_to_Y()で行われた処理の逆
     """
     # 標準化処理の解除
     Y_rec=scl.inverse_transform(Y_rec)
@@ -71,7 +75,7 @@ def Y_to_image(Y_rec,patch_size,original_img_size):
     img_rec=img_rec.astype(np.uint8)
     return img_rec
 
-
+'''
 def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
     """
     入力 : 学習画像データ群Y
@@ -90,8 +94,9 @@ def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
     D = ksvd.components_
         
     return D,X,ksvd
+'''
 
-
+'''
 def reconstruct_img(Y,D,ksvd):
     """
     入力 : 画像のデータ群Y
@@ -103,7 +108,7 @@ def reconstruct_img(Y,D,ksvd):
     X=ksvd.transform(Y)
     Y_rec=np.dot(X,D)
     return Y_rec
-
+'''
 
 def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     global feature_name
@@ -223,9 +228,9 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
     img_list = [train_img_part, test_img_ok_part, test_img_ng_part]
     
     # 学習用画像データ群Yを準備
-    Y=image_to_Y(train_img_part,patch_size,fit=True)
-    Y_ok=image_to_Y(test_img_ok_part,patch_size,fit=False)
-    Y_ng=image_to_Y(test_img_ng_part,patch_size,fit=False)
+    Y=img_to_Y(train_img_part,patch_size,fit=True)
+    Y_ok=img_to_Y(test_img_ok_part,patch_size,fit=False)
+    Y_ng=img_to_Y(test_img_ng_part,patch_size,fit=False)
 
 
     # 学習
@@ -239,7 +244,7 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
     evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,img_size, img_list, d_num)
 
 
-def read_img(path_list):
+def feature_img(path_list):
     """画像読込関数
     
     Args:
@@ -363,8 +368,26 @@ def main():
                 "img_data/data_old/img_train_RPC.jpg", 
                 "img_data/data_old/img_1.jpg"]
     # edge_Enphasis()
-    train_img, test_img_ok, test_img_ng = read_img(path_list)
+    train_img, test_img_ok, test_img_ng = feature_img(path_list)
     window_detect(train_img, test_img_ok, test_img_ng)
+    
+    img_path="../img_data/data_old/img_1.jpg"
+    img=read_img(img_path)
+
+    patch_size=(10,10)
+
+    # 画像をpatchに切り分けて、標準化
+    Y=img_to_Y(img,patch_size)
+
+    # 学習
+    D,X,ksvd=generate_dict(Y,n_components=20,transform_n_nonzero_coefs=3,max_iter=15)
+    """
+    n_components : 生成する基底ベクトルの本数
+    transform_n_nonzero_coefs : 画像を再構成するために使用を許される基底ベクトルの本数。言い換えれば、Xの非ゼロ成分の個数（L0ノルム）
+    max_iter : 詳細未詳。学習の反復回数の上限？
+    """
+
+    img_rec=reconstruct_img(Y,D,ksvd,patch_size,img.shape)
     
     
 patch_size=(5,5)
