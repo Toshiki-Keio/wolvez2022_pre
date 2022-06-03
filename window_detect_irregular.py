@@ -161,7 +161,7 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
             var_org = var_org + ((abs(Y[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
             var_ok = var_ok + ((abs(Y_rec_ok[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
             var_ng = var_ng + ((abs(Y_rec_ng[i][j]-Y[i][j])**2)-(np.average(Y)**2))*1/Y.size
-    print(f"元画像分散：{var_org}\nOK画像分散：{var_ok}\nNG画像分散：{var_ng}")
+    print(f"元画像分散：{var_org}\nOK画像分散：{var_ok}\nNG画像分散：{var_ng}\n")
     
     plt.subplot(337)
     plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
