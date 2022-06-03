@@ -228,17 +228,17 @@ def estimate(train_img_part, test_img_ok_part, test_img_ng_part, img_size, d_num
     img_list = [train_img_part, test_img_ok_part, test_img_ng_part]
     
     # 学習用画像データ群Yを準備
-    Y=img_to_Y(train_img_part,patch_size,fit=True)
-    Y_ok=img_to_Y(test_img_ok_part,patch_size,fit=False)
-    Y_ng=img_to_Y(test_img_ng_part,patch_size,fit=False)
+    Y=img_to_Y(train_img_part,patch_size)
+    Y_ok=img_to_Y(test_img_ok_part,patch_size)
+    Y_ng=img_to_Y(test_img_ng_part,patch_size)
 
 
     # 学習
-    D,X,ksvd=generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter)
+    D,X,ksvd=generate_dict(Y,n_components=20,transform_n_nonzero_coefs=3,max_iter=15)
 
     # 推論・画像再構成
-    Y_rec_ok=reconstruct_img(Y_ok,D,ksvd)
-    Y_rec_ng=reconstruct_img(Y_ng,D,ksvd)
+    Y_rec_ok=reconstruct_img(Y_ok,D,ksvd,patch_size,img_size)
+    Y_rec_ng=reconstruct_img(Y_ng,D,ksvd,patch_size,img_size)
 
     # 結果表示
     evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,img_size, img_list, d_num)
@@ -309,9 +309,9 @@ def feature_img(path_list):
         sys.exit()
         
     # 一旦二分の一で画像上部排除
-    train_img = np.asarray(Image.open(path_list[0]).convert('L'))
-    test_img_ok=np.asarray(Image.open(path_list[1]).convert('L'))
-    test_img_ng=np.asarray(Image.open(path_list[2]).convert('L'))
+    train_img = read_img(path_list[0])
+    test_img_ok=read_img(path_list[1])
+    test_img_ng=read_img(path_list[2])
     train_img = train_img[int(0.5*train_img.shape[0]):]
     test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
     test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
