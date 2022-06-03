@@ -24,7 +24,7 @@ def evaluate(img,img_rec):
     ax3.set_title("difference")
     ax4.hist(diff.reshape(-1,),bins=255,range=(0,255))
     ax4.set_title("histgram")
-    save_title=str(datetime.datetime.now()).replace(" ","")
+    save_title=str(datetime.datetime.now()).replace(" ","-")
     plt.savefig(os.getcwd()+"/img_result/"+save_title+".png")
     print("average: ",np.average(diff))
     print("median: ",np.median(diff))

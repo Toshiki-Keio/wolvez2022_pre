@@ -1,20 +1,15 @@
-import glob
-
 from a_read import read_img,img_to_Y
 from b_learn import generate_dict
 from c_reconstruct import reconstruct_img
 from d_analyze import evaluate
 
+import glob
+import os
 # 動画から画像を切り出す
 
 # 画像をndarrayに変換する
-<<<<<<< HEAD
-img_path="../img_data/data_old/img_1.jpg"
-img=read_img(img_path)
-=======
->>>>>>> 0cc7c7a6bf2cc2ed42f208b589d54afd72e54ea8
 
-files=glob.glob("/home/ytpc2019a/code_ws/wolvez2022/img_data/use_img/*")
+files=glob.glob(f"{os.getcwd()}/img_data/use_img/*")
 for img_path in files:
     # img_path="/home/ytpc2019a/code_ws/wolvez2022/img_data/data_old/img_1.jpg"
     print(img_path)
