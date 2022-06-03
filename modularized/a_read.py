@@ -3,7 +3,6 @@
 """
 import cv2
 import numpy as np
-import cv2
 from spmimage.feature_extraction.image import extract_simple_patches_2d, reconstruct_from_simple_patches_2d
 from sklearn.preprocessing import StandardScaler
 
@@ -32,3 +31,4 @@ scl.transform(data)で標準化。fit_transformでfitも同時にできる
 scl.inverse_transform(data)でもとに戻す
 2次元以下の配列にのみ対応。
 """
+
