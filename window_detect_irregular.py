@@ -164,8 +164,7 @@ def evaluate(Y,Y_rec_ok,Y_rec_ng,patch_size,original_img_size, img_list, d_num):
     print(f"元画像分散：{var_org}\nOK画像分散：{var_ok}\nNG画像分散：{var_ng}")
     
     plt.subplot(337)
-    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,1
-                                                   0))
+    plt.hist(abs(Y-Y).reshape(-1,),bins=100,range=(0,10))
     plt.ylim(0,pxcels/3)
     plt.title("difference", fontsize=fs)
     plt.subplot(338)
