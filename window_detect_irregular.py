@@ -192,6 +192,7 @@ def evaluate(Y_rec_img,Y_rec_ok_img,Y_rec_ng_img,patch_size,original_img_size, i
     #print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
 '''
 
+# 探査領域分割関数
 def img_window(img:np.ndarray, shape:list=(3, 3)):
     """画像探査領域分割関数
 
@@ -220,7 +221,8 @@ def img_window(img:np.ndarray, shape:list=(3, 3)):
             img_window_list.append(img_part)
     
     return img_window_list, (partial_height, partial_width)
- 
+
+# 評価用ヒストグラム作成
 def evaluate(img,img_rec,d_num):
     global times
     """
@@ -251,6 +253,7 @@ def evaluate(img,img_rec,d_num):
     print("variance: ",np.var(diff))
     return np.average(diff),np.median(diff),np.var(diff)   
 
+# 学習
 def estimate(train_img_part:np.ndarray):
     global patch_size
     # 学習用画像データ群Yを準備
@@ -261,8 +264,7 @@ def estimate(train_img_part:np.ndarray):
     
     return D, ksvd
 
-    
-
+# 辞書を使用した再構成及び構成誤差ヒストグラム作成
 def guess_img(test_img,D,ksvd,patch_size,img_size, d_num):
     Y_test=img_to_Y(test_img,patch_size)
     # 推論・画像再構成
@@ -272,15 +274,20 @@ def guess_img(test_img,D,ksvd,patch_size,img_size, d_num):
     ave, med, var = evaluate(test_img, Y_rec_test_img, d_num)
     return ave, med, var
 
+# 画像を特徴抽出済み画像へ変換
+# 標準入力で特徴量抽出可能
+# いずれはなくなる関数
 def feature_img(path_list, frame_num):
     """画像読込関数
     
     Args:
-        path_list (list): 変換希望画像パス一覧
+        path_list (str): 変換希望画像パス一覧
     
     Returns:
-        list: 3 paths of featured img.
+        str: path of featured img.
     """
+    # 「パスリスト」と書いてしまったがこれは一つのパス
+    
     global feature_name
     treat = Feature_img(path_list, frame_num)
     feature = sys.argv
@@ -361,21 +368,35 @@ def feature_img(path_list, frame_num):
         test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
     """
     return img    
-    
 
-def detect_window(img):
-    # 探査領域の分割数を指定
-    detect_shape = (2, 3)
-
-    # 各画像を探査領域に分割してリストに収納
-    img_window_list = img_window(img, detect_shape)
-
-    return img_window_list
-    # 各探査領域に対して異常検出を行う
-    for k in range(prod(detect_shape)):
-        D, ksvd = estimate(train_img_list[k], partial_size, d_num=k+1)
-
-
+# 経路ログ出力関数
+# 最も危険だと思われる箇所を表示(仮)
+def logger(data_title:str, log_data):
+    global frames
+    log_data = np.array(log_data)
+    max_data = np.max(log_data)
+    pos = np.where(log_data == max_data)
+    max_data_frame = int(frames[pos][0])
+    plt.subplot(311)
+    plt.plot(frames, log_data, color='g', label="LOG")
+    plt.scatter(max_data_frame, max_data, marker="o", s=400, c="yellow", alpha=0.5, edgecolors="r", label=f"Highest {data_title}")
+    plt.xlabel("Frame Number")
+    plt.ylabel(f"{data_title}")
+    plt.xlim(0, int(np.max(frames)))
+    plt.ylim(0, max_data+1000)
+    plt.title(f"Log of {data_title}\non the Way Passed Through")
+    plt.grid(True)
+    plt.legend()
+    plt.subplot(313)
+    plt.imshow(cv2.imread(f'img_data/from_mov/frame_{max_data_frame}.jpg', 1))
+    ax = plt.gca()
+    ax.axes.xaxis.set_visible(False)
+    ax.axes.yaxis.set_visible(False)
+    plt.title(f"Photo of above point\nFrame Number is {max_data_frame}")
+    plt.savefig(f"results_data/LOG_{data_title}/{feature_name}_{data_title}_log")
+    plt.close()
+ 
+# 特徴抽出から評価ヒストグラム作成まで
 def main(img_path, state, times):
     # 本編
     global D, ksvd, feature_name, var_log, ave_log, med_log
@@ -422,58 +443,44 @@ def main(img_path, state, times):
             continue
         
     
- 
+# 特徴抽出デフォルト
 feature_name = "normal_RGB"
-   
-D, ksvd = None, None
+
+
+# ログ用リスト
 var_log, frames = [], []
 ave_log = []
 med_log = []
+
+# 辞書学習用パラメータ
 patch_size=(5,5)
 n_components=7
 transform_n_nonzero_coefs=3
 max_iter=15
+D, ksvd = None, None
 
-
-times = 0
+# フレームごとに異常検出
+times = 0  # ループ番号(フレーム番号)
 if __name__ == "__main__":
+    # 一旦最初だけ学習ステートへ
     state = True
     pathlist = glob("img_data/from_mov/*")
+    
+    # 一旦全フレーム回すループ
     while times <= 203:
         main(pathlist[times].replace("\\","/"), state, times)
         frames.append(times)
+        print(f"\n\n{times}th frame has done\n\n")
+        
+        # 画像が変わらないフレームがいくつか存在
+        # 一旦2フレームに一回
         times = times + 2
         state = False
 
 frames = np.array(frames)
 
-
-
-def logger(data_title:str, log_data):
-    global frames
-    log_data = np.array(log_data)
-    max_data = np.max(log_data)
-    pos = np.where(log_data == max_data)
-    max_data_frame = int(frames[pos])
-    plt.subplot(311)
-    plt.plot(frames, log_data, color='g', label="LOG")
-    plt.scatter(max_data_frame, max_data, marker="o", s=600, c="yellow", alpha=0.5, edgecolors="r", label=f"Highest {data_title}")
-    plt.xlabel("Frame Number")
-    plt.ylabel(f"{data_title}")
-    plt.xlim(0, int(np.max(frames)))
-    plt.ylim(0, max_data+1000)
-    plt.title(f"Log of {data_title}\non the Way Passed Through")
-    plt.grid(True)
-    plt.subplot(313)
-    plt.imshow(cv2.imread(f'img_data/from_mov/frame_{max_data_frame}.jpg', 1))
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title(f"Photo of the above point\nFrame Number is {max_data_frame}")
-    plt.savefig(f"results_data/LOG_{data_title}/{feature_name}_{data_title}_log")
-    plt.close()
-    
-
+ 
+# 露府出力
 logger("Variance", var_log)
-logger("Average", ave_log)
-logger("Median", med_log)
+print("\n\nSaved Variance Log\n\n")
+logge

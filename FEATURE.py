@@ -12,6 +12,7 @@ class Feature_img():
         self.path_list = path_list
         self.frame_num = frame_num
 
+    # 赤色抽出
     def r(self):
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.path_list))
@@ -23,6 +24,7 @@ class Feature_img():
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
 
+    # 青色抽出
     def b(self):
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.path_list))
@@ -34,6 +36,7 @@ class Feature_img():
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
 
+    # 緑色抽出
     def g(self):
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.path_list))
@@ -45,6 +48,7 @@ class Feature_img():
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
 
+    # 緑色排除
     def rb(self):
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.path_list))
@@ -55,6 +59,7 @@ class Feature_img():
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
 
+    # 赤色排除
     def gb(self):
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.path_list))
@@ -64,7 +69,8 @@ class Feature_img():
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
-
+    
+    # 青色排除
     def rg(self):
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.path_list))
@@ -75,6 +81,7 @@ class Feature_img():
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
 
+    # VARI
     def vari(self):
         #self.output_img_list = []
         self.org_img = cv2.imread(self.path_list,1)
@@ -99,8 +106,8 @@ class Feature_img():
 
         vari_max = np.amax(self.vari_list_np)
         vari_min = np.amin(self.vari_list_np)
-        print("vari max: "+str(np.amax(self.vari_list_np)))
-        print("vari min: "+str(np.amin(self.vari_list_np)))
+        #print("vari max: "+str(np.amax(self.vari_list_np)))
+        #print("vari min: "+str(np.amin(self.vari_list_np)))
         for i in range(self.org_img.shape[0]):
             for j in range(self.org_img.shape[1]):
                 self.vari_list_np[i][j] = 100*(self.vari_list_np[i][j] - vari_min)/(vari_max - vari_min)
@@ -110,10 +117,10 @@ class Feature_img():
                 # print(self.vari_list_np[i][j])
                 # print(np.uint8(self.vari_list_np[i][j]))
                 self.output_img[i][j] = np.uint8(self.vari_list_np[i][j])
-        print("len(self.vari_list_np): "+str(self.vari_list_np.shape))
-        print("vari max: "+str(np.amax(self.vari_list_np)))
-        print("vari min: "+str(np.amin(self.vari_list_np)))
-        print(self.vari_list_np)
+        #print("len(self.vari_list_np): "+str(self.vari_list_np.shape))
+        #print("vari max: "+str(np.amax(self.vari_list_np)))
+        #print("vari min: "+str(np.amin(self.vari_list_np)))
+        #print(self.vari_list_np)
 
         #cv2.imshow("self.org_img", cv2.resize(self.org_img,dsize=(534,400)))
         #cv2.imshow("VARI_img",cv2.resize(self.output_img,dsize=(534,460)))
@@ -122,6 +129,7 @@ class Feature_img():
         cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
     
+    # エッジ強調
     def enphasis(self):
         #self.output_img_list = []
         self.org_img = cv2.imread(self.path_list, 1)
@@ -134,6 +142,7 @@ class Feature_img():
         cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
     
+    # エッジ検出
     def edge(self):
         #self.output_img_list = []
         self.org_img = cv2.imread(self.path_list)
@@ -143,9 +152,11 @@ class Feature_img():
         cv2.imwrite(self.save_name,self.gray)
         #self.output_img_list.append(self.save_name)
     
+    # 特徴抽出済画像パス引き渡し
     def output(self):
         return self.save_name
     
+    # 作ってみたが使わない
     def show(self):
         k = 0
         for img in self.output_img_list:
