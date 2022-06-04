@@ -245,7 +245,7 @@ def evaluate(img,img_rec,d_num):
     ax4.set_title("histgram")
     #save_title=str(datetime.datetime.now()).replace(" ","_").replace(":","-")
     #plt.savefig(os.getcwd()+"/img_result/"+save_title+".png")
-    plt.savefig(f"results_data/{feature_name}_{times}thFRAME_part_{d_num}")
+    plt.savefig(f"results_data/{feature_name}/{feature_name}_{times}thFRAME_part_{d_num}")
     print("average: ",np.average(diff))
     print("median: ",np.median(diff))
     print("variance: ",np.var(diff))
@@ -269,9 +269,10 @@ def guess_img(test_img,D,ksvd,patch_size,img_size, d_num):
     #Y_rec_img=reconstruct_img(Y,D,ksvd,patch_size,img_size)
     Y_rec_test_img=reconstruct_img(Y_test,D,ksvd,patch_size,img_size)
     # 結果表示
-    evaluate(test_img, Y_rec_test_img, d_num)
+    ave, med, var = evaluate(test_img, Y_rec_test_img, d_num)
+    return ave, med, var
 
-def feature_img(path_list):
+def feature_img(path_list, frame_num):
     """画像読込関数
     
     Args:
@@ -281,7 +282,7 @@ def feature_img(path_list):
         list: 3 paths of featured img.
     """
     global feature_name
-    treat = Feature_img(path_list)
+    treat = Feature_img(path_list, frame_num)
     feature = sys.argv
     if len(feature)<2:
         pass
@@ -375,9 +376,9 @@ def detect_window(img):
         D, ksvd = estimate(train_img_list[k], partial_size, d_num=k+1)
 
 
-def main(img_path, state):
+def main(img_path, state, times):
     # 本編
-    global D, ksvd, feature_name
+    global D, ksvd, feature_name, var_log, ave_log, med_log
     """
     （学習に関するパラメータについて）
     patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
@@ -397,7 +398,7 @@ def main(img_path, state):
     #            "img_data/data_old/img_train_RPC.jpg", 
     #            "img_data/data_old/img_1.jpg"]
     # edge_Enphasis()
-    img = feature_img(img_path)
+    img = feature_img(img_path, times)
     
     detect_shape = (2, 3)
 
@@ -411,28 +412,68 @@ def main(img_path, state):
                 D, ksvd = estimate(img_window_list[k])
                 save_name = f"img_data/use_img/learn_img/{feature_name}_part_{k}.jpg"
                 cv2.imwrite(save_name, img_window_list[k])
-        else:
-            try:
-                guess_img(img_window_list[k],D,ksvd,patch_size,partial_size, d_num=k+1)
-            except:
-                continue
+        try:
+            ave, med, var = guess_img(img_window_list[k],D,ksvd,patch_size,partial_size, d_num=k+1)
+            if k == 4:
+                var_log.append(var)
+                ave_log.append(ave)
+                med_log.append(med)
+        except:
+            continue
         
     
-    
+ 
+feature_name = "normal_RGB"
+   
 D, ksvd = None, None
+var_log, frames = [], []
+ave_log = []
+med_log = []
 patch_size=(5,5)
 n_components=7
 transform_n_nonzero_coefs=3
 max_iter=15
-feature_name = "normal_RGB"
 
 
 times = 0
 if __name__ == "__main__":
     state = True
     pathlist = glob("img_data/from_mov/*")
-    while times <= 20:
-        main(pathlist[times].replace("\\","/"), state)
-        times = times + 1
+    while times <= 203:
+        main(pathlist[times].replace("\\","/"), state, times)
+        frames.append(times)
+        times = times + 2
         state = False
+
+frames = np.array(frames)
+
+
+
+def logger(data_title:str, log_data):
+    global frames
+    log_data = np.array(log_data)
+    max_data = np.max(log_data)
+    pos = np.where(log_data == max_data)
+    max_data_frame = int(frames[pos])
+    plt.subplot(311)
+    plt.plot(frames, log_data, color='g', label="LOG")
+    plt.scatter(max_data_frame, max_data, marker="o", s=600, c="yellow", alpha=0.5, edgecolors="r", label=f"Highest {data_title}")
+    plt.xlabel("Frame Number")
+    plt.ylabel(f"{data_title}")
+    plt.xlim(0, int(np.max(frames)))
+    plt.ylim(0, max_data+1000)
+    plt.title(f"Log of {data_title}\non the Way Passed Through")
+    plt.grid(True)
+    plt.subplot(313)
+    plt.imshow(cv2.imread(f'img_data/from_mov/frame_{max_data_frame}.jpg', 1))
+    ax = plt.gca()
+    ax.axes.xaxis.set_visible(False)
+    ax.axes.yaxis.set_visible(False)
+    plt.title(f"Photo of the above point\nFrame Number is {max_data_frame}")
+    plt.savefig(f"results_data/LOG_{data_title}/{feature_name}_{data_title}_log")
+    plt.close()
     
+
+logger("Variance", var_log)
+logger("Average", ave_log)
+logger("Median", med_log)
