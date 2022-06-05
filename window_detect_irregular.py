@@ -38,25 +38,6 @@ patch全てに共通する基底ベクトルを求め、それを２次元配列
 
 scl=StandardScaler()
 
-'''
-def img_to_Y(img,patch_size,fit=False):
-    """
-    入力 : 取り込んだ画像img
-    出力 : 学習・評価に用いる際に用いる画像データ群Y
-    機能 : 画像をパッチに分割 -> パッチを2次元から1次元へ変換 -> 1次元ベクトルを標準化
-
-    備考 : 取り込む画像が1枚である必要はないと思う。何枚か（撮影方向を変えるなどして）撮影しておくと、ロバスト性が上がるかもしれません
-    注意 : fitは学習の時にTrue、推論の時にFalseとする
-    """
-    patches=extract_simple_patches_2d(img,patch_size=patch_size)
-    patches=patches.reshape(-1, np.prod(patch_size)).astype(np.float64)
-    if fit:
-        Y=scl.fit_transform(patches)
-    else:
-        Y=scl.transform(patches)
-    return Y
-'''
-
 def Y_to_image(Y_rec,patch_size,original_img_size):
     """
     入力 : 再構成で生成された画像データ群Y_rec (reconstructed)
@@ -76,121 +57,6 @@ def Y_to_image(Y_rec,patch_size,original_img_size):
     # 型の指定
     img_rec=img_rec.astype(np.uint8)
     return img_rec
-
-'''
-def generate_dict(Y,n_components,transform_n_nonzero_coefs,max_iter):
-    """
-    入力 : 学習画像データ群Y
-    出力 : 辞書D・スパースコード（=抽出行列α）X・学習したモデルksvd
-    機能 : 画像データ群Yを構成する基底ベクトルの集合Dを生成
-          Yを再構成するためにどうDの中身を組み合わせるか、を示すXも生成
-          この際、基底ベクトルの数をn_componentsで指定できる
-          また、各画素の再構成に使える基底ベクトルの本数をtransform_n_nonzero_coefsで指定できる
-          max_iterは詳細不明
-    """
-    # 学習モデルの定義
-    ksvd = KSVD(n_components=n_components, transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
-    # 抽出行列を求める
-    X = ksvd.fit_transform(Y)
-    # 辞書を求める
-    D = ksvd.components_
-        
-    return D,X,ksvd
-'''
-
-'''
-def reconstruct_img(Y,D,ksvd):
-    """
-    入力 : 画像のデータ群Y
-          学習済みの辞書D
-          学習したモデルksvd
-    出力 : Dを用いて再構成された画像のデータ群Y_rec (reconstructed)
-    機能 : Y~=DXとなるようなXを求める -> Y_rec=DXを求める
-    """
-    X=ksvd.transform(Y)
-    Y_rec=np.dot(X,D)
-    return Y_rec
-'''
-
-'''
-def evaluate(Y_rec_img,Y_rec_ok_img,Y_rec_ng_img,patch_size,original_img_size, img_list, d_num):
-    global feature_name
-    """
-    学習画像・正常画像・異常画像それぞれについて、
-    ・元画像
-    ・再構成画像
-    ・画素値の偏差のヒストグラム
-    を出力
-    """
-    pxcels = prod(original_img_size)
-    fs = 10
-    plt.subplot(331)
-    plt.imshow(img_list[0])
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title("train_img (original)", fontsize=fs)
-    plt.subplot(332)
-    plt.imshow(img_list[1])
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title("test_img_ok (original)", fontsize=fs)
-    plt.subplot(333)
-    plt.imshow(img_list[2])
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title("test_img_ng (original)", fontsize=fs)
-    plt.subplot(334)
-    plt.imshow(Y_rec_img)
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title("train_img (reconstruct)", fontsize=fs)
-    plt.subplot(335)
-    plt.imshow(Y_rec_ok_img)
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title("test_img_ok (reconstruct)", fontsize=fs)
-    plt.subplot(336)
-    plt.imshow(Y_rec_ng_img)
-    ax = plt.gca()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
-    plt.title("test_img_ng (reconstruct)", fontsize=fs)
-    
-    var_org = 0
-    var_ok = 0
-    var_ng = 0
-    for i in range(Y.shape[0]):
-        for j in range(Y.shape[1]):
-            var_org = var_org + ((abs(Y[i][j]-Y_rec_img[i][j])**2)-(np.average(Y_rec_img)**2))*1/Y.size
-            var_ok = var_ok + ((abs(Y_rec_ok_img[i][j]-Y[i][j])**2)-(np.average(Y_rec_ok_img)**2))*1/Y.size
-            var_ng = var_ng + ((abs(Y_rec_ng_img[i][j]-Y[i][j])**2)-(np.average(Y_rec_ng_img)**2))*1/Y.size
-    print(f"元画像分散：{var_org}\nOK画像分散：{var_ok}\nNG画像分散：{var_ng}\n")
-    
-    plt.subplot(337)
-    plt.hist(abs(-Y).reshape(-1,),bins=100,range=(0,10))
-    plt.ylim(0,pxcels/3)
-    plt.title("difference", fontsize=fs)
-    plt.subplot(338)
-    plt.hist(abs(Y_rec_ok-Y).reshape(-1,),bins=100,range=(0,10))
-    #print(Y)
-    plt.ylim(0,pxcels/3)
-    plt.title("difference", fontsize=fs)
-    plt.subplot(339)
-    plt.hist(abs(Y_rec_ng-Y).reshape(-1,),bins=100,range=(0,10))
-    plt.ylim(0,pxcels/3)
-    plt.title("difference", fontsize=fs)
-    plt.savefig(f"results_data/{feature_name}_part_{d_num}")
-    
-    #plt.show()
-    plt.close()
-    #print(np.average(abs(Y_rec_ok-Y)).reshape(-1,)) # 評価方法要検討
-    #print(np.average(abs(Y_rec_ng-Y)).reshape(-1,))
-'''
 
 # 探査領域分割関数
 def img_window(img:np.ndarray, shape:list=(3, 3)):
@@ -345,28 +211,8 @@ def feature_img(path_list, frame_num):
         
     # 一旦二分の一で画像上部排除
     img = read_img(path_list)
-    #test_img_ok=read_img(path_list[1])
-    #test_img_ng=read_img(path_list[2])
     img = img[int(0.5*img.shape[0]):]
-    #test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
-    #test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
     
-    # 画像を導入
-    """
-    edge_mode=False
-    if edge_mode:
-        train_img = np.asarray(Image.open("img_data/tochigi4_edge.jpg").convert('L'))
-        test_img_ok=np.asarray(Image.open("img_data/tochigi5_edge.jpg").convert('L'))
-        test_img_ng=np.asarray(Image.open("img_data/tochigi7_edge.jpg").convert('L'))
-    else:
-        # 一旦二分の一で画像上部排除
-        train_img = np.asarray(Image.open("img_data/use_img/img_train_RPC.jpg").convert('L'))
-        train_img = train_img[int(0.5*train_img.shape[0]):]
-        test_img_ok=np.asarray(Image.open("img_data/data_old/img_test_ok_RPC.jpg").convert('L'))
-        test_img_ok = test_img_ok[int(0.5*test_img_ok.shape[0]):]
-        test_img_ng=np.asarray(Image.open("img_data/data_old/img_1.jpg").convert('L'))
-        test_img_ng = test_img_ng[int(-train_img.shape[0]):, :train_img.shape[1]]
-    """
     return img    
 
 # 経路ログ出力関数
@@ -480,7 +326,10 @@ if __name__ == "__main__":
 frames = np.array(frames)
 
  
-# 露府出力
+# ログ出力
 logger("Variance", var_log)
 print("\n\nSaved Variance Log\n\n")
-logge
+logger("Average", ave_log)
+print("\n\nSaved Average Log\n\n")
+logger("Median", med_log)
+print("\n\nSaved Median Log\n\n")
