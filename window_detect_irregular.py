@@ -325,7 +325,11 @@ if __name__ == "__main__":
     
     # 一旦全フレーム回すループ
     while times <= 203:
-        main(pathlist[times].replace("\\","/"), state, times)
+        try:
+            main(pathlist[times].replace("\\","/"), state, times)
+        except:
+            # for ubuntu (temporary)
+            main(f"img_data/from_mov/frame_{times}.jpg", state, times)
         frames.append(times)
         print(f"\n\n{times}th frame has done\n\n")
         
