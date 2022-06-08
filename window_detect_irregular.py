@@ -241,6 +241,11 @@ def logger(data_title:str, log_data):
     plt.title(f"Photo of above point\nFrame Number is {max_data_frame}")
     plt.savefig(f"results_data/LOG_{data_title}/{feature_name}_{data_title}_log")
     plt.close()
+
+    """
+    2段階目に出力されるデータのログ採取
+    """
+    np.savez_compressed(f"number_log/LOG_{data_title}/{feature_name}_{data_title}_log",array_1=log_data,array_2=max_data)
  
 # 特徴抽出から評価ヒストグラム作成まで
 def main(img_path, state, times):
