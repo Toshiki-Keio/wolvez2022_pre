@@ -1,4 +1,5 @@
 import cv2
+import os
 import numpy as np
 from math import prod
 from spmimage.decomposition import KSVD
@@ -245,7 +246,12 @@ def logger(data_title:str, log_data):
     """
     2段階目に出力されるデータのログ採取
     """
-    np.savez_compressed(f"number_log/LOG_{data_title}/{feature_name}_{data_title}_log",array_1=log_data,array_2=max_data)
+    number_log = f"number_log/LOG_{data_title}"
+    if os.path.exists(number_log):
+        pass
+    else:
+        os.mkdir(number_log)
+    np.savez_compressed(number_log+f"/{feature_name}_{data_title}_log",array_1=log_data,array_2=max_data)
  
 # 特徴抽出から評価ヒストグラム作成まで
 def main(img_path, state, times):
