@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 from cv2 import aruco
 import sys
+import time
 
 def main(args):
     """
@@ -14,12 +15,22 @@ def main(args):
         cv2.imwrite('test.jpg', img)
         
     else:
+        now_time = time.time()
+        frame_rate = cap.get(cv2.CAP_PROP_FPS)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        size = (width,height)
+        fmt = cv2.VideoWriter_fourcc("m","p","4","v")
+        writer = cv2.VideoWriter("./result/"+str(now_time)+".mp4",fmt,frame_rate,size)
         while True:
-            ret, img = cap.read()
+            ret, img = cap.read()      
+            writer.write(img)
             cv2.imshow('cameratest', img)
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
-
+        
+        writer.release()
+        cap.release()
         cv2.destroyAllWindows()
 
 if __name__ == '__main__':

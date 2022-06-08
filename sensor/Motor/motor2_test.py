@@ -4,12 +4,12 @@ import time
 
 GPIO.setwarnings(False)
 Motor1 = motor2.motor(6,5,13)
-Motor2 = motor2.motor(20,21,12)
+Motor2 = motor2.motor(20,16,12)
 
 try:
     print("motor run") 
-    Motor1.go(60)
-    Motor2.go(60)
+    Motor1.go(70)
+    Motor2.go(70)
     time.sleep(5)
 
     #Motor.back(100)
