@@ -18,11 +18,11 @@ def pickup_frame():
             #for mov1
             #canvas=frame[38:int(mv.get(cv2.CAP_PROP_FRAME_HEIGHT)),58:int(mv.get(cv2.CAP_PROP_FRAME_WIDTH)),:]
             #for mov2
-            canvas=frame[35:int(mv.get(cv2.CAP_PROP_FRAME_HEIGHT)),6:int(mv.get(cv2.CAP_PROP_FRAME_WIDTH)),:]
-            cv2.circle(frame,(6,35),2,(0,0,255))
-            canvas=cv2.resize(canvas,(int(size[0]),int(size[1])))
-            cv2.imwrite(f'img_data/from_mov/numabe0608_1/frame_{i}.jpg', canvas)
-            save.write(canvas)
+            #canvas=frame[35:int(mv.get(cv2.CAP_PROP_FRAME_HEIGHT)),6:int(mv.get(cv2.CAP_PROP_FRAME_WIDTH)),:]
+            #cv2.circle(frame,(6,35),2,(0,0,255))
+            #canvas=cv2.resize(canvas,(int(size[0]),int(size[1])))
+            cv2.imwrite(f'img_data/from_mov/numabe0608_1/frame_{i}.jpg', frame)
+            save.write(frame)
     save.release()
     mv.release()
 

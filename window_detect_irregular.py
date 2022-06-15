@@ -9,13 +9,12 @@ from sklearn.preprocessing import StandardScaler
 from spmimage.feature_extraction.image import extract_simple_patches_2d, reconstruct_from_simple_patches_2d
 import matplotlib.pyplot as plt
 import sys
+from datetime import datetime
 
 from FEATURE import Feature_img
 from modularized.a_read import read_img, img_to_Y
 from modularized.b_learn import generate_dict
 from modularized.c_reconstruct import reconstruct_img
-from modularized.d_analyze import evaluate
-
 
 
 
@@ -144,7 +143,7 @@ def guess_img(test_img,D,ksvd,patch_size,img_size, d_num):
 # 画像を特徴抽出済み画像へ変換
 # 標準入力で特徴量抽出可能
 # いずれはなくなる関数
-def feature_img(path_list, frame_num):
+def feature_img(path_list, frame_num, feature_name):
     """画像読込関数
     
     Args:
@@ -154,61 +153,45 @@ def feature_img(path_list, frame_num):
         str: path of featured img.
     """
     # 「パスリスト」と書いてしまったがこれは一つのパス
-    
-    global feature_name
     treat = Feature_img(path_list, frame_num)
-    feature = sys.argv
-    if len(feature)<2:
-        pass
-    
-    elif feature[1]=="vari":
-        feature_name = feature[1]
+    if feature_name=="vari":
         treat.vari()
         path_list = treat.output()
     
-    elif feature[1]=="enphasis":
-        feature_name = feature[1]
+    elif feature_name=="enphasis":
         treat.enphasis()
         path_list = treat.output()
         
-    elif feature[1]=="edge":
-        feature_name = feature[1]
+    elif feature_name=="edge":
         treat.edge()
         path_list = treat.output()
         
-    elif feature[1]=="r":
-        feature_name = feature[1]
+    elif feature_name=="r":
         treat.r()
         path_list = treat.output()
         
-    elif feature[1]=="b":
-        feature_name = feature[1]
+    elif feature_name=="b":
         treat.b()
         path_list = treat.output()
         
-    elif feature[1]=="g":
-        feature_name = feature[1]
+    elif feature_name=="g":
         treat.g()
         path_list = treat.output()
         
-    elif feature[1]=="rb":
-        feature_name = feature[1]
+    elif feature_name=="rb":
         treat.rb()
         path_list = treat.output()
         
-    elif feature[1]=="gb":
-        feature_name = feature[1]
+    elif feature_name=="gb":
         treat.gb()
         path_list = treat.output()
         
-    elif feature[1]=="rg":
-        feature_name = feature[1]
+    elif feature_name=="rg":
         treat.rg()
         path_list = treat.output()
         
     else:
-        print(f"{feature[1]} was not found in Feature_img Function.\nFeatures are vari, enphasis, edge, red, blue, green, or nothing as normal.")
-        sys.exit()
+        pass
         
     # 一旦二分の一で画像上部排除
     img = read_img(path_list)
@@ -252,11 +235,17 @@ def logger(data_title:str, log_data):
     else:
         os.mkdir(number_log)
     np.savez_compressed(number_log+f"/{feature_name}_{data_title}_log",array_1=log_data,array_2=max_data)
- 
+
+
+def make_npz(frame_points):
+    frame_points = np.array(frame_points)
+    now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
+    np.savez_compressed("second_input_data/"+now,array_1=frame_points)
+
 # 特徴抽出から評価ヒストグラム作成まで
-def main(img_path, state, times):
+def main(img_path, state, times, feature_name):
     # 本編
-    global D, ksvd, feature_name, var_log, ave_log, med_log
+    global D, ksvd, var_log, ave_log, med_log
     """
     （学習に関するパラメータについて）
     patch_size : 学習用の画像を学習のために分割した際の、分割された画像(=patch)１つ１つのサイズ
@@ -276,7 +265,7 @@ def main(img_path, state, times):
     #            "img_data/data_old/img_train_RPC.jpg", 
     #            "img_data/data_old/img_1.jpg"]
     # edge_Enphasis()
-    img = feature_img(img_path, times)
+    img = feature_img(img_path, times, feature_name)
     
     detect_shape = (2, 3)
 
@@ -288,6 +277,8 @@ def main(img_path, state, times):
         if state:
             if k == 4:
                 D, ksvd = estimate(img_window_list[k])
+                print(type(D), type(ksvd))
+                dict_list[feature_name] = [D, ksvd]
                 save_name = f"img_data/use_img/learn_img/{feature_name}_part_{k}.jpg"
                 cv2.imwrite(save_name, img_window_list[k])
         try:
@@ -298,6 +289,7 @@ def main(img_path, state, times):
                 med_log.append(med)
         except:
             continue
+    return var, ave, med
         
     
 # 特徴抽出デフォルト
@@ -309,42 +301,50 @@ var_log, frames = [], []
 ave_log = []
 med_log = []
 
+
 # 辞書学習用パラメータ
 patch_size=(5,5)
 n_components=7
 transform_n_nonzero_coefs=3
 max_iter=15
 D, ksvd = None, None
+dict_list = {}
 
 # フレームごとに異常検出
 times = 0  # ループ番号(フレーム番号)
 if __name__ == "__main__":
-    # 一旦最初だけ学習ステートへ
     state = True
     pathlist = glob("img_data/from_mov/*")
     
     # 一旦全フレーム回すループ
-    while times <= 203:
-        try:
-            main(pathlist[times].replace("\\","/"), state, times)
-        except:
-            # for ubuntu (temporary)
-            main(f"img_data/from_mov/frame_{times}.jpg", state, times)
-        frames.append(times)
-        print(f"\n\n{times}th frame has done\n\n")
-        
-        # 画像が変わらないフレームがいくつか存在
-        # 一旦2フレームに一回
-        times = times + 2
+    while times <= len(pathlist):
+        frame_points = []
+        for feature_name in ["normal_RGB", "vari", "enphasis", "edge", "r", "g", "b", "rg", "rb", "gb"]:
+        # 一旦最初だけ学習ステートへ
+            try:
+                var, ave, med = main(f"img_data/from_mov/frame_{times}.jpg", state, times, feature_name)
+            except:
+                # for ubuntu (temporary)
+                var, ave, med = main(f"img_data/from_mov/frame_{times}.jpg", state, times, feature_name)
+            frames.append(times)
+            print(f"\n\n{times}th frame has done\n\n")
+            
+            frame_points.append(var)
+            frame_points.append(ave)
+            frame_points.append(med)
+            # 画像が変わらないフレームがいくつか存在
+            # 一旦2フレームに一回
+        times = times + 100
         state = False
 
-frames = np.array(frames)
+        make_npz(frame_points)
+        #frames = np.array(frames)
 
- 
-# ログ出力
-logger("Variance", var_log)
-print("\n\nSaved Variance Log\n\n")
-logger("Average", ave_log)
-print("\n\nSaved Average Log\n\n")
-logger("Median", med_log)
-print("\n\nSaved Median Log\n\n")
+        
+        # ログ出力
+        #logger("Variance", var_log)
+        #print("\n\nSaved Variance Log\n\n")
+        #logger("Average", ave_log)
+        #print("\n\nSaved Average Log\n\n")
+        #logger("Median", med_log)
+        #print("\n\nSaved Median Log\n\n")

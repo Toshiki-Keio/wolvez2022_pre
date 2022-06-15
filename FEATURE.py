@@ -145,7 +145,7 @@ class Feature_img():
     # エッジ検出
     def edge(self):
         #self.output_img_list = []
-        self.org_img = cv2.imread(self.path_list)
+        self.org_img = cv2.imread(self.path_list, 1)
         self.img_gray = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2GRAY)
         self.gray=cv2.Canny(self.img_gray,100,200)
         self.save_name = f"img_data/use_img/edge_{self.frame_num}thFRAME.jpg"
