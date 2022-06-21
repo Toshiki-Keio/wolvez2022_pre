@@ -152,6 +152,14 @@ class Feature_img():
         cv2.imwrite(self.save_name,self.gray)
         #self.output_img_list.append(self.save_name)
     
+    def hsv(self):
+        #self.output_img_list = []
+        self.org_img = cv2.imread(self.path_list, 1)
+        self.img_hsv = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2HSV)
+        self.save_name = f"img_data/use_img/hsv_{self.frame_num}thFRAME.jpg"
+        cv2.imwrite(self.save_name,self.img_hsv)
+        #self.output_img_list.append(self.save_name)
+
     # 特徴抽出済画像パス引き渡し
     def output(self):
         return self.save_name
