@@ -13,6 +13,8 @@ class Feature_img():
         self.imp_p = imp_p
         self.frame_num = frame_num
         self.sav_d = saveDir
+        if not os.path.exists(self.sav_d + f"/baca_featuring"):
+            os.mkdir(self.sav_d + f"/baca_featuring")
 
     # 赤色抽出
     def r(self):
@@ -20,8 +22,6 @@ class Feature_img():
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 1] = 0
         self.org_img[:, :, 2] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/red_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -34,8 +34,6 @@ class Feature_img():
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
         self.org_img[:, :, 1] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/blue_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -61,8 +59,6 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 1] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/purple_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -74,8 +70,6 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/emerald_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -139,8 +133,6 @@ class Feature_img():
         #cv2.imshow("self.org_img", cv2.resize(self.org_img,dsize=(534,400)))
         #cv2.imshow("VARI_img",cv2.resize(self.output_img,dsize=(534,460)))
 
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/vari_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
         self.output_img_list.append(self.save_name)
@@ -154,8 +146,6 @@ class Feature_img():
                             [2, -8, 2],
                             [0, 2, 0]], np.float32)
         self.output_img = cv2.filter2D(self.org_img, -1, kernel)
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/enphasis_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
         self.output_img_list.append(self.save_name)
@@ -166,8 +156,6 @@ class Feature_img():
         self.org_img = cv2.imread(self.imp_p, 1)
         self.img_gray = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2GRAY)
         self.gray=cv2.Canny(self.img_gray,100,200)
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/edge_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name,self.gray)
         self.output_img_list.append(self.save_name)
