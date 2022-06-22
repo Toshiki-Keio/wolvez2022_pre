@@ -1,57 +1,65 @@
-#import gps
-#from MicropyGPS import MicropyGPS
-#from LoRa_SOFT.LoRa import LoRa
-import sys
-sys.path.append("/home/pi/Desktop/wolvez2021/Testcode/sensor_integration/LoRa_SOFT")
-from bno055 import BNO055
-from encoder_motor2 import motor
-from servomotor import servomotor
-import time
 import RPi.GPIO as GPIO
+import sys
+import cv2
+sys.path.append("/home/pi/Desktop/wolvez2021/Testcode/sensor_integration/LoRa_SOFT")
+import time
 import numpy as np
-import LoRa
 import os
+from bno055 import BNO055
+from motor import motor
+import LoRa
+import constant as ct
 
 class Cansat():
     def __init__(self):
-        GPIO.setwarnings(False)
-        #self.microgps = MicropyGPS(9,'dd')# MicroGPSオブジェクトを生成する。
         self.bno055 = BNO055()
-        self.rightMotor = motor(19,26,5,6,13)
-        self.leftMotor = motor(8,7,16,20,12)
-        self.servomotor = servomotor(18)
         self.bno055.setupBno()
+        self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
+        self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
         self.LoRa = LoRa.LoRa()
-        GPIO.setmode(GPIO.BCM) #GPIOの設定
-         
-    def run(self):  
-        try:
-            #self.getgps()
-            #self.rightMotor.go(60)#rightmotor
-            #self.leftMotor.go(60)#leftmotor
-            if self.bno055.begin() is not True:
-                print("Error initializing device")
-            os.system("sudo insmod LoRa_SOFT/soft_uart.ko")
-            self.LoRa.setup()
-            while True:
-                self.getbno055()
-                self.LoRa.sensor()
-                #self.rotate_servo()#servomotor
-                #self.rotate_motor()# motor
-                #time.sleep(1)
-                #time.sleep(1)
-            print("motor stop")
-            #self.rightMotor.stop()
-            #self.leftMotor.stop()
-            #time.sleep(1)
-            
-        except KeyboardInterrupt:
-            GPIO.cleanup()
-            pass
-            
-    def getgps(self):
-        thread()# 引数はタイムゾーンの時差と出力フォーマット
-        gpsread()
+        self.timer = 0
+        self.cap = cv2.VideoCapture(0)
+    
+    def writeData(self):
+        #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
+        print_datalog = str(self.timer) + ","\
+                  + str(self.gps.Lat).rjust(6) + ","\
+                  + str(self.gps.Lon).rjust(6) + ","\
+                  + "rV:" + str(round(self.rightmotor.velocity,2)).rjust(6) + ","\
+                  + "lV:" + str(round(self.leftmotor.velocity,2)).rjust(6) + ","\
+                  + "q:" + str(self.ex).rjust(6) 
+        print(print_datalog)
+        
+        datalog = str(self.timer) + ","\
+                  + str(self.gps.Lat).rjust(6) + ","\
+                  + str(self.gps.Lon).rjust(6) + ","\
+                  + str(self.Ax).rjust(6) + ","\
+                  + str(self.Ay).rjust(6) + ","\
+                  + str(self.Az).rjust(6) + ","\
+                  + str(round(self.rightmotor.velocity,3)).rjust(6) + ","\
+                  + str(round(self.leftmotor.velocity,3)).rjust(6) + ","\
+                  + str(self.ex).rjust(6) 
+        
+        with open('/test.txt')  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+            test.write(datalog + '\n')
+
+    def setup(self):
+        self.gps.setupGps()
+        # os.system("sudo insmod LoRa_SOFT/soft_uart.ko")
+        self.LoRa.setup()
+        self.bno055.setupBno()
+
+        if self.bno055.begin() is not True:
+            print("Error initializing device")
+            exit()
+    
+    def run(self):#セットアップ終了後
+        self.timer = int(1000*(time.time() - self.startTime)) #経過時間 (ms)
+        self.getbno055()#BNO取得
+        self.LoRa.sensor()#GPS取得、LoRa通信？？
+        self.run_motor()#モータ走行
+        img = self.camera(self.cap)#カメラ撮影
+        self.writeData()#txtファイルへのログの保存
         
     def getbno055(self):      
         self.bno055.bnoread()
@@ -77,26 +85,18 @@ class Cansat():
               +"my="+str(self.bno055.my)+","\
               +"mz="+str(self.bno055.mz)
         print(grav,euler,magnet) 
-              
-        
-    def rotate_servo(self):
-        print("servomotor run") 
-        self.servomotor.servo_angle(-90)               #サーボモータ -90°
-        self.servomotor.servo_angle(0)                 #サーボモータ  0°
-        self.servomotor.servo_angle(90)
-                
-    def rotate_motor(self):
-        self.rightMotor.callback(19)
-        #print("19 to 26")
-        self.rightMotor.callback(26)
-        #print("8")
-        self.leftMotor.callback(8)
-        #print("7")
-        self.leftMotor.callback(7)
-                #time.sleep(0.01)
-                #if speed1 !=0 and speed2 !=0:
-                    #print(speed1,speed2)
-        
-cansat = Cansat()
-if __name__ == "__main__":
-    cansat.run()
+                  
+    def run_motor(self):
+        self.rightMotor.go(ct.const.MOTOR_VREF)
+        self.leftMotor.go(ct.const.MOTOR_VREF)
+    
+    def camera(self,cap):
+        ret, img = cap.read()      
+        cv2.imshow('camera', img)
+        return img
+
+    def keyboardinterrupt(self):
+        self.rightmotor.stop()
+        self.leftmotor.stop()
+        self.cap.release()
+        cv2.destroyAllWindows()
