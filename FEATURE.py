@@ -181,5 +181,5 @@ class Feature_img():
 
 
 if __name__ == "__main__":
-    feat = Feature_img(["img_data/data_old/img_train_RPC.jpg"])
-    train_img_path = feat.vari()
+    feat = Feature_img("img_data/data_old/img_train_RPC.jpg",1)
+    train_img_path = feat.hsv()
