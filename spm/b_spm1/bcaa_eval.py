@@ -13,10 +13,10 @@ class EvaluateImg(LearnDict):
         self.patch_size = super().patch_size
     
     def reconstruct(self,D,ksvd, original_img_size):
-        print("===== func reconstruct_img starts =====")
+        #print("===== func reconstruct_img starts =====")
         X=ksvd.transform(self.Y)
         Y_rec=np.dot(X,D)
-        print("Y was reconstructed by D")
+        #print("Y was reconstructed by D")
         scl=StandardScaler()
         scl.fit(Y_rec) # おまじない
         # 0-255の画素値に戻す
@@ -57,8 +57,8 @@ class EvaluateImg(LearnDict):
         #save_title=str(datetime.datetime.now()).replace(" ","_").replace(":","-")
         #plt.savefig(os.getcwd()+"/img_result/"+save_title+".png")
         self.saveName = saveDir + f"/bcba_difference/{time}"
-        plt.savefig(self.saveName+"/{feature_name}_part_{d_num}.jpg")
-        print("average: ",np.average(diff))
-        print("median: ",np.median(diff))
-        print("variance: ",np.var(diff))
+        plt.savefig(self.saveName+f"/{feature_name}_part_{d_num}.jpg")
+        #print("average: ",np.average(diff))
+        #print("median: ",np.median(diff))
+        #print("variance: ",np.var(diff))
         return np.average(diff),np.median(diff),np.var(diff)

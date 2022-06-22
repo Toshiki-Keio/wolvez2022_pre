@@ -7,14 +7,22 @@ from matplotlib import pyplot as plt
 from time import time
 
 class Feature_img():
-    output_img_list = []
     save_name = None
     def __init__(self, imp_p, frame_num, saveDir):
+        self.output_img_list = []
         self.imp_p = imp_p
         self.frame_num = frame_num
         self.sav_d = saveDir
         if not os.path.exists(self.sav_d + f"/baca_featuring"):
             os.mkdir(self.sav_d + f"/baca_featuring")
+    
+    def normalRGB(self):
+        self.org_img = np.asarray(Image.open(self.imp_p))
+        self.save_name = self.sav_d + f"/baca_featuring/normalRGB_{self.frame_num}.jpg"
+        self.output_img = Image.fromarray(self.org_img)
+        self.output_img.save(self.save_name)
+        #cv2.imwrite(self.save_name, self.output_img)
+        self.output_img_list.append(self.save_name)
 
     # 赤色抽出
     def r(self):
