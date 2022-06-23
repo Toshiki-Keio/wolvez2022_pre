@@ -1,10 +1,8 @@
 import cv2
 import RPi.GPIO as GPIO
-import Cansat
+from cansat import Cansat
 
 cansat = Cansat()
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM) #GPIOの設定
 cansat.setup()
 
 try:

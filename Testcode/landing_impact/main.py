@@ -1,12 +1,10 @@
 import RPi.GPIO as GPIO
-import Cansat
+from cansat import Cansat
 import time
 
 state = 0
 
 cansat = Cansat(state)
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM) #GPIOの設定
 cansat.setup()
 
 try:
@@ -14,7 +12,13 @@ try:
         cansat.sensor()
         time.sleep(0.05)
         cansat.sequence()
+        if cansat.state >= 3:
+            print("Finished")
+            cansat.keyboardinterrupt()
+            GPIO.cleanup()
+            break
     
 except KeyboardInterrupt:
     print("Finished")
+    cansat.keyboardinterrupt()
     GPIO.cleanup()

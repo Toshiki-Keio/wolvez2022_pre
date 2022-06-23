@@ -1,5 +1,5 @@
-#Last Update 2021/08/10
-#Hikaru Kimura
+#Last Update 2022/06/23
+#Toshiki Fukui
 
 import const
 
@@ -24,7 +24,7 @@ const.RED_LED_PIN = 9
 const.BLUE_LED_PIN = 10
 const.GREEN_LED_PIN = 11
 
-#Releasing Pin
+#Separation Pin
 const.SEPARATION_PIN = 26
 
 #Flight Pin
@@ -46,6 +46,7 @@ const.PREPARING_TIME_THRE = 10
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 1 #加速度の値
+const.SEPARATION_TIME = 10
 const.LANDING_RELEASING_TIME_THRE = 3
 const.LANDING_PRE_MOTOR_TIME_THRE = 2
 const.STARTING_TIME_THRE = 60

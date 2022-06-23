@@ -7,21 +7,30 @@ import numpy as np
 import os
 from bno055 import BNO055
 from motor import motor
-import LoRa
 import constant as ct
+import gps
 
 class Cansat():
     def __init__(self,state):
+        # GPIO設定
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM) #GPIOの設定
+        GPIO.setup(ct.const.FLIGHTPIN_PIN,GPIO.IN) #フライトピン用
+        GPIO.setup(ct.const.SEPARATION_PIN,GPIO.OUT) #焼き切り用のピンの設定
+        
+        #         
         self.bno055 = BNO055()
         self.bno055.setupBno()
         self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
         self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
-        self.LoRa = LoRa.LoRa()
-
+        self.gps = gps.GPS()
+        self.cap = cv2.VideoCapture(0)
+        
         #初期条件
         self.timer = 0
         self.state = state
                 #stateに入っている時刻の初期化
+        self.startTime = time.time()
         self.preparingTime = 0
         self.flyingTime = 0
         self.droppingTime = 0
@@ -34,6 +43,10 @@ class Cansat():
         # self.finishTime = 0
         
         #state管理用変数初期化
+        self.gpscount=0
+        self.startgps_lon=[]
+        self.startgps_lat=[]
+        
         self.countPreLoop = 0
         self.countFlyLoop = 0
         self.countDropLoop = 0
@@ -45,30 +58,31 @@ class Cansat():
     def writeData(self):
         #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
         print_datalog = str(self.timer) + ","\
-                  + str(self.gps.Lat).rjust(6) + ","\
-                  + str(self.gps.Lon).rjust(6) + ","\
-                  + "rV:" + str(round(self.rightmotor.velocity,2)).rjust(6) + ","\
-                  + "lV:" + str(round(self.leftmotor.velocity,2)).rjust(6) + ","\
-                  + "q:" + str(self.ex).rjust(6) 
+                  + "state:"+str(self.state)+ ","\
+                  + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
+                  + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
+                  + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
+                  + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
+                  + "q:" + str(self.bno055.ex).rjust(6) 
         print(print_datalog)
         
         datalog = str(self.timer) + ","\
+                  + str(self.state) + ","\
                   + str(self.gps.Lat).rjust(6) + ","\
                   + str(self.gps.Lon).rjust(6) + ","\
-                  + str(self.Ax).rjust(6) + ","\
-                  + str(self.Ay).rjust(6) + ","\
-                  + str(self.Az).rjust(6) + ","\
-                  + str(round(self.rightmotor.velocity,3)).rjust(6) + ","\
-                  + str(round(self.leftmotor.velocity,3)).rjust(6) + ","\
-                  + str(self.ex).rjust(6) 
+                  + str(self.bno055.ax).rjust(6) + ","\
+                  + str(self.bno055.ay).rjust(6) + ","\
+                  + str(self.bno055.az).rjust(6) + ","\
+                  + str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
+                  + str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
+                  + str(self.bno055.ex).rjust(6) 
         
-        with open('/test.txt')  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+        with open('test.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
             test.write(datalog + '\n')
 
     def setup(self):
         self.gps.setupGps()
         # os.system("sudo insmod LoRa_SOFT/soft_uart.ko")
-        self.LoRa.setup()
         self.bno055.setupBno()
 
         if self.bno055.begin() is not True:
@@ -94,33 +108,33 @@ class Cansat():
         #     self.positioning()
         # elif self.state == 8:
         #     self.finish()
-        # else:
-        #     self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
-    
+        else:
+            self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
+            
     def sensor(self):#セットアップ終了後
         self.timer = int(1000*(time.time() - self.startTime)) #経過時間 (ms)
         self.gps.gpsread()
         self.bno055.bnoread()
-        self.Ax=round(self.bno055.Ax,3)
-        self.Ay=round(self.bno055.Ay,3)
-        self.Az=round(self.bno055.Az,3)
+        self.ax=round(self.bno055.ax,3)
+        self.ay=round(self.bno055.ay,3)
+        self.az=round(self.bno055.az,3)
         self.ex=round(self.bno055.ex,3)
         
         self.writeData()#txtファイルへのログの保存
     
-        if not self.state == 1: #preparingのときは電波を発しない
-            if not self.state ==5:#self.sendRadio()#LoRaでログを送信
-                self.sendRadio()
-            else:
-                self.rightmotor.stop()
-                self.leftmotor.stop()
-                self.switchRadio()
+#         if not self.state == 1: #preparingのときは電波を発しない
+#             if not self.state ==5:#self.sendRadio()#LoRaでログを送信
+#                 self.sendRadio()
+#             else:
+#                 self.rightMotor.stop()
+#                 self.leftMotor.stop()
+#                 self.switchRadio()
 
     def preparing(self):#時間が立ったら移行
         if self.preparingTime == 0:
             self.preparingTime = time.time()#時刻を取得
-            self.rightmotor.stop()
-            self.leftmotor.stop()
+            self.rightMotor.stop()
+            self.leftMotor.stop()
         #self.countPreLoop+ = 1
         if not self.preparingTime == 0:
             if self.gpscount <= ct.const.PREPARING_GPS_COUNT_THRE:
@@ -154,7 +168,7 @@ class Cansat():
             self.droppingTime = time.time()
       
         #加速度が小さくなったら着地判定
-        if (pow(self.bno055.Ax,2) + pow(self.bno055.Ay,2) + pow(self.bno055.Az,2)) < pow(ct.const.DROPPING_ACC_THRE,2):#加速度が閾値以下で着地判定
+        if (pow(self.bno055.ax,2) + pow(self.bno055.ay,2) + pow(self.bno055.az,2)) < pow(ct.const.DROPPING_ACC_THRE,2):#加速度が閾値以下で着地判定
             self.countDropLoop+=1
             self.separation()
             
@@ -190,9 +204,9 @@ class Cansat():
         print(grav,euler,magnet) 
         
     def separation(self):
-        GPIO.output(25,1) #電圧をHIGHにして焼き切りを行う
+        GPIO.output(ct.const.SEPARATION_PIN,1) #電圧をHIGHにして焼き切りを行う
         time.sleep(ct.const.SEPARATION_TIME) #継続時間を指定
-        GPIO.output(25,0) #電圧をLOWにして焼き切りを終了する
+        GPIO.output(ct.const.SEPARATION_PIN,0) #電圧をLOWにして焼き切りを終了する
         
     def run_motor(self):
         self.rightMotor.go(ct.const.MOTOR_VREF)
@@ -204,7 +218,7 @@ class Cansat():
         return img
 
     def keyboardinterrupt(self):
-        self.rightmotor.stop()
-        self.leftmotor.stop()
+        self.rightMotor.stop()
+        self.leftMotor.stop()
         self.cap.release()
         cv2.destroyAllWindows()
