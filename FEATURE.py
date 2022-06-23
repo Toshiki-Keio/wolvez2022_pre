@@ -81,7 +81,7 @@ class Feature_img():
         #cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
 
-    # VARI
+    # VARI (正規化植生指標)
     def vari(self):
         #self.output_img_list = []
         self.org_img = cv2.imread(self.path_list,1)
@@ -129,6 +129,58 @@ class Feature_img():
         cv2.imwrite(self.save_name, self.output_img)
         #self.output_img_list.append(self.save_name)
     
+    # RGBVI
+    def rgbvi(self):
+        self.org_img = cv2.imread(self.path_list,1)
+        self.rgbvi_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
+        self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
+        for i in range(self.org_img.shape[0]):
+            for j in range(self.org_img.shape[1]):
+                rgbvi = 0.0
+                b = float(self.org_img[i][j][0])
+                g = float(self.org_img[i][j][1])
+                r = float(self.org_img[i][j][2])
+                rgbvi = (g*g-r*b)/(g*g+r*b)     # ここがGRVIの計算式
+                self.vari_list_np[i][j] = rgbvi
+                self.output_img[i][j] = np.uint8(self.rgbvi_list_np[i][j])
+        self.save_name = f"img_data/use_img/rgbvi_{self.frame_num}thFRAME.jpg"
+        cv2.imwrite(self.save_name, self.output_img)
+
+    # GRVI（緑赤植生指標）
+    def grvi(self):
+        self.org_img = cv2.imread(self.path_list,1)
+        self.grvi_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
+        self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
+        for i in range(self.org_img.shape[0]):
+            for j in range(self.org_img.shape[1]):
+                grvi = 0.0
+                b = float(self.org_img[i][j][0])
+                g = float(self.org_img[i][j][1])
+                r = float(self.org_img[i][j][2])
+                grvi = (g-r)/(g+r)     # ここがGRVIの計算式
+                self.grvi_list_np[i][j] = grvi
+                self.output_img[i][j] = np.uint8(self.grvi_list_np[i][j])
+        self.save_name = f"img_data/use_img/grvi_{self.frame_num}thFRAME.jpg"
+        cv2.imwrite(self.save_name, self.output_img) 
+
+    # IOR（酸化鉄比）ARLISSで使用できるかも？
+    def ior(self):
+        self.org_img = cv2.imread(self.path_list,1)
+        self.ior_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
+        self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
+        for i in range(self.org_img.shape[0]):
+            for j in range(self.org_img.shape[1]):
+                ior = 0.0
+                b = float(self.org_img[i][j][0])
+                g = float(self.org_img[i][j][1])
+                r = float(self.org_img[i][j][2])
+                ior = (g-r)/(g+r)     # ここがGRVIの計算式
+                self.ior_list_np[i][j] = ior
+                self.output_img[i][j] = np.uint8(self.ior_list_np[i][j])
+        self.save_name = f"img_data/use_img/ior_{self.frame_num}thFRAME.jpg"
+        cv2.imwrite(self.save_name, self.output_img) 
+    
+
     # エッジ強調
     def enphasis(self):
         #self.output_img_list = []
