@@ -18,7 +18,7 @@ class Cansat():
         GPIO.setup(ct.const.FLIGHTPIN_PIN,GPIO.IN) #フライトピン用
         GPIO.setup(ct.const.SEPARATION_PIN,GPIO.OUT) #焼き切り用のピンの設定
         
-        #         
+        # インスタンス生成        
         self.bno055 = BNO055()
         self.bno055.setupBno()
         self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
@@ -26,7 +26,7 @@ class Cansat():
         self.gps = gps.GPS()
         self.cap = cv2.VideoCapture(0)
         
-        #初期条件
+        #初期パラメータ設定
         self.timer = 0
         self.state = state
                 #stateに入っている時刻の初期化

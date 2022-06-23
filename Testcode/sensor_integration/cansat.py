@@ -15,11 +15,11 @@ import constant as ct
 
 class Cansat():
     def __init__(self):
-        #GPIOの設定
+        # GPIOの設定
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         
-        #
+        # インスタンス生成
         self.bno055 = BNO055()
         self.bno055.setupBno()
         self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
