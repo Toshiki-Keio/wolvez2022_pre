@@ -214,6 +214,9 @@ class Cansat():
         ret, img = cap.read()      
         cv2.imshow('camera', img)
         return img
+    
+    def stuck_detection(self):
+        return 0
 
     def keyboardinterrupt(self):
         self.rightMotor.stop()
