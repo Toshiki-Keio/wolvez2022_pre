@@ -80,10 +80,10 @@ for path in range(len(import_paths)):
                     os.mkdir(saveName)
                 ave, med, var = ei.evaluate(iw_list[win], img_rec, win, feature_name, now, saveDir)
                 if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                    feature_values['feature'] = {}
-                    feature_values['feature']["var"] = ave
-                    feature_values['feature']["med"] = med
-                    feature_values['feature']["ave"] = var
+                    feature_values[feature_name] = {}
+                    feature_values[feature_name]["var"] = ave
+                    feature_values[feature_name]["med"] = med
+                    feature_values[feature_name]["ave"] = var
     if not learn_state:
         np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=feature_values)
         with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
