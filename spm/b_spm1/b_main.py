@@ -14,11 +14,13 @@ from baba_into_window import IntoWindow
 from bbaa_learn_dict import LearnDict
 from bcaa_eval import EvaluateImg
 
+from time import time
+
 
 # 一旦一枚目だけ学習
 learn_state = True
 import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")
-import_paths = import_paths[:10]
+#import_paths = import_paths[:10]
 dict_list = {}
 saveDir = "b-data"
 
@@ -30,6 +32,8 @@ if not os.path.exists(saveDir + f"/bcca_secondinput"):
     os.mkdir(saveDir + f"/bcca_secondinput")
 
 for path in range(len(import_paths)):
+    start_time = time()
+    
     now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
     Save = True
     
@@ -78,18 +82,26 @@ for path in range(len(import_paths)):
                 saveName = saveDir + f"/bcba_difference/{now}"
                 if not os.path.exists(saveName):
                     os.mkdir(saveName)
-                ave, med, var = ei.evaluate(iw_list[win], img_rec, win, feature_name, now, saveDir)
+                ave, med, var = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, saveDir)
                 if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
                     feature_values[feature_name] = {}
                     feature_values[feature_name]["var"] = ave
                     feature_values[feature_name]["med"] = med
                     feature_values[feature_name]["ave"] = var
+                '''
+                feature_values[feature_name] = {}
+                feature_values[feature_name][f'win_{win+1}'] = {}
+                feature_values[feature_name]["var"] = ave
+                feature_values[feature_name]["med"] = med
+                feature_values[feature_name]["ave"] = var
+                '''
     if not learn_state:
         np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
         #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
         #    pickle.dump(feature_values, tf)
     
+    end_time = time()
     # Learn state should be changed by main.py
     learn_state = False
     frame = str(re.findall(".*/frame_(.*).jpg", importPath)[0])
-    print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\n\n")
+    print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
