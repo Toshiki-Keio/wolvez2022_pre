@@ -17,6 +17,7 @@ from bcaa_eval import EvaluateImg
 # 一旦一枚目だけ学習
 learn_state = True
 import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")
+import_paths = import_paths[:10]
 dict_list = {}
 saveDir = "b-data"
 

@@ -29,8 +29,12 @@ class ReadFeaturedImg():
         
         self.treat.normalRGB()
         self.treat.vari()
+        #self.treat.rgbvi()
+        #self.treat.grvi()
+        #self.treat.ior()
         self.treat.enphasis()
         self.treat.edge()
+        self.treat.hsv()
         self.treat.r()
         self.treat.b()
         self.treat.g()
