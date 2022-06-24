@@ -10,21 +10,21 @@ class LearnDict():
     max_iter=15
     def __init__(self, img_part:np.ndarray):
         self.train_img = img_part
-        self.Y = self.__img_to_Y(self.train_img, self.patch_size)
+        self.Y = self.img_to_Y(self.train_img, self.patch_size)
     
     def generate(self):
         self.D, self.ksvd = self.__generate_dict(Y=self.Y, n_components=self.n_components,
                                                  transform_n_nonzero_coefs=self.transform_n_nonzero_coefs, max_iter=self.max_iter)
         return self.D, self.ksvd
     
-    def __img_to_Y(self, train_img, patch_size=(5,5)):
+    def img_to_Y(self, train_img, patch_size=(5,5)):
         self.scl=StandardScaler()
-        print("===== func img_to_Y starts =====")
+        #print("===== func img_to_Y starts =====")
         self.patches=extract_simple_patches_2d(train_img,patch_size=patch_size)# 画像をpatch_sizeに分割
         self.patches=self.patches.reshape(-1, np.prod(patch_size))# 2次元に直す。(枚数,patchの積) つまりパッチを2→1次元にしている
         #print("patch_size: ",patches.shape)# (枚数,patch_size[0],patch_size[1])つまり３じげん
         self.Y=self.scl.fit_transform(self.patches)# 各パッチの標準化（スケールの違いを標準化する）
-        print("patches were standardized")
+        #print("patches were standardized")
         return self.Y
     
     def __generate_dict(self, Y=None, n_components=20, transform_n_nonzero_coefs=3, max_iter=15):
@@ -37,7 +37,7 @@ class LearnDict():
             また、各画素の再構成に使える基底ベクトルの本数をtransform_n_nonzero_coefsで指定できる
             max_iterは詳細不明
         """
-        print("===== func generate_dict starts =====")
+        #print("===== func generate_dict starts =====")
         # 学習モデルの定義
         self.ksvd = KSVD(n_components=n_components,
                     transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)

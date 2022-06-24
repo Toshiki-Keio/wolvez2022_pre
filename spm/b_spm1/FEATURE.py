@@ -7,12 +7,22 @@ from matplotlib import pyplot as plt
 from time import time
 
 class Feature_img():
-    output_img_list = []
     save_name = None
     def __init__(self, imp_p, frame_num, saveDir):
+        self.output_img_list = []
         self.imp_p = imp_p
         self.frame_num = frame_num
         self.sav_d = saveDir
+        if not os.path.exists(self.sav_d + f"/baca_featuring"):
+            os.mkdir(self.sav_d + f"/baca_featuring")
+    
+    def normalRGB(self):
+        self.org_img = np.asarray(Image.open(self.imp_p))
+        self.save_name = self.sav_d + f"/baca_featuring/normalRGB_{self.frame_num}.jpg"
+        self.output_img = Image.fromarray(self.org_img)
+        self.output_img.save(self.save_name)
+        #cv2.imwrite(self.save_name, self.output_img)
+        self.output_img_list.append(self.save_name)
 
     # 赤色抽出
     def r(self):
@@ -20,8 +30,6 @@ class Feature_img():
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 1] = 0
         self.org_img[:, :, 2] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/red_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -34,8 +42,6 @@ class Feature_img():
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
         self.org_img[:, :, 1] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/blue_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -61,8 +67,6 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 1] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/purple_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -74,8 +78,6 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.asarray(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/emerald_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
@@ -139,10 +141,65 @@ class Feature_img():
         #cv2.imshow("self.org_img", cv2.resize(self.org_img,dsize=(534,400)))
         #cv2.imshow("VARI_img",cv2.resize(self.output_img,dsize=(534,460)))
 
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/vari_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
+        self.output_img_list.append(self.save_name)
+        
+    # RGBVI
+    def rgbvi(self):
+        self.org_img = cv2.imread(self.imp_p,1)
+        self.rgbvi_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
+        self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
+        for i in range(self.org_img.shape[0]):
+            for j in range(self.org_img.shape[1]):
+                rgbvi = 0.0
+                b = float(self.org_img[i][j][0])
+                g = float(self.org_img[i][j][1])
+                r = float(self.org_img[i][j][2])
+                if g*g+r*b != 0:
+                    rgbvi = (g*g-r*b)/(g*g+r*b)     # ここがGRVIの計算式
+                else:
+                    rgbvi = 0 
+                self.vari_list_np[i][j] = rgbvi
+                self.output_img[i][j] = np.uint8(self.rgbvi_list_np[i][j])
+        self.save_name = self.sav_d + f"/baca_featuring/rgbvi_{self.frame_num}.jpg"
+        cv2.imwrite(self.save_name, self.output_img)
+        self.output_img_list.append(self.save_name)
+
+    # GRVI（緑赤植生指標）
+    def grvi(self):
+        self.org_img = cv2.imread(self.imp_p,1)
+        self.grvi_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
+        self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
+        for i in range(self.org_img.shape[0]):
+            for j in range(self.org_img.shape[1]):
+                grvi = 0.0
+                b = float(self.org_img[i][j][0])
+                g = float(self.org_img[i][j][1])
+                r = float(self.org_img[i][j][2])
+                grvi = (g-r)/(g+r)     # ここがGRVIの計算式
+                self.grvi_list_np[i][j] = grvi
+                self.output_img[i][j] = np.uint8(self.grvi_list_np[i][j])
+        self.save_name = self.sav_d + f"/baca_featuring/grvi_{self.frame_num}.jpg"
+        cv2.imwrite(self.save_name, self.output_img) 
+        self.output_img_list.append(self.save_name)
+
+    # IOR（酸化鉄比）ARLISSで使用できるかも？
+    def ior(self):
+        self.org_img = cv2.imread(self.imp_p,1)
+        self.ior_list_np = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.float64)
+        self.output_img = np.ones((self.org_img.shape[0],self.org_img.shape[1]), np.uint8)
+        for i in range(self.org_img.shape[0]):
+            for j in range(self.org_img.shape[1]):
+                ior = 0.0
+                b = float(self.org_img[i][j][0])
+                g = float(self.org_img[i][j][1])
+                r = float(self.org_img[i][j][2])
+                ior = (g-r)/(g+r)     # ここがGRVIの計算式
+                self.ior_list_np[i][j] = ior
+                self.output_img[i][j] = np.uint8(self.ior_list_np[i][j])
+        self.save_name = self.sav_d + f"/baca_featuring/ior_{self.frame_num}.jpg"
+        cv2.imwrite(self.save_name, self.output_img) 
         self.output_img_list.append(self.save_name)
     
     # エッジ強調
@@ -154,8 +211,6 @@ class Feature_img():
                             [2, -8, 2],
                             [0, 2, 0]], np.float32)
         self.output_img = cv2.filter2D(self.org_img, -1, kernel)
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/enphasis_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
         self.output_img_list.append(self.save_name)
@@ -166,10 +221,16 @@ class Feature_img():
         self.org_img = cv2.imread(self.imp_p, 1)
         self.img_gray = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2GRAY)
         self.gray=cv2.Canny(self.img_gray,100,200)
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
         self.save_name = self.sav_d + f"/baca_featuring/edge_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name,self.gray)
+        self.output_img_list.append(self.save_name)
+        
+    def hsv(self):
+        #self.output_img_list = []
+        self.org_img = cv2.imread(self.imp_p, 1)
+        self.img_hsv = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2HSV)
+        self.save_name = self.sav_d + f"/baca_featuring/hsv_{self.frame_num}.jpg"
+        cv2.imwrite(self.save_name,self.img_hsv)
         self.output_img_list.append(self.save_name)
     
     # 特徴抽出済画像パス引き渡し

@@ -27,9 +27,14 @@ class ReadFeaturedImg():
         '''
         self.treat = Feature_img(self.imp_p, frame_num, self.sav_d)
         
+        self.treat.normalRGB()
         self.treat.vari()
+        #self.treat.rgbvi()
+        #self.treat.grvi()
+        #self.treat.ior()
         self.treat.enphasis()
         self.treat.edge()
+        self.treat.hsv()
         self.treat.r()
         self.treat.b()
         self.treat.g()
@@ -43,7 +48,7 @@ class ReadFeaturedImg():
 
 
     def read_img(self, path):
-        print("===== func read_img starts =====")
+        #print("===== func read_img starts =====")
         self.img=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
         self.img = self.img[int(0.5*self.img.shape[0]):]
         # 読み込めないエラーが生じた際のロバスト性も検討したい

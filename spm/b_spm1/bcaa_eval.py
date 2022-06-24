@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from bbaa_learn_dict import LearnDict
 from sklearn.preprocessing import StandardScaler
@@ -7,14 +8,15 @@ import matplotlib.pyplot as plt
 
 class EvaluateImg(LearnDict):
     def __init__(self, eval_img:np.ndarray):
-        self.Y = super().__img_to_Y(eval_img)
+        self.Y = super().img_to_Y(eval_img)
+    
         self.patch_size = super().patch_size
     
     def reconstruct(self,D,ksvd, original_img_size):
-        print("===== func reconstruct_img starts =====")
+        #print("===== func reconstruct_img starts =====")
         X=ksvd.transform(self.Y)
         Y_rec=np.dot(X,D)
-        print("Y was reconstructed by D")
+        #print("Y was reconstructed by D")
         scl=StandardScaler()
         scl.fit(Y_rec) # おまじない
         # 0-255の画素値に戻す
@@ -31,7 +33,7 @@ class EvaluateImg(LearnDict):
         img_rec=img_rec.astype(np.uint8)    
         return img_rec
     
-    def evaluate(img,img_rec,d_num, feature_name, time, saveDir):
+    def evaluate(self,img,img_rec,d_num, feature_name, time, saveDir):
         """
         学習画像・正常画像・異常画像それぞれについて、
         ・元画像
@@ -54,8 +56,9 @@ class EvaluateImg(LearnDict):
         ax4.set_title("histgram")
         #save_title=str(datetime.datetime.now()).replace(" ","_").replace(":","-")
         #plt.savefig(os.getcwd()+"/img_result/"+save_title+".png")
-        plt.savefig(saveDir + f"/bcba_difference/{time}/{feature_name}_part_{d_num}")
-        print("average: ",np.average(diff))
-        print("median: ",np.median(diff))
-        print("variance: ",np.var(diff))
+        self.saveName = saveDir + f"/bcba_difference/{time}"
+        plt.savefig(self.saveName+f"/{feature_name}_part_{d_num}.jpg")
+        #print("average: ",np.average(diff))
+        #print("median: ",np.median(diff))
+        #print("variance: ",np.var(diff))
         return np.average(diff),np.median(diff),np.var(diff)
