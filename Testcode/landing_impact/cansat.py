@@ -90,23 +90,21 @@ class Cansat():
             exit()
 
     def sequence(self):
-        if self.state == 0:
+        if self.state == 0:#センサ系の準備を行う段階
             self.preparing()
-        elif self.state == 1:
+        elif self.state == 1:#放出・降下を行う段階
             self.flying()
-        elif self.state == 2:
+        elif self.state == 2:#着陸判定、パラ分離（焼き切り）
             self.dropping()
-        # elif self.state == 3:
-        #     self.run_motor()
-        # elif self.state == 4:
-        #     self.starting()
-        # elif self.state == 5:
-        #     self.measuring()
-        # elif self.state == 6:
-        #     self.running()
-        # elif self.state == 7:
-        #     self.positioning()
-        # elif self.state == 8:
+        # elif self.state == 3:#パラシュートから離れる。カメラでの撮影行う
+        #     self.landing()
+        # elif self.state == 4:#スパースモデリング第一段階
+        #     self.spm_first()
+        # elif self.state == 5:#スパースモデリング第二段階
+        #     self.spm_second()
+        # elif self.state == 6:#経路計画段階
+        #     self.planning()
+        # elif self.state == 7:#終了
         #     self.finish()
         else:
             self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
