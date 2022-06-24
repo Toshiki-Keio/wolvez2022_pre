@@ -85,9 +85,9 @@ for path in range(len(import_paths)):
                     feature_values[feature_name]["med"] = med
                     feature_values[feature_name]["ave"] = var
     if not learn_state:
-        np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=feature_values)
-        with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
-            pickle.dump(feature_values, tf)
+        np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
+        #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
+        #    pickle.dump(feature_values, tf)
     
     # Learn state should be changed by main.py
     learn_state = False
