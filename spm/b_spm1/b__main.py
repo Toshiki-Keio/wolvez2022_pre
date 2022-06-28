@@ -22,8 +22,8 @@ from time import time
 def b_call(img_path=None):
     # 一旦一枚目だけ学習
     learn_state = True
-    import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")
-    #import_paths = import_paths[:10]
+    import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg")
+    #import_paths = import_paths[10:]
     import_paths = import_paths# ここの[:10]を外しましたby林出
     dict_list = {}
     saveDir = "b-data"
@@ -38,7 +38,7 @@ def b_call(img_path=None):
     if not os.path.exists(saveName):
         os.mkdir(saveName)
 
-    for path in range(len(import_paths)):
+    for path in range(10,len(import_paths)):
         start_time = time()
         
         now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
@@ -49,7 +49,7 @@ def b_call(img_path=None):
         
         # Path that img will be read
         #importPath = path.replace("\\", "/")
-        importPath = f"../a_prepare/ac_pictures/aca_normal/movie_1/frame_{path}.jpg".replace("\\","/")
+        importPath = f"../a_prepare/ac_pictures/aca_normal/movie_3/frame_{path}.jpg".replace("\\","/")
         
         # This will change such as datetime
         print("CURRENT FRAME: "+str(re.findall(".*/frame_(.*).jpg", importPath)[0]))
