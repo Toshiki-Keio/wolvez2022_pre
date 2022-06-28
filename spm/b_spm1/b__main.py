@@ -23,7 +23,7 @@ def b_call(img_path=None):
     # 一旦一枚目だけ学習
     learn_state = True
     import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")
-    import_paths = import_paths[:10]
+    import_paths = import_paths# ここの[:10]を外しましたby林出
     dict_list = {}
     saveDir = "b-data"
 

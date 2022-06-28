@@ -31,6 +31,7 @@ def unpack(npz_path):
 # get data
 spm_path=os.getcwd()
 # print(spm_path)
+print(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
 files=glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
 # pprint(files)
 """
@@ -75,7 +76,7 @@ model_master=[Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=10000
 for win_no,win in enumerate(data_list_all_win):
     train_X=win[:-1]
     train_y=np.zeros((train_X.shape[0],1))
-    train_y[-2]=1
+    train_y[-10:-2]=1
     print(train_X.shape,train_y.shape)
     model_master[win_no].fit(train_X,train_y)
 
