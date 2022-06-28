@@ -8,31 +8,31 @@ import glob
 import pickle
 from pprint import pprint
 
-def gen_train_X(npz_path):
+def unpack(npz_path):
     """
-    元画像1枚に関するデータが全部入ったnpz_pathを渡すと、その元画像についてのtrain_Xを発行してくれる
+    元画像1枚に関するデータが全部入ったnpz_pathを渡すと、listへの復元と、listのどこに何が入っているかの案内の発行をしてくれる
     """
     pic=np.load(npz_path,allow_pickle=True)['array_1'][0]
-    pprint(pic)
+    # pprint(pic)
     feature_keys=list(pic.keys())
-    train_X_master=[[],[],[],[],[],[]]
-    train_X_master_label=[[],[],[],[],[],[]]
+    list_master=[[],[],[],[],[],[]]
+    list_master_label=[[],[],[],[],[],[]]
     for f_key in feature_keys:
         window_keys=list(pic[f_key].keys())
         for i,w_key in enumerate(window_keys):
-            print(list(pic[f_key][w_key].values()))
-            train_X_master[i].append(list(pic[f_key][w_key].values()))
-            labels=[f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[0]}",f"{f_key}-{w_key}-{list(pic[f_key][w_key].keys())[1]}",f"{f_key}-{w_key}-{list(pic[f_key][w_key].keys())[2]}"]
-            train_X_master_label[i].append(labels)
-    train_X_master=np.array(train_X_master)
-    return train_X_master,train_X_master_label
+            # print(list(pic[f_key][w_key].values()))
+            list_master[i].append(list(pic[f_key][w_key].values()))
+            labels=[f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[0]}",f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[1]}",f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[2]}"]
+            list_master_label[i].append(labels)
+    list_master=np.array(list_master)
+    return list_master,list_master_label
 
 
 # get data
 spm_path=os.getcwd()
-print(spm_path)
+# print(spm_path)
 files=glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
-pprint(files)
+# pprint(files)
 """
 ['wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-36.npz',
  'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-42.npz',
@@ -44,12 +44,48 @@ pprint(files)
  'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-08-02.npz',
  'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-23.npz']
  """
-
-# generate train_X
-train_X_all_time=[]
+# npzを解凍。
+data_list_all_time=[]
+label_list_all_time=[]
 for file in files:
-    train_X_all_time.append(gen_train_X(file))
-print(train_X_all_time)
+    data_per_pic,label_list_per_pic=unpack(file)
+    data_list_all_time.append(data_per_pic)
+    label_list_all_time.append(label_list_per_pic)
+data_list_all_time=np.array(data_list_all_time)
+label_list_all_time=np.array(label_list_all_time)
+# print(label_list_all_time.shape)#撮影した写真の枚数、ウィンドウの数、特徴画像の種類、特徴画像の特徴量の種類
+# print("data_list_all_time")
+# pprint(label_list_all_time)
+
+# ウィンドウごとに整理
+data_list_all_win=[[],[],[],[],[],[]]
+label_list_all_win=[[],[],[],[],[],[]]
+for pic,lab_pic in zip(data_list_all_time,label_list_all_time):
+    for win_no,(win,label_win) in enumerate(zip(pic,lab_pic)):
+        data_list_all_win[win_no].append(win.flatten())
+        label_list_all_win[win_no].append(label_win.flatten())
+        # print(train_X.shape)
+        pass        
+data_list_all_win=np.array(data_list_all_win)
+label_list_all_win=np.array(label_list_all_win)
+print(label_list_all_win.shape)
+
+# train
+model_master=[Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000)]
+for win_no,win in enumerate(data_list_all_win):
+    train_X=win[:-1]
+    train_y=np.zeros((train_X.shape[0],1))
+    train_y[-2]=1
+    print(train_X.shape,train_y.shape)
+    model_master[win_no].fit(train_X,train_y)
+
+# test
+score_master=np.zeros((data_list_all_win.shape[0],1))
+for win_no,win in enumerate(data_list_all_win):
+    test_X=win[-1]
+    score_master[win_no]=model_master[win_no].predict(test_X.reshape(1,-1))
+print(score_master)
+
 """
 npzの中身
 array(
@@ -93,6 +129,8 @@ array([{'normalRGB': {'win_1': {'var': 207.65133020344288, 'med': 241.0, 'ave': 
       dtype=object)
 array([{'normalRGB': {'win_1': {'var': 203.99444444444444, 'med': 242.0, 'ave': 7410.999264910451}, 'win_2': {'var': 149.90031298904537, 'med': 235.0, 'ave': 13145.506729166513}, 'win_3': {'var': 178.13489827856026, 'med': 241.0, 'ave': 11224.512318886364}, 'win_4': {'var': 191.35508607198747, 'med': 236.0, 'ave': 8560.51108133062}, 'win_5': {'var': 194.21600156494523, 'med': 235.0, 'ave': 7948.326230647884}, 'win_6': {'var': 217.28176838810643, 'med': 235.0, 'ave': 3707.208712991739}}, 'enphasis': {'win_1': {'var': 144.3664710485133, 'med': 140.0, 'ave': 1084.8827959972054}, 'win_2': {'var': 147.3859546165884, 'med': 141.0, 'ave': 2066.5191532749354}, 'win_3': {'var': 148.5098591549296, 'med': 142.0, 'ave': 1733.7481031100529}, 'win_4': {'var': 147.35105633802817, 'med': 143.0, 'ave': 2134.2731209498775}, 'win_5': {'var': 145.25735524256652, 'med': 141.0, 'ave': 2400.3185100631613}, 'win_6': {'var': 147.6482785602504, 'med': 141.0, 'ave': 1641.205869493609}}, 'edge': {'win_1': {'var': 127.88924100156494, 'med': 137.0, 'ave': 729.5923099090544}, 'win_2': {'var': 128.04053208137717, 'med': 132.0, 'ave': 705.528169356952}, 'win_3': {'var': 128.0259780907668, 'med': 132.0, 'ave': 657.0942390668127}, 'win_4': {'var': 128.30958528951487, 'med': 130.0, 'ave': 675.5228189203468}, 'win_5': {'var': 128.0429186228482, 'med': 131.0, 'ave': 779.7873207461163}, 'win_6': {'var': 128.03564162754304, 'med': 130.0, 'ave': 599.781632647782}}, 'hsv': {'win_1': {'var': 188.54237089201877, 'med': 200.0, 'ave': 3062.337328338183}, 'win_2': {'var': 200.90168231611892, 'med': 215.0, 'ave': 2907.459308593912}, 'win_3': {'var': 215.43169014084506, 'med': 223.0, 'ave': 1510.9682602107166}, 'win_4': {'var': 220.5106807511737, 'med': 227.0, 'ave': 1052.4487122126343}, 'win_5': {'var': 224.31126760563382, 'med': 232.0, 'ave': 1129.2839418986532}, 'win_6': {'var': 220.93536776212832, 'med': 226.0, 'ave': 932.6473093717932}}, 'red': {'win_1': {'var': 160.92785602503912, 'med': 169.0, 'ave': 1171.9483946208986}, 'win_2': {'var': 160.9407668231612, 'med': 168.0, 'ave': 784.0560375966459}, 'win_3': {'var': 159.7835289514867, 'med': 163.0, 'ave': 502.01163011301156}, 'win_4': {'var': 159.29381846635368, 'med': 160.0, 'ave': 705.4264250124289}, 'win_5': {'var': 157.7271909233177, 'med': 160.0, 'ave': 789.262625285927}, 'win_6': {'var': 154.81756651017216, 'med': 157.0, 'ave': 752.717226628988}}, 'blue': {'win_1': {'var': 138.81306729264475, 'med': 152.0, 'ave': 1593.3868089015753}, 'win_2': {'var': 138.57519561815337, 'med': 148.0, 'ave': 1219.1052219883375}, 'win_3': {'var': 137.39518779342723, 'med': 141.0, 'ave': 575.3642882667681}, 'win_4': {'var': 136.46075899843507, 'med': 138.0, 'ave': 890.7209953550637}, 'win_5': {'var': 136.3203834115806, 'med': 139.0, 'ave': 1086.3524796652023}, 'win_6': {'var': 136.30176056338027, 'med': 139.0, 'ave': 925.1202472916527}}, 'green': {'win_1': {'var': 200.14053208137716, 'med': 204.0, 'ave': 437.285962784182}, 'win_2': {'var': 205.82824726134587, 'med': 210.0, 'ave': 442.22707376671787}, 'win_3': {'var': 204.9233959311424, 'med': 207.0, 'ave': 335.83591585419316}, 'win_4': {'var': 200.16158059467918, 'med': 202.0, 'ave': 546.4444707411571}, 'win_5': {'var': 200.6488262910798, 'med': 203.0, 'ave': 470.6060197491679}, 'win_6': {'var': 198.83388106416277, 'med': 201.0, 'ave': 390.49204456175414}}, 'purple': {'win_1': {'var': 172.53176838810643, 'med': 180.0, 'ave': 945.3236386568411}, 'win_2': {'var': 172.4092723004695, 'med': 179.0, 'ave': 741.3676683280435}, 'win_3': {'var': 170.12057902973396, 'med': 173.0, 'ave': 403.41370795893437}, 'win_4': {'var': 168.47476525821597, 'med': 170.0, 'ave': 517.3425556960699}, 'win_5': {'var': 166.9804773082942, 'med': 169.0, 'ave': 674.9437111962769}, 'win_6': {'var': 164.0131455399061, 'med': 166.0, 'ave': 590.3992794639512}}, 'emerald': {'win_1': {'var': 210.8654538341158, 'med': 214.0, 'ave': 404.8748941993554}, 'win_2': {'var': 216.50242566510173, 'med': 220.0, 'ave': 450.88066704259643}, 'win_3': {'var': 215.25829420970265, 'med': 217.0, 'ave': 300.5121573406707}, 'win_4': {'var': 209.09835680751175, 'med': 211.0, 'ave': 544.9704511340342}, 'win_5': {'var': 209.7023082942097, 'med': 212.0, 'ave': 521.880119867396}, 'win_6': {'var': 207.95011737089203, 'med': 210.0, 'ave': 383.9319796419361}}, 'yellow': {'win_1': {'var': 223.91205007824726, 'med': 234.0, 'ave': 2161.485926783095}, 'win_2': {'var': 209.7714006259781, 'med': 238.0, 'ave': 5748.147859697089}, 'win_3': {'var': 221.9890062597809, 'med': 238.0, 'ave': 3359.6290262425273}, 'win_4': {'var': 217.5785993740219, 'med': 232.0, 'ave': 3138.89882996313}, 'win_5': {'var': 215.73693270735524, 'med': 231.0, 'ave': 3214.378682923484}, 'win_6': {'var': 222.55395148669797, 'med': 228.0, 'ave': 1030.1739280477245}}}],
       dtype=object)
+
+撮影画像1枚から生成されるtrain_X
 """
 
 """
@@ -101,6 +139,7 @@ for file in files:
 path=os.getcwd()
 """#train_X=np.load(path+"/second_input_data/2022-06-09_18-44-40.npz")["array_1"]
 # 特徴画像の数＊特徴量ベクトル＊学習画像の数　を想定
+"""
 test_X=train_X[-1].reshape(1,-1)
 train_X=train_X[:-1]
 train_y=np.zeros((train_X.shape[0],1))
@@ -111,7 +150,6 @@ model=Lasso(max_iter=1000)
 model.fit(train_X,train_y)
 possibility=model.predict(test_X)
 print(possibility)
-"""
 ・Xを1次元にも3次元にもできない問題
 ・今後何らかの支障になるかもなと思い、できればここをロバストにしてみたいと思うところです。
 """
