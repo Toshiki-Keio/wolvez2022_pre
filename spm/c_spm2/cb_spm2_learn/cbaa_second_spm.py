@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import Lasso
@@ -72,20 +73,31 @@ label_list_all_win=np.array(label_list_all_win)
 print(label_list_all_win.shape)
 
 # train
+test_num=50
 model_master=[Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000)]
 for win_no,win in enumerate(data_list_all_win):
-    train_X=win[:-1]
+    train_X=win[:-test_num]
     train_y=np.zeros((train_X.shape[0],1))
-    train_y[-10:-2]=1
+    train_y[-50:-20]=1
     print(train_X.shape,train_y.shape)
     model_master[win_no].fit(train_X,train_y)
 
 # test
-score_master=np.zeros((data_list_all_win.shape[0],1))
-for win_no,win in enumerate(data_list_all_win):
-    test_X=win[-1]
-    score_master[win_no]=model_master[win_no].predict(test_X.reshape(1,-1))
-print(score_master)
+score_master=[[],[],[],[],[],[]]
+for test_no in range(test_num):
+    for win_no,win in enumerate(data_list_all_win):
+        test_X=win[-test_no]
+        score=model_master[win_no].predict(test_X.reshape(1,-1))
+        score_master[win_no].append(score)
+        pass
+
+
+for i,win_score in enumerate(score_master):
+    plt.plot(np.arange(len(win_score)),win_score,label=f"win_{i}")
+plt.xlabel("time")
+plt.ylabel("degree of risk")
+plt.legend()
+plt.show()
 
 """
 npzの中身

@@ -98,7 +98,7 @@ def b_call(img_path=None):
                     #    feature_values[feature_name]["med"] = med
                     #    feature_values[feature_name]["ave"] = var
                     
-                    if not feature_name in feature_values:
+                    if  win == 0:
                         feature_values[feature_name] = {}
                     feature_values[feature_name][f'win_{win+1}'] = {}
                     feature_values[feature_name][f'win_{win+1}']["var"] = ave
@@ -108,6 +108,7 @@ def b_call(img_path=None):
         
                     
         if not learn_state:
+            print(feature_values)
             np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
