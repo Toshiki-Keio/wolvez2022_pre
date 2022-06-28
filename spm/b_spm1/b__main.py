@@ -108,7 +108,6 @@ def b_call(img_path=None):
         
                     
         if not learn_state:
-            print(feature_values)
             np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
