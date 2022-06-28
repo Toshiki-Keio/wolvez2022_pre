@@ -17,7 +17,7 @@ Cansatの大元のmain.pyで以下を記述できる場合にはこのプログ�
 '''
 # 開発段階ではムービーの画像パスを取得
 import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")
-import_paths = import_paths[:10]
+import_paths = import_paths[:100]
 for n in range(len(import_paths)):
     start_time = time.time()
     importPath = f"../a_prepare/ac_pictures/aca_normal/movie_1/frame_{n}.jpg".replace("\\","/")
