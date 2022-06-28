@@ -89,11 +89,12 @@ class Bspm():
                 #    feature_values[feature_name]["med"] = med
                 #    feature_values[feature_name]["ave"] = var
                 
-                feature_values[feature_name] = {}
+                if not feature_name in feature_values:
+                    feature_values[feature_name] = {}
                 feature_values[feature_name][f'win_{win+1}'] = {}
-                feature_values[feature_name]["var"] = ave
-                feature_values[feature_name]["med"] = med
-                feature_values[feature_name]["ave"] = var
+                feature_values[feature_name][f'win_{win+1}']["var"] = ave
+                feature_values[feature_name][f'win_{win+1}']["med"] = med
+                feature_values[feature_name][f'win_{win+1}']["ave"] = var
         
         
         
