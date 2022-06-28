@@ -13,7 +13,7 @@ dicts = {}
 '''
 Cansatの大元のmain.pyで以下を記述できる場合にはこのプログラム
 マルチプロセスによる並行処理
-以下を記述できない場合やb_main.pyを呼び出すファイルが__name__=="__main__"ではない場合は不可
+以下を記述できない場合やb_executor.pyを呼び出すファイルが__name__=="__main__"ではない場合は不可
 '''
 # 開発段階ではムービーの画像パスを取得
 import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")

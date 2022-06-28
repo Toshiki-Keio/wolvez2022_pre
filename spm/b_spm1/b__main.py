@@ -23,6 +23,7 @@ def b_call(img_path=None):
     # 一旦一枚目だけ学習
     learn_state = True
     import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_1/*.jpg")
+    #import_paths = import_paths[:10]
     import_paths = import_paths# ここの[:10]を外しましたby林出
     dict_list = {}
     saveDir = "b-data"
@@ -97,7 +98,7 @@ def b_call(img_path=None):
                     #    feature_values[feature_name]["med"] = med
                     #    feature_values[feature_name]["ave"] = var
                     
-                    if  win == 0:
+                    if not feature_name in feature_values:
                         feature_values[feature_name] = {}
                     feature_values[feature_name][f'win_{win+1}'] = {}
                     feature_values[feature_name][f'win_{win+1}']["var"] = ave
@@ -107,7 +108,6 @@ def b_call(img_path=None):
         
                     
         if not learn_state:
-            print(feature_values)
             np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
