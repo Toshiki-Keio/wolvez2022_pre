@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 from bbaa_learn_dict import LearnDict
 from sklearn.preprocessing import StandardScaler
 from spmimage.feature_extraction.image import reconstruct_from_simple_patches_2d
@@ -50,6 +51,7 @@ class EvaluateImg(LearnDict):
         #ax2.imshow(img_rec, cmap='gray')
         #ax2.set_title("reconstructed img")
         diff=abs(img-img_rec)
+        diff_df = pd.DataFrame(diff.reshape(-1,))
         #ax3.imshow(diff*255,cmap='gray')
         #ax3.set_title("difference")
         #ax4.hist(diff.reshape(-1,),bins=255,range=(0,255))
@@ -61,4 +63,4 @@ class EvaluateImg(LearnDict):
         #print("average: ",np.average(diff))
         #print("median: ",np.median(diff))
         #print("variance: ",np.var(diff))
-        return np.average(diff),np.median(diff),np.var(diff)
+        return np.average(diff),np.median(diff),np.var(diff),diff_df.kurt().to_numpy()[0],diff_df.skew().to_numpy()[0]

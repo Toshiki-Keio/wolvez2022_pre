@@ -91,7 +91,7 @@ def spm_first(img_path=None):
                     saveName = saveDir + f"/bcba_difference/{now}"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
-                    ave, med, var = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, saveDir)
+                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, saveDir)
                     #if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
                     #    feature_values[feature_name] = {}
                     #    feature_values[feature_name]["var"] = ave
@@ -104,10 +104,13 @@ def spm_first(img_path=None):
                     feature_values[feature_name][f'win_{win+1}']["var"] = ave
                     feature_values[feature_name][f'win_{win+1}']["med"] = med
                     feature_values[feature_name][f'win_{win+1}']["ave"] = var
+                    feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
+                    feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
         
         
                     
         if not learn_state:
+            print(feature_values)
             np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
