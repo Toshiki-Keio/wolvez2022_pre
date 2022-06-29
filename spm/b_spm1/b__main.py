@@ -19,7 +19,7 @@ from time import time
 '''
 
 
-def b_call(img_path=None):
+def spm_first(img_path=None):
     # 一旦一枚目だけ学習
     learn_state = True
     import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg")
@@ -119,4 +119,4 @@ def b_call(img_path=None):
         print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
 
 if __name__ == "__main__":
-    b_call()
+    spm_first()
