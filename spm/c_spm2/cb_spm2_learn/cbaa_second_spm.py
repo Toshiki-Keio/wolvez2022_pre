@@ -34,19 +34,9 @@ def unpack(npz_path):
 spm_path = os.getcwd()
 # print(spm_path)
 print(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
-files = glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
+files = sorted(glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*"))
 # pprint(files)
-"""
-['wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-36.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-42.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-16.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-29.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-08-08.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-55.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-49.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-08-02.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-23.npz']
- """
+
 # npzを解凍。
 data_list_all_time = []
 label_list_all_time = []
@@ -71,13 +61,12 @@ for pic, lab_pic in zip(data_list_all_time, label_list_all_time):
         pass
 data_list_all_win = np.array(data_list_all_win)
 label_list_all_win = np.array(label_list_all_win)
-print(label_list_all_win.shape)
 
 fps = 30
 stack_appear = 23
 stack_disapper = 27
 stack_appear_frame = stack_appear*fps
-stack_appear_frame = stack_disapper*fps
+stack_disappear_frame = stack_disapper*fps
 total_frame = len(files)
 
 
@@ -88,7 +77,7 @@ model_master = [Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(
 for win_no, win in enumerate(data_list_all_win):
     train_X = win[:-test_num]
     train_y = np.zeros((train_X.shape[0], 1))
-    train_y[-50:-20] = 1
+    train_y[stack_appear_frame:stack_disappear_frame] = 1
     print(train_X.shape, train_y.shape)
     model_master[win_no].fit(train_X, train_y)
 
@@ -100,14 +89,30 @@ for test_no in range(test_num):
         score = model_master[win_no].predict(test_X.reshape(1, -1))
         score_master[win_no].append(score)
         pass
-
+pprint(label_list_all_win)
 
 for i, win_score in enumerate(score_master):
     plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i}")
+
 plt.xlabel("time")
 plt.ylabel("degree of risk")
 plt.legend()
-plt.show()
+# plt.show()
+
+valuable_weight=[]
+valuable_label=[]
+for i,model in enumerate(model_master):
+    print(f"win_{i+1}重み係数: ",model_master[i].coef_.shape)
+    weight = model_master[i].coef_
+    print(weight)
+    label_list=label_list_all_win[i][0]
+    for j,w in enumerate(weight):
+        if w >=1e-6:
+            valuable_weight.append(w)
+            valuable_label.append(label_list[j])
+
+pprint(valuable_label)
+pprint(len(valuable_label))
 
 """
 npzの中身
