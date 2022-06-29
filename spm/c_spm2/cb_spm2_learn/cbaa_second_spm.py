@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import Lasso
@@ -9,95 +8,111 @@ import glob
 import pickle
 from pprint import pprint
 
+
 def unpack(npz_path):
     """
     元画像1枚に関するデータが全部入ったnpz_pathを渡すと、listへの復元と、listのどこに何が入っているかの案内の発行をしてくれる
     """
-    pic=np.load(npz_path,allow_pickle=True)['array_1'][0]
+    pic = np.load(npz_path, allow_pickle=True)['array_1'][0]
     # pprint(pic)
-    feature_keys=list(pic.keys())
-    list_master=[[],[],[],[],[],[]]
-    list_master_label=[[],[],[],[],[],[]]
+    feature_keys = list(pic.keys())
+    list_master = [[], [], [], [], [], []]
+    list_master_label = [[], [], [], [], [], []]
     for f_key in feature_keys:
-        window_keys=list(pic[f_key].keys())
-        for i,w_key in enumerate(window_keys):
+        window_keys = list(pic[f_key].keys())
+        for i, w_key in enumerate(window_keys):
             # print(list(pic[f_key][w_key].values()))
             list_master[i].append(list(pic[f_key][w_key].values()))
-            labels=[f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[0]}",f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[1]}",f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[2]}"]
+            labels = [f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[0]}", f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[1]}",
+                      f"{w_key}-{f_key}-{list(pic[f_key][w_key].keys())[2]}"]
             list_master_label[i].append(labels)
-    list_master=np.array(list_master)
-    return list_master,list_master_label
+    list_master = np.array(list_master)
+    return list_master, list_master_label
 
 
 # get data
-spm_path=os.getcwd()
+spm_path = os.getcwd()
 # print(spm_path)
 print(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
-files=glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
+files = sorted(glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*"))
 # pprint(files)
-"""
-['wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-36.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-42.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-16.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-29.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-08-08.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-55.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-49.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-08-02.npz',
- 'wolvez2022/spm/b_spm1/b-data/bcca_secondinput/2022-06-25_23-07-23.npz']
- """
+
 # npzを解凍。
-data_list_all_time=[]
-label_list_all_time=[]
+data_list_all_time = []
+label_list_all_time = []
 for file in files:
-    data_per_pic,label_list_per_pic=unpack(file)
+    data_per_pic, label_list_per_pic = unpack(file)
     data_list_all_time.append(data_per_pic)
     label_list_all_time.append(label_list_per_pic)
-data_list_all_time=np.array(data_list_all_time)
-label_list_all_time=np.array(label_list_all_time)
+data_list_all_time = np.array(data_list_all_time)
+label_list_all_time = np.array(label_list_all_time)
 # print(label_list_all_time.shape)#撮影した写真の枚数、ウィンドウの数、特徴画像の種類、特徴画像の特徴量の種類
 # print("data_list_all_time")
 # pprint(label_list_all_time)
 
 # ウィンドウごとに整理
-data_list_all_win=[[],[],[],[],[],[]]
-label_list_all_win=[[],[],[],[],[],[]]
-for pic,lab_pic in zip(data_list_all_time,label_list_all_time):
-    for win_no,(win,label_win) in enumerate(zip(pic,lab_pic)):
+data_list_all_win = [[], [], [], [], [], []]
+label_list_all_win = [[], [], [], [], [], []]
+for pic, lab_pic in zip(data_list_all_time, label_list_all_time):
+    for win_no, (win, label_win) in enumerate(zip(pic, lab_pic)):
         data_list_all_win[win_no].append(win.flatten())
         label_list_all_win[win_no].append(label_win.flatten())
         # print(train_X.shape)
-        pass        
-data_list_all_win=np.array(data_list_all_win)
-label_list_all_win=np.array(label_list_all_win)
-print(label_list_all_win.shape)
+        pass
+data_list_all_win = np.array(data_list_all_win)
+label_list_all_win = np.array(label_list_all_win)
+
+fps = 30
+stack_appear = 23
+stack_disapper = 27
+stack_appear_frame = stack_appear*fps
+stack_disappear_frame = stack_disapper*fps
+total_frame = len(files)
+
 
 # train
-test_num=50
-model_master=[Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000),Lasso(max_iter=100000)]
-for win_no,win in enumerate(data_list_all_win):
-    train_X=win[:-test_num]
-    train_y=np.zeros((train_X.shape[0],1))
-    train_y[-50:-20]=1
-    print(train_X.shape,train_y.shape)
-    model_master[win_no].fit(train_X,train_y)
+test_num = 50
+model_master = [Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(
+    max_iter=100000), Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(max_iter=100000)]
+for win_no, win in enumerate(data_list_all_win):
+    train_X = win[:-test_num]
+    train_y = np.zeros((train_X.shape[0], 1))
+    train_y[stack_appear_frame:stack_disappear_frame] = 1
+    print(train_X.shape, train_y.shape)
+    model_master[win_no].fit(train_X, train_y)
 
 # test
-score_master=[[],[],[],[],[],[]]
+score_master = [[], [], [], [], [], []]
 for test_no in range(test_num):
-    for win_no,win in enumerate(data_list_all_win):
-        test_X=win[-test_no]
-        score=model_master[win_no].predict(test_X.reshape(1,-1))
+    for win_no, win in enumerate(data_list_all_win):
+        test_X = win[-test_no]
+        score = model_master[win_no].predict(test_X.reshape(1, -1))
         score_master[win_no].append(score)
         pass
+pprint(label_list_all_win)
 
+for i, win_score in enumerate(score_master):
+    plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i}")
 
-for i,win_score in enumerate(score_master):
-    plt.plot(np.arange(len(win_score)),win_score,label=f"win_{i}")
 plt.xlabel("time")
 plt.ylabel("degree of risk")
 plt.legend()
-plt.show()
+# plt.show()
+
+valuable_weight=[]
+valuable_label=[]
+for i,model in enumerate(model_master):
+    print(f"win_{i+1}重み係数: ",model_master[i].coef_.shape)
+    weight = model_master[i].coef_
+    print(weight)
+    label_list=label_list_all_win[i][0]
+    for j,w in enumerate(weight):
+        if w >=1e-6:
+            valuable_weight.append(w)
+            valuable_label.append(label_list[j])
+
+pprint(valuable_label)
+pprint(len(valuable_label))
 
 """
 npzの中身
@@ -150,7 +165,7 @@ array([{'normalRGB': {'win_1': {'var': 203.99444444444444, 'med': 242.0, 'ave': 
 for file in files:
     pprint(np.load(file,allow_pickle=True)["array_1"][0])
 path=os.getcwd()
-"""#train_X=np.load(path+"/second_input_data/2022-06-09_18-44-40.npz")["array_1"]
+"""  # train_X=np.load(path+"/second_input_data/2022-06-09_18-44-40.npz")["array_1"]
 # 特徴画像の数＊特徴量ベクトル＊学習画像の数　を想定
 """
 test_X=train_X[-1].reshape(1,-1)
