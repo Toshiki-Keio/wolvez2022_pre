@@ -7,6 +7,8 @@ import os
 import glob
 import pickle
 from pprint import pprint
+from sklearn.preprocessing import StandardScaler
+
 
 
 def unpack(npz_path):
@@ -34,7 +36,7 @@ def unpack(npz_path):
 spm_path = os.getcwd()
 # print(spm_path)
 print(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
-files = sorted(glob.glob(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*"))
+files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))
 # pprint(files)
 
 # npzを解凍。
@@ -74,18 +76,26 @@ total_frame = len(files)
 test_num = 50
 model_master = [Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(
     max_iter=100000), Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(max_iter=100000)]
+standardization_list=[StandardScaler(),StandardScaler(),StandardScaler(),StandardScaler(),StandardScaler(),StandardScaler()]
+scaler_list=["","","","","",""]
 for win_no, win in enumerate(data_list_all_win):
     train_X = win[:-test_num]
+    scaler_list[win_no]=standardization_list[win_no].fit(train_X)
+    train_X=scaler_list[win_no].transform(train_X)
     train_y = np.zeros((train_X.shape[0], 1))
     train_y[stack_appear_frame:stack_disappear_frame] = 1
     print(train_X.shape, train_y.shape)
     model_master[win_no].fit(train_X, train_y)
+
 
 # test
 score_master = [[], [], [], [], [], []]
 for test_no in range(test_num):
     for win_no, win in enumerate(data_list_all_win):
         test_X = win[-test_no]
+        print(f"test_X win_no: {win_no}",test_X.shape)
+        test_X=scaler_list[win_no].transform(test_X.reshape(1, -1))
+        print(f"test_X win_no: {win_no}",test_X.shape)
         score = model_master[win_no].predict(test_X.reshape(1, -1))
         score_master[win_no].append(score)
         pass
