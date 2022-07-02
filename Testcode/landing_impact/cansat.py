@@ -190,9 +190,7 @@ class Cansat():
       
         #加速度が小さくなったら着地判定
         if (pow(self.bno055.ax,2) + pow(self.bno055.ay,2) + pow(self.bno055.az,2)) < pow(ct.const.DROPPING_ACC_THRE,2):#加速度が閾値以下で着地判定
-            self.countDropLoop+=1
-            self.separation()
-            
+            self.countDropLoop+=1            
             if self.countDropLoop > ct.const.DROPPING_ACC_COUNT_THRE:#着地判定が複数回行われたらステート以降
                 self.state = 3
                 self.laststate = 3
