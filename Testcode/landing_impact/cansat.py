@@ -215,11 +215,11 @@ class Cansat():
         
             #焼き切りが終わったあと一定時間モータを回して分離シートから脱出
             elif self.landstate == 1:
-                self.rightmotor.go(ct.const.MOTOR_VREF)
-                self.leftmotor.go(ct.const.MOTOR_VREF)
+                self.rightMotor.go(ct.const.MOTOR_VREF)
+                self.leftMotor.go(ct.const.MOTOR_VREF)
                 if time.time()-self.pre_motorTime > ct.const.PRE_MOTOR_TIME_THRE:#一定時間モータ回したら分離したことにする
-                    self.rightmotor.stop()
-                    self.leftmotor.stop()
+                    self.rightMotor.stop()
+                    self.leftMotor.stop()
                     self.state = 4
                     self.laststate = 4
 
