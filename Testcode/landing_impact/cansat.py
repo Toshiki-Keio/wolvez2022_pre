@@ -281,5 +281,8 @@ class Cansat():
     def keyboardinterrupt(self):
         self.rightMotor.stop()
         self.leftMotor.stop()
+        self.RED_LED.led_off()
+        self.BLUE_LED.led_off()
+        self.GREEN_LED.led_off()
         self.cap.release()
         cv2.destroyAllWindows()
