@@ -44,7 +44,7 @@ class Cansat():
         self.preparingTime = 0
         self.flyingTime = 0
         self.droppingTime = 0
-        # self.landingTime = 0
+        self.landingTime = 0
         # self.pre_motorTime = 0
         # self.startingTime = 0
         # self.measureringTime = 0
