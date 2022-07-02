@@ -217,7 +217,7 @@ class Cansat():
             elif self.landstate == 1:
                 self.rightMotor.go(ct.const.MOTOR_VREF)
                 self.leftMotor.go(ct.const.MOTOR_VREF)
-                if time.time()-self.pre_motorTime > ct.const.PRE_MOTOR_TIME_THRE:#一定時間モータ回したら分離したことにする
+                if time.time()-self.pre_motorTime > ct.const.LANDING_PRE_MOTOR_TIME_THRE:#一定時間モータ回したら分離したことにする
                     self.rightMotor.stop()
                     self.leftMotor.stop()
                     self.state = 4
