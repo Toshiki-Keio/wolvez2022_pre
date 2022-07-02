@@ -31,10 +31,10 @@ class Cansat():
         self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
         self.gps = GPS()
         self.radio = radio()
-        self.RED_LED = led.led(ct.const.RED_LED_PIN)
-        self.BLUE_LED = led.led(ct.const.BLUE_LED_PIN)
-        self.GREEN_LED = led.led(ct.const.GREEN_LED_PIN)
-        # self.cap = cv2.VideoCapture(0)
+        self.RED_LED = led(ct.const.RED_LED_PIN)
+        self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
+        self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
+        self.cap = cv2.VideoCapture(0)
         
         #初期パラメータ設定
         self.timer = 0
@@ -104,8 +104,8 @@ class Cansat():
             self.dropping()
         elif self.state == 3:#パラシュートから離れる。カメラでの撮影行う
             self.landing()
-        # elif self.state == 4:#スパースモデリング第一段階
-        #     self.spm_first()
+        elif self.state == 4:#スパースモデリング第一段階
+            self.spm_first()
         # elif self.state == 5:#スパースモデリング第二段階
         #     self.spm_second()
         # elif self.state == 6:#経路計画段階
@@ -223,6 +223,9 @@ class Cansat():
                     self.leftmotor.stop()
                     self.state = 4
                     self.laststate = 4
+
+    def spm_first(self):
+        self.camera()
 
     def sendRadio(self):
         datalog = str(self.state) + ","\
