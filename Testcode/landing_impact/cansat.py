@@ -45,6 +45,7 @@ class Cansat():
         self.flyingTime = 0
         self.droppingTime = 0
         self.landingTime = 0
+        self.landstate = 0
         # self.pre_motorTime = 0
         # self.startingTime = 0
         # self.measureringTime = 0
@@ -85,9 +86,9 @@ class Cansat():
                   + str(self.gps.Time) + ","\
                   + str(self.gps.Lat).rjust(6) + ","\
                   + str(self.gps.Lon).rjust(6) + ","\
-                  + str(self.bno055.ax).rjust(6) + ","\
-                  + str(self.bno055.ay).rjust(6) + ","\
-                  + str(self.bno055.az).rjust(6) + ","\
+                  + str(round(self.bno055.ax),8).rjust(6) + ","\
+                  + str(round(self.bno055.ay),8).rjust(6) + ","\
+                  + str(round(self.bno055.az),8).rjust(6) + ","\
                   + str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
                   + str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
                   + str(self.bno055.ex).rjust(6) 
