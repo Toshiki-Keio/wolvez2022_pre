@@ -1,5 +1,5 @@
-#Last Update 2022/06/23
-#Toshiki Fukui
+#Last Update 2022/07/02
+#Author : Toshiki Fukui
 
 import const
 
@@ -30,12 +30,14 @@ const.SEPARATION_PIN = 26
 #Flight Pin
 const.FLIGHTPIN_PIN = 4
 
+
 ##Variable Threshold
 const.ANGLE_THRE = 10
 const.SHADOW_EDGE_LENGTH = 15
 const.CASE_DISCRIMINATION = 1 #Case判定における許容誤差
 const.START_CONST_SHORT = 0.5 #Startingステートにおける帯の幅　±0.5
 const.START_CONST_LONG = 5 #Startingステートにおける帯の幅　±5
+
 
 ##State Threshold
 const.PREPARING_GPS_COUNT_THRE= 10
