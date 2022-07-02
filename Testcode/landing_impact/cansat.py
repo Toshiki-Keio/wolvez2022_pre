@@ -69,8 +69,12 @@ class Cansat():
         #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
         print_datalog = str(self.timer) + ","\
                   + "state:"+str(self.state)+ ","\
+                  + "Time:"+str(self.gps.Time) + ","\
                   + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
                   + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
+                  + "ax:"+str(self.bno055.ax).rjust(6) + ","\
+                  + "ay:"+str(self.bno055.ay).rjust(6) + ","\
+                  + "az:"+str(self.bno055.az).rjust(6) + ","\
                   + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
                   + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
                   + "q:" + str(self.bno055.ex).rjust(6) 
@@ -78,6 +82,7 @@ class Cansat():
         
         datalog = str(self.timer) + ","\
                   + str(self.state) + ","\
+                  + str(self.gps.Time) + ","\
                   + str(self.gps.Lat).rjust(6) + ","\
                   + str(self.gps.Lon).rjust(6) + ","\
                   + str(self.bno055.ax).rjust(6) + ","\
