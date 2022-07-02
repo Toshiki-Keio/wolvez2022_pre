@@ -73,9 +73,9 @@ class Cansat():
                   + "Time:"+str(self.gps.Time) + ","\
                   + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
                   + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
-                  + "ax:"+str(self.bno055.ax).rjust(6) + ","\
-                  + "ay:"+str(self.bno055.ay).rjust(6) + ","\
-                  + "az:"+str(self.bno055.az).rjust(6) + ","\
+                  + "ax:"+str(round(self.bno055.ax,8)).rjust(6) + ","\
+                  + "ay:"+str(round(self.bno055.ay,8)).rjust(6) + ","\
+                  + "az:"+str(round(self.bno055.az,8)).rjust(6) + ","\
                   + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
                   + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
                   + "q:" + str(self.bno055.ex).rjust(6) 
@@ -86,9 +86,9 @@ class Cansat():
                   + str(self.gps.Time) + ","\
                   + str(self.gps.Lat).rjust(6) + ","\
                   + str(self.gps.Lon).rjust(6) + ","\
-                  + str(round(self.bno055.ax),8).rjust(6) + ","\
-                  + str(round(self.bno055.ay),8).rjust(6) + ","\
-                  + str(round(self.bno055.az),8).rjust(6) + ","\
+                  + str(self.bno055.ax).rjust(6) + ","\
+                  + str(self.bno055.ay).rjust(6) + ","\
+                  + str(self.bno055.az).rjust(6) + ","\
                   + str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
                   + str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
                   + str(self.bno055.ex).rjust(6) 
