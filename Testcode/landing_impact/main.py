@@ -12,7 +12,7 @@ try:
         cansat.sensor()
         time.sleep(0.05)
         cansat.sequence()
-        if cansat.state >= 3:
+        if cansat.state >= 4:
             print("Finished")
             cansat.keyboardinterrupt()
             GPIO.cleanup()

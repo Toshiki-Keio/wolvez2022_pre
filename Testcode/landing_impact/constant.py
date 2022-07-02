@@ -33,13 +33,9 @@ const.FLIGHTPIN_PIN = 4
 ##Variable Threshold
 const.ANGLE_THRE = 10
 const.SHADOW_EDGE_LENGTH = 15
-const.MEASURMENT_INTERVAL = 5 #測位点間距離
-const.MAX_SHADOW_EDGE_LENGTH = 5 
 const.CASE_DISCRIMINATION = 1 #Case判定における許容誤差
 const.START_CONST_SHORT = 0.5 #Startingステートにおける帯の幅　±0.5
 const.START_CONST_LONG = 5 #Startingステートにおける帯の幅　±5
-const.SEPARATION_TIME = 10 #焼き切り時間
-
 
 ##State Threshold
 const.PREPARING_GPS_COUNT_THRE= 10
@@ -48,7 +44,8 @@ const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 1 #加速度の値
 const.LANDING_RELEASING_TIME_THRE = 3
-const.LANDING_PRE_MOTOR_TIME_THRE = 2
+const.SEPARATION_TIME_THRE = 10 #焼き切り時間
+const.LANDING_PRE_MOTOR_TIME_THRE = 5 #分離シートから離れるためにモータを回転させる時間
 const.STARTING_TIME_THRE = 60
 const.MEASURING_SWITCH_COUNT_THRE = 20 #1地点での測位回数
 const.MEASURING_MAX_MEASURING_COUNT_THRE = 6 #最大測位点
