@@ -224,7 +224,7 @@ class Cansat():
                     self.laststate = 4
 
     def spm_first(self):
-        self.camera()
+        self.camera(self.cap)
 
     def sendRadio(self):
         datalog = str(self.state) + ","\
