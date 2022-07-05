@@ -56,27 +56,33 @@ class Open_npz():
         list_master = np.array(list_master)
         return list_master, list_master_label
 
-    def get_train_X(self):
+    def get_data(self):
         return self.data_list_all_win,self.label_list_all_win
 
 class Learn():
     """
     dataからmodelを作る。
     """
-    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27) -> None:
+    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
         self.fps = fps
-        self.stack_appear = stack_appear
-        self.stack_disappear = stack_disappear
-        self.stack_appear_frame = stack_appear*fps
-        self.stack_disappear_frame = stack_disappear*fps
-
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
         print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
+        if stack_info.all==None:
+            self.stack_appear = stack_appear
+            self.stack_disappear = stack_disappear
+            self.stack_appear_frame = stack_appear*fps
+            self.stack_disappear_frame = stack_disappear*fps
+            self.stack_info=np.zeros((self.data_list_all_win.shape[0],2))
+            self.stack_info[:,0]=int(self.stack_appear_frame)
+            self.stack_info[:,1]=int(self.stack_disappear_frame)
+            pprint(self.stack_info)
+        else:
+            self.stack_info=stack_info*self.fps
+            pass
         self.initialize_model()
         self.fit()
 
-        pass
 
     def initialize_model(self):
         self.model_master=[]
@@ -93,12 +99,16 @@ class Learn():
             self.scaler_master[win_no]=self.standardization_master[win_no].fit(train_X)
             train_X=self.scaler_master[win_no].transform(train_X)
             train_y = np.zeros((train_X.shape[0], 1))
-            train_y[self.stack_appear_frame:self.stack_disappear_frame] = 1
+            print(self.stack_info[win_no][0])
+            train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 1
             print(train_X.shape, train_y.shape)
             self.model_master[win_no].fit(train_X, train_y)
             pass
         pass
-        
+    
+    def get_data(self):
+        return self.model_master,self.label_list_all_win
+
 
 
 
@@ -108,7 +118,36 @@ class Learn():
 spm_path = os.getcwd()
 train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))
 
-train=Open_npz(train_files)
-data_list_all_win,label_list_all_win=train.get_train_X()
+seq1=Open_npz(train_files)
+data_list_all_win,label_list_all_win=seq1.get_data()
 
-Learn(data_list_all_win,label_list_all_win)
+stack_info=np.array([[23., 27.],
+       [23., 27.],
+       [23., 27.],
+       [23., 27.],
+       [23., 27.],
+       [23., 27.]])
+"""
+「stackした」と学習させるフレームの指定方法
+1. 全ウィンドウで一斉にラベリングする場合
+    Learnの引数でstack_appearおよびstack_disappearを[s]で指定する。
+2. ウィンドウごとに個別にラベリングする場合
+stack_info=np.array(
+    [
+        [win_1_stack_start,win_1_stack_end],
+        [win_2_stack_start,win_2_stack_end],
+        ...
+        [win_6_stack_start,win_6_stack_end],
+    ]
+)
+t[s]で入力すること。
+"""
+seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=stack_info)
+model_master,label_list_all_win=seq2.get_data()
+
+spm_path = os.getcwd()
+test_files = sorted(glob.glob(spm_path+"/####  test data directory path  ####/*"))
+
+seq3=Open_npz(test_files)
+data_list_all_win,label_list_all_win=seq3.get_data()
+
