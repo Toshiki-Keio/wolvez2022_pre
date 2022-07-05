@@ -177,7 +177,7 @@ stack_info=np.array(
 )
 t[s]で入力すること。
 """
-seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=stack_info)
+seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
 model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 spm_path = os.getcwd()
