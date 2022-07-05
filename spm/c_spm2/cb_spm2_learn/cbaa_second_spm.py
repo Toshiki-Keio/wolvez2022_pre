@@ -35,7 +35,7 @@ def unpack(npz_path):
 # get data
 spm_path = os.getcwd()
 # print(spm_path)
-print(spm_path+"/spm/b_spm1/b-data/bcca_secondinput/*")
+print(spm_path+"/b_spm1/b-data/bcca_secondinput/*")
 files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))
 # pprint(files)
 
@@ -124,6 +124,7 @@ for i,model in enumerate(model_master):
 pprint(valuable_label)
 pprint(len(valuable_label))
 
+print(files)
 """
 npzの中身
 array(
