@@ -6,6 +6,8 @@ from sklearn.linear_model import Lasso
 import os
 import glob
 from pprint import pprint
+from sklearn.preprocessing import StandardScaler
+
 
 
 
@@ -61,22 +63,47 @@ class Learn():
     """
     dataからmodelを作る。
     """
-    def __init__(self,data_list_all_win,label_list_all_win) -> None:
+    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27) -> None:
+        self.fps = fps
+        self.stack_appear = stack_appear
+        self.stack_disappear = stack_disappear
+        self.stack_appear_frame = stack_appear*fps
+        self.stack_disappear_frame = stack_disappear*fps
+
         self.data_list_all_win=data_list_all_win
+        self.label_list_all_win=label_list_all_win
         print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
-        self.initialize_model_list()
+        self.initialize_model()
+        self.fit()
+
         pass
 
-    def initialize_model_list(self):
-        self.model_list=[]
+    def initialize_model(self):
+        self.model_master=[]
+        self.standardization_master=[]
+        self.scaler_master=[]
         for i in range(self.data_list_all_win.shape[0]):
-            self.model_list.append(Lasso(max_iter=100000))
-        return self.model_list
-
-
-
-
+            self.model_master.append(Lasso(max_iter=100000))
+            self.standardization_master.append(StandardScaler())
+            self.scaler_master.append("")
+    
+    def fit(self):
+        for win_no, win in enumerate(self.data_list_all_win):
+            train_X = win
+            self.scaler_master[win_no]=self.standardization_master[win_no].fit(train_X)
+            train_X=self.scaler_master[win_no].transform(train_X)
+            train_y = np.zeros((train_X.shape[0], 1))
+            train_y[self.stack_appear_frame:self.stack_disappear_frame] = 1
+            print(train_X.shape, train_y.shape)
+            self.model_master[win_no].fit(train_X, train_y)
+            pass
+        pass
         
+
+
+
+
+
 # wolvez2022/spmで実行してください
 spm_path = os.getcwd()
 train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))

@@ -77,7 +77,7 @@ test_num = 50
 model_master = [Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(
     max_iter=100000), Lasso(max_iter=100000), Lasso(max_iter=100000), Lasso(max_iter=100000)]
 standardization_list=[StandardScaler(),StandardScaler(),StandardScaler(),StandardScaler(),StandardScaler(),StandardScaler()]
-scaler_list=["","","","","",""]
+scaler_list=["","","","","",""]#####
 for win_no, win in enumerate(data_list_all_win):
     train_X = win[:-test_num]
     scaler_list[win_no]=standardization_list[win_no].fit(train_X)
