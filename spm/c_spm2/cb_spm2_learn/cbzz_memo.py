@@ -107,16 +107,51 @@ class Learn():
         pass
     
     def get_data(self):
-        return self.model_master,self.label_list_all_win
+        return self.model_master,self.label_list_all_win,self.scaler_master
 
 
+class Evaluate():
+    def __init__(self,model_master,test_data_list_all_win,scaler_master):
+        self.model_master=model_master
+        self.test_data_list_all_win=test_data_list_all_win
+        self.scaler_master=scaler_master
+        if len(self.model_master)!=len(self.test_data_list_all_win):
+            print("学習済みモデルのウィンドウ数と、テストデータのウィンドウ数が一致しません")
+            return None
+        self.test()
+        self.plot()
+
+
+    def test(self):
+        print(self.test_data_list_all_win)
+        self.score_master=[]
+        for win_no in range(np.array(self.test_data_list_all_win).shape[0]):
+            self.score_master.append([])
+        for test_no in range(np.array(self.test_data_list_all_win).shape[1]):
+            for win_no, win in enumerate(self.test_data_list_all_win):
+                test_X = win[test_no]
+                print(f"test_X win_no: {win_no}",test_X.shape)
+                test_X=self.scaler_master[win_no].transform(test_X.reshape(1, -1))
+                print(f"test_X win_no: {win_no}",test_X.shape)
+                score = self.model_master[win_no].predict(test_X.reshape(1, -1))
+                self.score_master[win_no].append(score)
+                pass
+        pprint(self.score_master[0])
+    
+    def plot(self):
+        for i, win_score in enumerate(self.score_master):
+            plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i}")
+        plt.xlabel("time")
+        plt.ylabel("degree of risk")
+        plt.legend()
+        plt.show()
 
 
 
 
 # wolvez2022/spmで実行してください
 spm_path = os.getcwd()
-train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))
+train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))[:-50]
 
 seq1=Open_npz(train_files)
 data_list_all_win,label_list_all_win=seq1.get_data()
@@ -143,11 +178,12 @@ stack_info=np.array(
 t[s]で入力すること。
 """
 seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=stack_info)
-model_master,label_list_all_win=seq2.get_data()
+model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 spm_path = os.getcwd()
-test_files = sorted(glob.glob(spm_path+"/####  test data directory path  ####/*"))
+test_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))[-50:]
 
 seq3=Open_npz(test_files)
-data_list_all_win,label_list_all_win=seq3.get_data()
+test_data_list_all_win,test_label_list_all_win=seq3.get_data()
 
+seq4=Evaluate(model_master,test_data_list_all_win,scaler_master)

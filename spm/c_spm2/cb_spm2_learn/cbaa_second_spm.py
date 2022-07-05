@@ -107,7 +107,7 @@ for i, win_score in enumerate(score_master):
 plt.xlabel("time")
 plt.ylabel("degree of risk")
 plt.legend()
-# plt.show()
+plt.show()
 
 valuable_weight=[]
 valuable_label=[]
