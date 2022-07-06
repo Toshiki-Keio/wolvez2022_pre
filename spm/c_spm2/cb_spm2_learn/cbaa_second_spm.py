@@ -31,7 +31,7 @@ train_X=train_X[:-1]
 train_y=np.zeros((train_X.shape[0],1))
 test_y=0
 print(train_X.shape,test_X.shape,train_y.shape)
-train_y[-5:]=1
+train_y[-1:]=1
 model=Lasso(max_iter=1000)
 model.fit(train_X,train_y)
 possibility=model.predict(test_X)
