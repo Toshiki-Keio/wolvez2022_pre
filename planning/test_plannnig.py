@@ -3,9 +3,10 @@
 # import estimation
 # import constant as ct
 # import RPi.GPIO as GPIO
-# import time
 # import bno055
+# import gps
 
+from msilib import type_string
 import time
 import math
 from math import sqrt
@@ -13,6 +14,11 @@ from math import radians
 from math import sin
 from math import fabs
 import numpy as np
+
+# 危険度行列
+# risk : spm2から出力された危険度
+# bias_goal : Cansatとゴール方向の相対角度から算出されるバイアス行列
+# integrated_risk : 上記2つの行列を足し合わせたもの
 
 
 # GPSの値を取得後，指定したものと比較してその方向に走行する
@@ -25,21 +31,68 @@ import numpy as np
 
 # 2点の情報から方向・距離を算出
 
-
-
+direction_cansat2goal = 0*180/math.pi # 仮にCansatとゴールの相対角度を指定
+bias_goal = np.zeros((2,3)) # ゴール方向に対するバイアスの初期設定
+num_bias = -10
+# Cansatとゴールの相対角度からバイアス行列を設定
+if direction_cansat2goal >= 20:
+    np.put(bias_goal,[2,5],num_bias)
+elif direction_cansat2goal > -20 and direction_cansat2goal < 20:
+    np.put(bias_goal,[1,4],num_bias)
+else:
+    np.put(bias_goal,[0,3],num_bias)
+print("bias_goal: \n"+str(bias_goal)+"\n") #確認用
 
 
 
 # 危険度を仮設定
 # あとで林出にデータをもらう！
 # degree_of_risk = np.zeros((2,3))
-degree_of_risk = np.asarray([[40,40,30],[40,40,40]])
+# risk = np.asarray([[40,40,30],[40,40,40]])
+risk = np.random.randint(30,100,(2,3))
+upper_risk = risk[0,:]
+lower_risk = risk[1,:]
+print("risk:\n"+str(risk)+"\n")
+# print("upper_risk:\n"+str(upper_risk)+"\n")
+# print("lower_risk:\n"+str(lower_risk)+"\n")
 
-print(degree_of_risk)
+# バイアスをかけた危険度
+integrated_risk = risk + bias_goal
+upper_integrated_risk = integrated_risk[0,:]
+lower_integrated_risk = integrated_risk[1,:]
+print("integrated_risk: \n" + str(integrated_risk)+"\n")
+# print("upper_integrated_risk: \n" + str(upper_integrated_risk)+"\n")
+# print("lower_integrated_risk: \n" + str(lower_integrated_risk)+"\n")
 
 # 危険度の最小値のインデックスを取得
-min_idx = np.unravel_index(np.argmin(degree_of_risk), degree_of_risk.shape)
-print(min_idx[0])
+lower_risk_min_idx = np.argmin(lower_risk)
+print("lower_risk_min_idx: "+str(lower_risk_min_idx))
+lower_integrated_risk_min_idx = np.argmin(lower_integrated_risk)
+print("lower_integrated_risk_min_idx: "+str(lower_integrated_risk_min_idx))
+
+print("＜もともとの危険度のみから判断した場合＞")
+if np.amin(lower_risk) >= 80:
+    print("riskの下の行が全て閾値以上")
+    print("どこも危険なので旋回して別角度を探索")
+else:
+    if lower_risk_min_idx == 0:
+        print("左側が安全そうなので左に曲がりながら走行")
+    elif lower_risk_min_idx == 1:
+        print("中央が安全そうなので直進")
+    elif lower_risk_min_idx == 2:
+        print("右側が安全そうなので右に曲がりながら走行")
+
+print("＜バイアスありの危険度から判断した場合＞")
+if np.amin(lower_integrated_risk) >= 80:
+    print("riskの下の行が全て閾値以上")
+    print("どこも危険なので旋回して別角度を探索")
+else:
+    if lower_integrated_risk_min_idx == 0:
+        print("左側が安全そうなので左に曲がりながら走行")
+    elif lower_integrated_risk_min_idx == 1:
+        print("中央が安全そうなので直進")
+    elif lower_integrated_risk_min_idx == 2:
+        print("右側が安全そうなので右に曲がりながら走行")
 
 # 選ばれた領域に対する動きを設定
 # モータの設定
@@ -48,29 +101,7 @@ GPIO.setwarnings(False)
 Motor1 = motor2.motor(6,5,13)    # おそらく右のモータ
 Motor2 = motor2.motor(20,16,12)  # おそらく左のモータ
 """
-# 0列目（左側）が選ばれた場合には左回転
-if min(min_idx[1]) == 0:
-    """ 
-    Motor1.go(70)
-    Motor2.back(70)
-    time.sleep(5) 
-    """
-    # 再度危険度を算出
 
-# 1列目（中央）が選ばれた場合には直進
-elif min(min_idx[1]) == 1:
-    """ 
-    Motor1.go(70)
-    Motor2.back(70)
-    time.sleep()
-    """
-# 2列目（右側）が選ばれた場合には右回転
-elif min(min_idx[1]) == 2:
-    """ 
-    Motor1.back(70)
-    Motor2.go(70)
-    time.sleep
-    """
 
 # 以下，estimation_test.pyから改良
 # GPIO.setwarnings(False)
