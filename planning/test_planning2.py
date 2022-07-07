@@ -77,6 +77,7 @@ def direction_from_gps(now_lat,now_lon,goal_lat,goal_lon):
 
 
 # オブジェクトの生成
+
 GPIO.setwarnings(False)
 MotorR = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
 MotorL = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN,ct.const.LEFT_MOTOR_VREF_PIN)
@@ -95,6 +96,7 @@ while count < 2:
     count += 1
     # GPSから現在の緯度・経度を取得
     gps.gpsread()
+<<<<<<< HEAD
     datalog ="Time:" + str(gps.Time) + ","\
                   + "緯度:" + str(gps.Lat) + ","\
                   + "経度:" + str(gps.Lon)
@@ -111,6 +113,7 @@ while count < 2:
     digree_cansatfront2goal = digree_north2goal - digree_north2cansatfront
     print("digree_cansatfront2goal: "+str(digree_cansatfront2goal))
 #     direction_goal_deg = np.random.randint(-60,60)  #ゴール方向の角度を取得（後でGPSから値が取れるようにする）
+
     
     # ゴール方向の角度から左・中央・右のどの方向に行くかを算出
     direction_goal = decide_direction(digree_cansatfront2goal)  #角度から左・前・右のどの方向に進むべきかを取得
