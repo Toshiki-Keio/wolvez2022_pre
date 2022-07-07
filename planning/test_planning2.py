@@ -21,15 +21,15 @@ import numpy as np
 # ゴール方向の角度から行く方向を決定する関数
 def decide_direction(direction_goal_deg):
     if direction_goal_deg >= 20:
-        direction_goal_lcr = 2
-        print("ゴール方向："+str(direction_goal_lcr)+" 右に曲がりたい")
+        direction_goal = 2
+        print("ゴール方向："+str(direction_goal)+" -> 右に曲がりたい")
     elif direction_goal_deg > -20 and direction_goal_deg < 20:
-        direction_goal_lcr = 1
-        print("ゴール方向："+str(direction_goal_lcr)+" 直進したい")
+        direction_goal = 1
+        print("ゴール方向："+str(direction_goal)+" -> 直進したい")
     else:
-        direction_goal_lcr = 0
-        print("ゴール方向："+str(direction_goal_lcr)+" 左に曲がりたい")
-    return direction_goal_lcr
+        direction_goal = 0
+        print("ゴール方向："+str(direction_goal)+" -> 左に曲がりたい")
+    return direction_goal
 
 # それぞれの方向に対して実際に行う動作を決める関数
 def decide_behavior(direction):
@@ -102,7 +102,7 @@ while count < 2:
                   + "経度:" + str(gps.Lon)
     print(datalog)
     gps_dictionary = gps.vincenty_inverse(gps.Lat,gps.Lat,goal_position[0],goal_position[1])
-    print(gps_dictionary)
+    # print(gps_dictionary)
     digree_north2goal = gps_dictionary["azimuth1"]
 
     # 加速度センサからCansatがどの方位角を向いているかを計測
