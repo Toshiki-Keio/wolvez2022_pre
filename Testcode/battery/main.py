@@ -39,7 +39,7 @@ try:
                       + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
                       + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
                       + "q:" + str(self.bno055.ex).rjust(6) + ","\
-                      + "Camera:" + str(img))
+                      + "Camera:" + str(img)
         print(datalog)
     
 except KeyboardInterrupt:
