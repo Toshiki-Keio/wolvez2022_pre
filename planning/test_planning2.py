@@ -43,6 +43,7 @@ def decide_behavior(direction):
         print("90度回転する")
 
 # それぞれの方向に対して実際に行う動作を決める関数
+
 def decide_behavior_raspi(direction,MotorR,MotorL):
     if direction == 0:
         print("左に"+str(digree_cansatfront2goal)+"[deg] 曲がる")
@@ -65,6 +66,7 @@ def decide_behavior_raspi(direction,MotorR,MotorL):
 #                 MotorR.stop()
 #                 MotorL.stop()
 #                 break
+
     elif direction == 1:
         print("直進する")
         MotorR.go(70)
@@ -74,11 +76,13 @@ def decide_behavior_raspi(direction,MotorR,MotorL):
         MotorL.stop()
     elif direction == 2:
         print("右に"+str(digree_cansatfront2goal)+"[deg] 曲がる")
+
         MotorR.go(70)
         MotorL.back(70)
         time.sleep(1)
         MotorR.stop()
         MotorL.stop()
+
     elif direction == 3:
         print("90度回転する")
         MotorR.back(70)
