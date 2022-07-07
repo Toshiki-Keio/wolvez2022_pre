@@ -64,7 +64,7 @@ def direction_from_gps(now_lat,now_lon,goal_lat,goal_lon):
     direction_goal_deg = 10
     return [direction_goal_deg, distance_goal]
 
-"""ここから実際のコード！"""
+
 
 
 # オブジェクトの生成
