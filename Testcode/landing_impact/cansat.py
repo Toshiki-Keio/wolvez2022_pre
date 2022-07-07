@@ -26,7 +26,6 @@ class Cansat():
         
         # インスタンス生成        
         self.bno055 = BNO055()
-        self.bno055.setupBno()
         self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
         self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
         self.gps = GPS()
@@ -70,9 +69,9 @@ class Cansat():
                   + "Time:"+str(self.gps.Time) + ","\
                   + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
                   + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
-                  + "ax:"+str(round(self.bno055.ax,8)).rjust(6) + ","\
-                  + "ay:"+str(round(self.bno055.ay,8)).rjust(6) + ","\
-                  + "az:"+str(round(self.bno055.az,8)).rjust(6) + ","\
+                  + "ax:"+str(round(self.bno055.ax,6)).rjust(6) + ","\
+                  + "ay:"+str(round(self.bno055.ay,6)).rjust(6) + ","\
+                  + "az:"+str(round(self.bno055.az,6)).rjust(6) + ","\
                   + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
                   + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
                   + "q:" + str(self.bno055.ex).rjust(6) + ","\
@@ -257,32 +256,7 @@ class Cansat():
                   + str(self.gps.Lat) + ","\
                   + str(self.gps.Lon) + ","\
 
-        self.radio.switchData(datalog) #データを送信 
-
-    def getbno055(self):      
-        self.bno055.bnoread()
-        self.bno055.ax=round(self.bno055.ax,3)
-        self.bno055.ay=round(self.bno055.ay,3)
-        self.bno055.az=round(self.bno055.az,3)
-        self.bno055.gx=round(self.bno055.gx,3)
-        self.bno055.gy=round(self.bno055.gy,3)
-        self.bno055.gz=round(self.bno055.gz,3)
-        self.bno055.ex=round(self.bno055.ex,3)
-        self.bno055.ey=round(self.bno055.ey,3)
-        self.bno055.ez=round(self.bno055.ez,3)
-        accel="ax="+str(self.bno055.ax)+","\
-              +"ay="+str(self.bno055.ay)+","\
-              +"az="+str(self.bno055.az)
-        grav="gx="+str(self.bno055.gx)+","\
-              +"gy="+str(self.bno055.gy)+","\
-              +"gz="+str(self.bno055.gz) # including gravity
-        euler="ex="+str(self.bno055.ex)+","\
-              +"ey="+str(self.bno055.ey)+","\
-              +"ez="+str(self.bno055.ez)
-        magnet="mx="+str(self.bno055.mx)+","\
-              +"my="+str(self.bno055.my)+","\
-              +"mz="+str(self.bno055.mz)
-        # print(grav,euler,magnet) 
+        self.radio.switchData(datalog) #データを送信
         
     def run_motor(self):
         self.rightMotor.go(ct.const.MOTOR_VREF)
