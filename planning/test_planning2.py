@@ -43,14 +43,28 @@ def decide_behavior(direction):
         print("90度回転する")
 
 # それぞれの方向に対して実際に行う動作を決める関数
-def decide_behavior_raspi(digree_cansatfront2goal,direction,MotorR,MotorL):
+def decide_behavior_raspi(direction,MotorR,MotorL):
     if direction == 0:
         print("左に"+str(digree_cansatfront2goal)+"[deg] 曲がる")
-        MotorR.go(70)
-        MotorL.back(70)
+        MotorR.back(70)
+        MotorL.go(70)
         time.sleep(1)
         MotorR.stop()
         MotorL.stop()
+        
+        # 現在の方位角を取得
+#         bno055.bnoread()
+#         bno055.ex=round(bno055.ex,3)
+#         digree_north2cansatfront_now = bno055.ex
+#         digree_cansatfront2goal_now = digree_north2goal - digree_north2cansatfront_now
+# 
+#         while True:
+#             MotorR.go(70)
+#             MotorL.back(70)
+#             if digree_cansatfront2goal-5 <= digree_cansatfront2goal_now or digree_cansatfront2goal_now <= digree_cansatfront2goal + 5:
+#                 MotorR.stop()
+#                 MotorL.stop()
+#                 break
     elif direction == 1:
         print("直進する")
         MotorR.go(70)
@@ -60,8 +74,8 @@ def decide_behavior_raspi(digree_cansatfront2goal,direction,MotorR,MotorL):
         MotorL.stop()
     elif direction == 2:
         print("右に"+str(digree_cansatfront2goal)+"[deg] 曲がる")
-        MotorR.back(70)
-        MotorL.go(70)
+        MotorR.go(70)
+        MotorL.back(70)
         time.sleep(1)
         MotorR.stop()
         MotorL.stop()
@@ -72,6 +86,8 @@ def decide_behavior_raspi(digree_cansatfront2goal,direction,MotorR,MotorL):
         time.sleep(1)
         MotorR.stop()
         MotorL.stop()
+        
+
 
 
 
@@ -109,6 +125,7 @@ while count < 2:
     bno055.bnoread()
     bno055.ex=round(bno055.ex,3)
     digree_north2cansatfront = bno055.ex
+    print("current position[deg]: "+str(digree_north2cansatfront))
 
     # ゴールの方位角とCansatの前方方位角から，Cansatとゴールの相対角度を算出
     digree_cansatfront2goal = digree_north2goal - digree_north2cansatfront
@@ -136,12 +153,12 @@ while count < 2:
     if np.amin(lower_risk) >= threshold_risk:
         print("前方に安全なルートはありません。90度回転して新たな経路を探索します。")
         direction_real = 3
-        decide_behavior_raspi(digree_cansatfront2goal,direction_real,MotorR,MotorL)
+        decide_behavior_raspi(direction_real,MotorR,MotorL)
 
     else:
         if lower_risk[direction_goal] <= threshold_risk:   #ゴール方向の危険度が閾値以下の場合
 #             decide_behavior(direction_real)   # その方向に進む
-            decide_behavior_raspi(digree_cansatfront2goal,direction_real,MotorR,MotorL)
+            decide_behavior_raspi(direction_real,MotorR,MotorL)
         else:
             print("ゴール方向が安全ではありません。別ルートを探索します。")
             if direction_goal == 0:
@@ -150,7 +167,7 @@ while count < 2:
                 else:
                     direction_real = 2
 #                 decide_behavior(direction_real)
-                decide_behavior_raspi(digree_cansatfront2goal,direction_real,MotorR,MotorL)
+                decide_behavior_raspi(direction_real,MotorR,MotorL)
                 # decide_behavior_raspi(direction_real,MotorR,MotorL)
             elif direction_goal == 1:
                 if lower_risk[0] <= lower_risk[2]:
@@ -159,7 +176,7 @@ while count < 2:
                     direction_real = 2
                 direction_real = 0
 #                 decide_behavior(direction_real)
-                decide_behavior_raspi(digree_cansatfront2goal,direction_real,MotorR,MotorL)
+                decide_behavior_raspi(direction_real,MotorR,MotorL)
                 # decide_behavior_raspi(direction_real,MotorR,MotorL)
             elif direction_goal == 2:
                 if lower_risk[0] <= lower_risk[1]:
@@ -167,6 +184,6 @@ while count < 2:
                 else:
                     direction_real = 1
                 # decide_behavior(direction_real)
-                decide_behavior_raspi(digree_cansatfront2goal,direction_real,MotorR,MotorL)
+                decide_behavior_raspi(direction_real,MotorR,MotorL)
 
 
