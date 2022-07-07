@@ -43,14 +43,19 @@ def decide_behavior(direction):
         print("90度回転する")
 
 # それぞれの方向に対して実際に行う動作を決める関数
-def decide_behavior_raspi(digree_cansatfront2goal,direction,MotorR,MotorL):
+def decide_behavior_raspi(digree_north2goal,digree_cansatfront2goal,direction,MotorR,MotorL):
     if direction == 0:
         print("左に"+str(digree_cansatfront2goal)+"[deg] 曲がる")
         MotorR.go(70)
         MotorL.back(70)
-        time.sleep(1)
-        MotorR.stop()
-        MotorL.stop()
+        # 現在の方位角を取得
+        bno055.bnoread()
+        bno055.ex=round(bno055.ex,3)
+        digree_north2cansatfront = bno055.ex
+        # ゴールの方位角に近づくと止まる
+        if digree_north2goal-5 <= digree_north2cansatfront or digree_north2cansatfront <= digree_north2goal + 5:
+            MotorR.stop()
+            MotorL.stop()
     elif direction == 1:
         print("直進する")
         MotorR.go(70)
@@ -62,9 +67,14 @@ def decide_behavior_raspi(digree_cansatfront2goal,direction,MotorR,MotorL):
         print("右に"+str(digree_cansatfront2goal)+"[deg] 曲がる")
         MotorR.back(70)
         MotorL.go(70)
-        time.sleep(1)
-        MotorR.stop()
-        MotorL.stop()
+        # 現在の方位角を取得
+        bno055.bnoread()
+        bno055.ex=round(bno055.ex,3)
+        digree_north2cansatfront = bno055.ex
+        # ゴールの方位角に近づくと止まる
+        if digree_north2goal-5 <= digree_north2cansatfront or digree_north2cansatfront <= digree_north2goal + 5:
+            MotorR.stop()
+            MotorL.stop()
     elif direction == 3:
         print("90度回転する")
         MotorR.back(70)
