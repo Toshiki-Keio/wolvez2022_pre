@@ -3,7 +3,7 @@
 
 import RPi.GPIO as GPIO
 import sys
-# import cv2
+import cv2
 sys.path.append("/home/pi/Desktop/wolvez2021/Testcode/sensor_integration/LoRa_SOFT")
 import time
 import numpy as np
@@ -34,18 +34,18 @@ class Cansat():
         self.RED_LED = led(ct.const.RED_LED_PIN)
         self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
         self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
-#         self.cap = cv2.VideoCapture(0)
         
         #初期パラメータ設定
         self.timer = 0
         self.state = state
-                #stateに入っている時刻の初期化
         self.startTime = time.time()
         self.preparingTime = 0
         self.flyingTime = 0
         self.droppingTime = 0
         self.landingTime = 0
         self.landstate = 0
+        self.firstimgcount = 0
+        self.camerastate = 0
         # self.pre_motorTime = 0
         # self.startingTime = 0
         # self.measureringTime = 0
@@ -61,11 +61,6 @@ class Cansat():
         self.countPreLoop = 0
         self.countFlyLoop = 0
         self.countDropLoop = 0
-        self.countSwitchLoop=0
-        self.countGoal = 0
-        self.countgrass=0
-        self.cameradata = 0
-        
     
     def writeData(self):
         #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
@@ -79,7 +74,9 @@ class Cansat():
                   + "az:"+str(round(self.bno055.az,8)).rjust(6) + ","\
                   + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
                   + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
-                  + "q:" + str(self.bno055.ex).rjust(6) 
+                  + "q:" + str(self.bno055.ex).rjust(6) + ","\
+                  + "Camera:" + str(self.camerastate)
+
         print(print_datalog)
         
         datalog = str(self.timer) + ","\
@@ -92,7 +89,8 @@ class Cansat():
                   + "az:"+str(self.bno055.az).rjust(6) + ","\
                   + "rV:"+str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
                   + "lV:"+str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
-                  + "q:"+str(self.bno055.ex).rjust(6) 
+                  + "q:"+str(self.bno055.ex).rjust(6) + ","\
+                  + "Camera:" + str(self.camerastate)
         
         with open('results/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
             test.write(datalog + '\n')
@@ -210,6 +208,7 @@ class Cansat():
             self.GREEN_LED.led_on()
             
         if not self.landingTime == 0:
+            #焼き切りによるパラ分離
             if self.landstate == 0:
                 GPIO.output(ct.const.SEPARATION_PIN,1) #電圧をHIGHにして焼き切りを行う
                 if time.time()-self.landingTime > ct.const.SEPARATION_TIME_THRE:
@@ -217,19 +216,32 @@ class Cansat():
                     self.landstate = 1
                     self.pre_motorTime = time.time()
         
-            #焼き切りが終わったあと一定時間モータを回して分離シートから脱出
+            #焼き切り終了後カメラ起動
             elif self.landstate == 1:
+                self.cap = cv2.VideoCapture(0)
+                self.landstate = 2
+            
+            #カメラ起動後分離シート離脱
+            elif self.landstate == 2:
                 self.rightMotor.go(ct.const.MOTOR_VREF)
                 self.leftMotor.go(ct.const.MOTOR_VREF)
-                if time.time()-self.pre_motorTime > ct.const.LANDING_PRE_MOTOR_TIME_THRE:#一定時間モータ回したら分離したことにする
+                if time.time()-self.pre_motorTime > ct.const.LANDING_CAMERA_TIME_THRE:#スタックしないと考えて撮影
+                    ret, self.firstimg = self.cap.read()
+                    cv2.imwrite(f"results/camera_result/first/firstimg{self.firstimgcount}.jpg",self.firstimg)
+                    self.camerastate = "Captured!"
+                else:
+                    self.camerastate = 0
+
+                if time.time()-self.pre_motorTime > ct.const.LANDING_PRE_MOTOR_TIME_THRE: #5秒間モータ回して分離シートから十分離れる
                     self.rightMotor.stop()
                     self.leftMotor.stop()
                     self.state = 4
                     self.laststate = 4
 
     def spm_first(self):
-        self.cameradata = self.camera(self.cap)
-        time.sleep(1)
+            ret, img = self.cap.read()
+            cv2.imshow("img",img)
+            time.sleep(1)
 
     def sendRadio(self):
         datalog = str(self.state) + ","\
