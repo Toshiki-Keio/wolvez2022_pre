@@ -111,10 +111,11 @@ class Learn():
 
 
 class Evaluate():
-    def __init__(self,model_master,test_data_list_all_win,scaler_master):
+    def __init__(self,model_master,test_data_list_all_win,scaler_master,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
         self.scaler_master=scaler_master
+        self.test_code=test_code
         if len(self.model_master)!=len(self.test_data_list_all_win):
             print("学習済みモデルのウィンドウ数と、テストデータのウィンドウ数が一致しません")
             return None
@@ -144,6 +145,7 @@ class Evaluate():
         plt.xlabel("time")
         plt.ylabel("degree of risk")
         plt.legend()
+        plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/ccaa{self.test_code}_L-bcca_P-bcc{self.test_code}.png")
         plt.show()
 
 
@@ -156,12 +158,12 @@ train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bccc/*"
 seq1=Open_npz(train_files)
 data_list_all_win,label_list_all_win=seq1.get_data()
 
-stack_info=np.array([[0., 0.],
+stack_info=np.array([[12., 18.],
        [12., 18.],
-       [0., 0.],
-       [0., 0.],
        [12., 18.],
-       [0, 0.]])
+       [12., 18.],
+       [12., 18.],
+       [12, 18.]])
 """
 「stackした」と学習させるフレームの指定方法
 1. 全ウィンドウで一斉にラベリングする場合
@@ -182,9 +184,13 @@ seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
 model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 spm_path = os.getcwd()
-test_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bcca/*"))
+test_codes=['a','b','c','d','e','f','g','h','i']
+for test_code in test_codes:
+    test_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"))
 
-seq3=Open_npz(test_files)
-test_data_list_all_win,test_label_list_all_win=seq3.get_data()
+    seq3=Open_npz(test_files)
+    test_data_list_all_win,test_label_list_all_win=seq3.get_data()
 
-seq4=Evaluate(model_master,test_data_list_all_win,scaler_master)
+    seq4=Evaluate(model_master,test_data_list_all_win,scaler_master,test_code)
+    del seq3
+    del seq4
