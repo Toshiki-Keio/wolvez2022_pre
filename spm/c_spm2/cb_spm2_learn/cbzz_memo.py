@@ -68,7 +68,7 @@ class Learn():
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
         print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
-        if stack_info.all==None:
+        if stack_info==None:
             self.stack_appear = stack_appear
             self.stack_disappear = stack_disappear
             self.stack_appear_frame = stack_appear*fps
@@ -100,7 +100,7 @@ class Learn():
             train_X=self.scaler_master[win_no].transform(train_X)
             train_y = np.zeros((train_X.shape[0], 1))
             print(self.stack_info[win_no][0])
-            train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 1
+            train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 100
             print(train_X.shape, train_y.shape)
             self.model_master[win_no].fit(train_X, train_y)
             pass
@@ -130,17 +130,17 @@ class Evaluate():
         for test_no in range(np.array(self.test_data_list_all_win).shape[1]):
             for win_no, win in enumerate(self.test_data_list_all_win):
                 test_X = win[test_no]
-                print(f"test_X win_no: {win_no}",test_X.shape)
+                print(f"test_X win_no\n: {win_no}",test_X)
                 test_X=self.scaler_master[win_no].transform(test_X.reshape(1, -1))
-                print(f"test_X win_no: {win_no}",test_X.shape)
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
+                print(score)
                 self.score_master[win_no].append(score)
                 pass
-        pprint(self.score_master[0])
+        # pprint(self.score_master[0])
     
     def plot(self):
         for i, win_score in enumerate(self.score_master):
-            plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i}")
+            plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i+1}")
         plt.xlabel("time")
         plt.ylabel("degree of risk")
         plt.legend()
@@ -151,7 +151,7 @@ class Evaluate():
 
 # wolvez2022/spmで実行してください
 spm_path = os.getcwd()
-train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))[:-50]
+train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bccc/*"))
 
 seq1=Open_npz(train_files)
 data_list_all_win,label_list_all_win=seq1.get_data()
@@ -177,11 +177,12 @@ stack_info=np.array(
 )
 t[s]で入力すること。
 """
-seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
+seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=10,stack_disappear=15,stack_info=None)
+# seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
 model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 spm_path = os.getcwd()
-test_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/*"))[-50:]
+test_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bcca/*"))
 
 seq3=Open_npz(test_files)
 test_data_list_all_win,test_label_list_all_win=seq3.get_data()
