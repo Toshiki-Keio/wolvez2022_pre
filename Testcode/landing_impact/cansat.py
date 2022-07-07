@@ -3,7 +3,7 @@
 
 import RPi.GPIO as GPIO
 import sys
-import cv2
+# import cv2
 sys.path.append("/home/pi/Desktop/wolvez2021/Testcode/sensor_integration/LoRa_SOFT")
 import time
 import numpy as np
@@ -34,7 +34,7 @@ class Cansat():
         self.RED_LED = led(ct.const.RED_LED_PIN)
         self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
         self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
-        self.cap = cv2.VideoCapture(0)
+#         self.cap = cv2.VideoCapture(0)
         
         #初期パラメータ設定
         self.timer = 0
@@ -64,6 +64,7 @@ class Cansat():
         self.countSwitchLoop=0
         self.countGoal = 0
         self.countgrass=0
+        self.cameradata = 0
         
     
     def writeData(self):
@@ -82,19 +83,22 @@ class Cansat():
         print(print_datalog)
         
         datalog = str(self.timer) + ","\
-                  + str(self.state) + ","\
-                  + str(self.gps.Time) + ","\
-                  + str(self.gps.Lat).rjust(6) + ","\
-                  + str(self.gps.Lon).rjust(6) + ","\
-                  + str(self.bno055.ax).rjust(6) + ","\
-                  + str(self.bno055.ay).rjust(6) + ","\
-                  + str(self.bno055.az).rjust(6) + ","\
-                  + str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
-                  + str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
-                  + str(self.bno055.ex).rjust(6) 
+                  + "state:"+str(self.state) + ","\
+                  + "Time:"+str(self.gps.Time) + ","\
+                  + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
+                  + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
+                  + "ax:"+str(self.bno055.ax).rjust(6) + ","\
+                  + "ay:"+str(self.bno055.ay).rjust(6) + ","\
+                  + "az:"+str(self.bno055.az).rjust(6) + ","\
+                  + "rV:"+str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
+                  + "lV:"+str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
+                  + "q:"+str(self.bno055.ex).rjust(6) 
         
-        with open('test.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+        with open('results/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
             test.write(datalog + '\n')
+            
+        with open('results/camera_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+            test.write(str(self.cameradata) + '\n')
 
     def sequence(self):
         if self.state == 0:#センサ系の準備を行う段階
@@ -122,7 +126,7 @@ class Cansat():
         self.gps.setupGps()
         # os.system("sudo insmod LoRa_SOFT/soft_uart.ko")
         self.bno055.setupBno()
-        self.radio.setupRadio()
+#         self.radio.setupRadio()
         if self.bno055.begin() is not True:
             print("Error initializing device")
             exit()    
@@ -138,11 +142,11 @@ class Cansat():
         
         self.writeData()#txtファイルへのログの保存
     
-        if not self.state == 1: #preparingのときは電波を発しない
-            if not self.state ==5:#self.sendRadio()#LoRaでログを送信
-                self.sendRadio()
-            else:
-                self.switchRadio()
+#         if not self.state == 1: #preparingのときは電波を発しない
+#             if not self.state ==5:#self.sendRadio()#LoRaでログを送信
+#                 self.sendRadio()
+#             else:
+#                 self.switchRadio()
 
     def preparing(self):#時間が立ったら移行
         if self.preparingTime == 0:
@@ -224,7 +228,8 @@ class Cansat():
                     self.laststate = 4
 
     def spm_first(self):
-        self.camera(self.cap)
+        self.cameradata = self.camera(self.cap)
+        time.sleep(1)
 
     def sendRadio(self):
         datalog = str(self.state) + ","\

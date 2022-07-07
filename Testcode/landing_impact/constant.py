@@ -20,8 +20,8 @@ const.LEFT_MOTOR_ENCODER_B_PIN = 8
 const.MOTOR_VREF = 70
 
 #LED
-const.RED_LED_PIN = 9
-const.BLUE_LED_PIN = 10
+const.RED_LED_PIN =  10
+const.BLUE_LED_PIN = 9
 const.GREEN_LED_PIN = 11
 
 #Releasing Pin

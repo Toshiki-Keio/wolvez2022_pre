@@ -5,7 +5,7 @@ import RPi.GPIO as GPIO
 from cansat import Cansat
 import time
 
-state = 0
+state = 0 
 
 cansat = Cansat(state)
 cansat.setup()
@@ -15,7 +15,7 @@ try:
         cansat.sensor()
         time.sleep(0.05)
         cansat.sequence()
-        if cansat.state >= 4:
+        if cansat.state >= 5:
             print("Finished")
             cansat.keyboardinterrupt()
             GPIO.cleanup()
