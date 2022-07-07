@@ -17,12 +17,12 @@ try:
         print("Error initializing device")
         exit()
     
-    #camera
-    cap = cv2.VideoCapture(0)
-    
     #Motor
     self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
     self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
+
+    #camera
+    cap = cv2.VideoCapture(0)
 
     while True:
         #モータ回転
