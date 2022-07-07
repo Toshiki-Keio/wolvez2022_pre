@@ -17,6 +17,11 @@ class cansat(object):
                   + "緯度:" + str(self.gps.Lat) + ","\
                   + "経度:" + str(self.gps.Lon)
         print(datalog)
+        dictionary = self.gps.vincenty_inverse(self.gps.Lat,self.gps.Lon,35.55518,139.65578)
+#         dictionary = self.gps.vincenty_inverse(35.55550,139.65457,35.55518,139.65578)
+#         x = gps.gpsdis*math.cos(math.radians(gps.gpsdegrees))
+        print(dictionary)
+#         print("x: "+str(x))
     
     '''
         with open("test.txt",mode = 'a') as test:

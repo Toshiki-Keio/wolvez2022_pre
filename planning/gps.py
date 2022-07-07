@@ -140,13 +140,13 @@ class GPS(object):
             α1 = α1 + math.pi * 2
 
         self.gpsdegrees=math.degrees(α1)
-    """
+    
         return {
             'distance': self.gpsdis,           # 距離
-            'azimuth1': degrees(α1), # 方位角(始点→終点)
-            'azimuth2': degrees(α2), # 方位角(終点→始点)
+            'azimuth1': math.degrees(α1), # 方位角(始点→終点)
+            'azimuth2': math.degrees(α2), # 方位角(終点→始点)
         }
-    """
+    
 #g = GPS()
 """
 GPS = GPS()

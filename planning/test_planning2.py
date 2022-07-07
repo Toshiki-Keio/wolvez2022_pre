@@ -1,12 +1,12 @@
 # ラズパイで動かす時にはこれコメントアウトをはずこと
-# import motor
-# import estimation
-# import constant as ct
-# import RPi.GPIO as GPIO
-# import bno055
-# import gps
+import motor
+import estimation
+import constant as ct
+import RPi.GPIO as GPIO
+import bno055
+import gps
 
-from msilib import type_string
+# from msilib import type_string
 import time
 import math
 from math import sqrt
@@ -46,14 +46,23 @@ def decide_behavior_raspi(direction,MotorR,MotorL):
         print("左に曲がる")
         MotorR.go(70)
         MotorL.back(70)
+        time.sleep(1)
+        MotorR.stop()
+        MotorL.stop()
     elif direction == 1:
         print("直進する")
         MotorR.go(70)
         MotorL.go(70)
+        time.sleep(1)
+        MotorR.stop()
+        MotorL.stop()
     elif direction == 2:
         print("右に曲がる")
         MotorR.back(70)
         MotorL.go(70)
+        time.sleep(1)
+        MotorR.stop()
+        MotorL.stop()
 
 # GPSから距離・方向を算出する関数
 # 緯度：latitude，経度：longitude
@@ -74,22 +83,38 @@ MotorL = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN,ct.
 bno055 = bno055.BNO055()
 bno055.setupBno()
 gps = gps.GPS()
-gps.setup()
+gps.setupGps()
 
 
-
+#
+goal_position = (35.55518,139.65578)
 
 count = 0
-while count < 5:
+start_time = time.time()
+while count < 2:
     count += 1
     # GPSから現在の緯度・経度を取得
-
+    gps.gpsread()
+    datalog ="Time:" + str(gps.Time) + ","\
+                  + "緯度:" + str(gps.Lat) + ","\
+                  + "経度:" + str(gps.Lon)
+    print(datalog)
+    gps_dictionary = gps.vincenty_inverse(gps.Lat,gps.Lat,goal_position[0],goal_position[1])
+    print(gps_dictionary)
+    digree_north2goal = gps_dictionary["azimuth1"]
+    #
+    bno055.bnoread()
+    bno055.ex=round(bno055.ex,3)
+    digree_north2cansatfront = bno055.ex
     # 現在の緯度・経度とゴールの緯度・経度からゴールへの角度を算出
-    direction_goal_deg = np.random.randint(-60,60)  #ゴール方向の角度を取得（後でGPSから値が取れるようにする）
+    
+    digree_cansatfront2goal = digree_north2goal - digree_north2cansatfront
+    print("digree_cansatfront2goal: "+str(digree_cansatfront2goal))
+#     direction_goal_deg = np.random.randint(-60,60)  #ゴール方向の角度を取得（後でGPSから値が取れるようにする）
     
     # ゴール方向の角度から左・中央・右のどの方向に行くかを算出
-    direction_goal_lcr = decide_direction(direction_goal_deg)  #角度から左・前・右のどの方向に進むべきかを取得
-    direction_real = direction_goal_lcr
+    direction_goal = decide_direction(digree_cansatfront2goal)  #角度から左・前・右のどの方向に進むべきかを取得
+    direction_real = direction_goal
 
 
     # 危険度行列を取得
@@ -108,26 +133,29 @@ while count < 5:
         print("前方に安全なルートはありません。90度回転して新たな経路を探索します。")
 
     else:
-        if lower_risk[direction_goal_lcr] <= threshold_risk:   #ゴール方向の危険度が閾値以下の場合
-            decide_behavior(direction_real)   # その方向に進む
+        if lower_risk[direction_goal] <= threshold_risk:   #ゴール方向の危険度が閾値以下の場合
+#             decide_behavior(direction_real)   # その方向に進む
+            decide_behavior_raspi(direction_real,MotorR,MotorL)
         else:
             print("ゴール方向が安全ではありません。別ルートを探索します。")
-            if direction_goal_lcr == 0:
+            if direction_goal == 0:
                 if lower_risk[1] <= lower_risk[2]:
                     direction_real = 1
                 else:
                     direction_real = 2
-                decide_behavior(direction_real)
+#                 decide_behavior(direction_real)
+                decide_behavior_raspi(direction_real,MotorR,MotorL)
                 # decide_behavior_raspi(direction_real,MotorR,MotorL)
-            elif direction_goal_lcr == 1:
+            elif direction_goal == 1:
                 if lower_risk[0] <= lower_risk[2]:
                     direction_real = 0
                 else:
                     direction_real = 2
                 direction_real = 0
-                decide_behavior(direction_real)
+#                 decide_behavior(direction_real)
+                decide_behavior_raspi(direction_real,MotorR,MotorL)
                 # decide_behavior_raspi(direction_real,MotorR,MotorL)
-            elif direction_goal_lcr == 2:
+            elif direction_goal == 2:
                 if lower_risk[0] <= lower_risk[1]:
                     direction_real = 0
                 else:
