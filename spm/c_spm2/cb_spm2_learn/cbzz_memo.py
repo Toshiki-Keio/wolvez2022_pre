@@ -68,7 +68,7 @@ class Learn():
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
         print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
-        if stack_info==None:
+        if stack_info.all==None:
             self.stack_appear = stack_appear
             self.stack_disappear = stack_disappear
             self.stack_appear_frame = stack_appear*fps
@@ -156,12 +156,12 @@ train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bccc/*"
 seq1=Open_npz(train_files)
 data_list_all_win,label_list_all_win=seq1.get_data()
 
-stack_info=np.array([[23., 27.],
-       [23., 27.],
-       [23., 27.],
-       [23., 27.],
-       [23., 27.],
-       [23., 27.]])
+stack_info=np.array([[0., 0.],
+       [12., 18.],
+       [0., 0.],
+       [0., 0.],
+       [12., 18.],
+       [0, 0.]])
 """
 「stackした」と学習させるフレームの指定方法
 1. 全ウィンドウで一斉にラベリングする場合
@@ -177,8 +177,8 @@ stack_info=np.array(
 )
 t[s]で入力すること。
 """
-seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=10,stack_disappear=15,stack_info=None)
-# seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
+# seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=10,stack_disappear=15,stack_info=None)
+seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
 model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 spm_path = os.getcwd()
