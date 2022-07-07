@@ -68,7 +68,7 @@ class Learn():
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
         print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
-        if stack_info.all==None:
+        if stack_info==None:
             self.stack_appear = stack_appear
             self.stack_disappear = stack_disappear
             self.stack_appear_frame = stack_appear*fps
@@ -145,15 +145,16 @@ class Evaluate():
         plt.xlabel("time")
         plt.ylabel("degree of risk")
         plt.legend()
-        plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/ccaa{self.test_code}_L-bcca_P-bcc{self.test_code}.png")
-        plt.show()
+        plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/ccai{self.test_code}_L-bcci_P-bcc{self.test_code}.png")
+        plt.cla()
+        # plt.show()
 
 
 
 
 # wolvez2022/spmで実行してください
 spm_path = os.getcwd()
-train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bccc/*"))
+train_files = sorted(glob.glob(spm_path+"/b_spm1/b-data/bcca_secondinput/bcci/*"))
 
 seq1=Open_npz(train_files)
 data_list_all_win,label_list_all_win=seq1.get_data()
@@ -179,8 +180,8 @@ stack_info=np.array(
 )
 t[s]で入力すること。
 """
-# seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=10,stack_disappear=15,stack_info=None)
-seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
+seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=5,stack_disappear=6,stack_info=None)
+#seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
 model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 spm_path = os.getcwd()
