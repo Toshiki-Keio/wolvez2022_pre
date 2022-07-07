@@ -68,13 +68,13 @@ def direction_from_gps(now_lat,now_lon,goal_lat,goal_lon):
 
 
 # オブジェクトの生成
-GPIO.setwarnings(False)
-MotorR = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
-MotorL = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN,ct.const.LEFT_MOTOR_VREF_PIN)
-bno055 = bno055.BNO055()
-bno055.setupBno()
-gps = gps.GPS()
-gps.setup()
+# GPIO.setwarnings(False)
+# MotorR = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
+# MotorL = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN,ct.const.LEFT_MOTOR_VREF_PIN)
+# bno055 = bno055.BNO055()
+# bno055.setupBno()
+# gps = gps.GPS()
+# gps.setup()
 
 
 
@@ -83,8 +83,11 @@ count = 0
 while count < 5:
     count += 1
     # GPSから現在の緯度・経度を取得
-
+    gps.gpsread()
+    now_lat = gps.Lat
+    now_lon = gps.Lon
     # 現在の緯度・経度とゴールの緯度・経度からゴールへの角度を算出
+
     direction_goal_deg = np.random.randint(-60,60)  #ゴール方向の角度を取得（後でGPSから値が取れるようにする）
     
     # ゴール方向の角度から左・中央・右のどの方向に行くかを算出
