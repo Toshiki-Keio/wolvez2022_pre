@@ -46,6 +46,7 @@ class Cansat():
         self.landstate = 0
         self.firstimgcount = 0
         self.camerastate = 0
+        self.camerafirst = 0
         # self.pre_motorTime = 0
         # self.startingTime = 0
         # self.measureringTime = 0
@@ -94,9 +95,6 @@ class Cansat():
         
         with open('results/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
             test.write(datalog + '\n')
-            
-        with open('results/camera_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
-            test.write(str(self.cameradata) + '\n')
 
     def sequence(self):
         if self.state == 0:#センサ系の準備を行う段階
@@ -226,11 +224,13 @@ class Cansat():
                 self.rightMotor.go(ct.const.MOTOR_VREF)
                 self.leftMotor.go(ct.const.MOTOR_VREF)
                 if time.time()-self.pre_motorTime > ct.const.LANDING_CAMERA_TIME_THRE:#スタックしないと考えて撮影
-                    ret, self.firstimg = self.cap.read()
-                    cv2.imwrite(f"results/camera_result/first/firstimg{self.firstimgcount}.jpg",self.firstimg)
-                    self.camerastate = "Captured!"
-                else:
-                    self.camerastate = 0
+                    if self.camerafirst == 0:
+                        ret, self.firstimg = self.cap.read()
+                        cv2.imwrite(f"results/camera_result/first/firstimg{self.firstimgcount}.jpg",self.firstimg)
+                        self.camerastate = "captured!"
+                        self.camerafirst = 1
+                    else:
+                        self.camerastate = 0
 
                 if time.time()-self.pre_motorTime > ct.const.LANDING_PRE_MOTOR_TIME_THRE: #5秒間モータ回して分離シートから十分離れる
                     self.rightMotor.stop()

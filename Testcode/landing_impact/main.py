@@ -5,7 +5,7 @@ import RPi.GPIO as GPIO
 from cansat import Cansat
 import time
 
-state = 0 
+state = 0
 
 cansat = Cansat(state)
 cansat.setup()
