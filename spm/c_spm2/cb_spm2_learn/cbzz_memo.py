@@ -121,8 +121,20 @@ for i,model in enumerate(model_master):
             valuable_weight.append(w)
             valuable_label.append(label_list[j])
 
+<<<<<<< HEAD
 pprint(valuable_label)
 pprint(len(valuable_label))
+=======
+# wolvez2022/spmで実行してください
+train_codes=['a','b','c','d','e','f','g','h','i']
+test_codes=['a','b','c','d','e','f','g','h','i']
+stack_starts=[0.,0.,9.,20.,11.,4.,35.,58.,10.,]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
+stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
+# train_codes=['a','c','d','e','f']
+# test_codes=['a','c','d','e','f']
+# stack_starts=[0.,9.,20.,11.,4.]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
+# stack_ends=[4.,16.,24.,13.,6.]
+>>>>>>> 8da5ee7e96008a9b1b835218fe8366eba2fb0915
 
 print(files)
 """
