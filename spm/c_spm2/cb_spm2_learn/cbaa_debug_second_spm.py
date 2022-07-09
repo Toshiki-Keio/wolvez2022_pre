@@ -162,6 +162,11 @@ train_codes=['a','b','c','d','e','f','g','h','i']
 test_codes=['a','b','c','d','e','f','g','h','i']
 stack_starts=[0.,0.,9.,20.,11.,4.,35.,58.,10.,]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
 stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
+
+train_codes=['e']
+#test_codes=[]
+stack_starts=[11]
+stack_ends=[13]
 # train_codes=['a','c','d','e','f']
 # test_codes=['a','c','d','e','f']
 # stack_starts=[0.,9.,20.,11.,4.]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
@@ -202,8 +207,12 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
 
     spm_path = os.getcwd()
     for test_code in test_codes:
+        test_dir=f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"
+        ### デバッグ用
+        test_dir="/b_spm1/b-data/bcca_secondinput/test2022-07-09_11-20-14.npz"
+        ###
         print('test data mov code : ',test_code)
-        test_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"))
+        test_files = sorted(glob.glob(spm_path+test_dir))
 
         seq3=Open_npz(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
