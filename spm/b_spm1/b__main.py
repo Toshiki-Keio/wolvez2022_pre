@@ -82,7 +82,7 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
                         save_name = saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
                         cv2.imwrite(save_name, iw_list[win])
                         
-                        params = f"psize_{(str(ld.patch_size).zfill(3),str(ld.patch_size).zfill(3))}-ncom_{str(ld.n_components).zfill(3)}-tcoef_{str(ld.transform_n_nonzero_coefs).zfill(3)}-mxiter_{str(ld.max_iter).zfill(3)}"
+                        params = f"psize_{(str(ld.patch_size[0]).zfill(3),str(ld.patch_size[1]).zfill(3))}-ncom_{str(ld.n_components).zfill(3)}-tcoef_{str(ld.transform_n_nonzero_coefs).zfill(3)}-mxiter_{str(ld.max_iter).zfill(3)}"
                 else:
                     D, ksvd = dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win],patch_size=patch_size,n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
@@ -113,7 +113,7 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
                     
         if not learn_state:
             # np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
-            np.savez_compressed(saveDir + f"/bcca_secondinput/{params}",array_1=np.array([feature_values]))
+            np.savez_compressed(saveDir + f"/bczz_h_param/{params}",array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
         
