@@ -61,7 +61,7 @@ class Learn():# second_spm.pyとして実装済み
     """
     dataからmodelを作る。
     """
-    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
+    def start(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
         self.fps = fps
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
@@ -196,7 +196,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     )
     t[s]で入力すること。
     """
-    seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
+    seq2=Learn()
+    seq2.start(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
     #seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
     model_master,label_list_all_win,scaler_master=seq2.get_data()
 
