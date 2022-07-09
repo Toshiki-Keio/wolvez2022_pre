@@ -53,6 +53,7 @@ class Cansat():
         self.landingTime = 0
         self.landstate = 0
         self.firstlearnimgcount = 0
+        self.firstevalimgcount = 0
         self.camerastate = 0
         self.camerafirst = 0
         # self.pre_motorTime = 0
@@ -244,8 +245,8 @@ class Cansat():
     def spm_first(self,learn_state):
         #学習用画像を一枚撮影
         if self.camerafirst == 0:
-            ret, self.firstlearnimg = self.cap.read()
-            cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstlearnimg)
+            ret, self.firstimg = self.cap.read()
+            cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
             self.camerastate = "captured!"
             self.camerafirst = 1
         else:
@@ -309,38 +310,42 @@ class Cansat():
 
         else:#20枚撮影
             for i in range(ct.const.SPM_FIRST_COUNT_THRE):
-                for fmg in fmg_list:#それぞれの特徴画像に対して処理
-                    iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
-                    feature_name = str(re.findall(self.saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
-                    print("FEATURED BY: ",feature_name)
-                    
-                    for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
-                        D, ksvd = self.dict_list[feature_name]
-                        ei = EvaluateImg(iw_list[win])
-                        img_rec = ei.reconstruct(D, ksvd, window_size)
-                        saveName = self.saveDir + f"/bcba_difference"
-                        if not os.path.exists(saveName):
-                            os.mkdir(saveName)
-                        saveName = self.saveDir + f"/bcba_difference/{now}"
-                        if not os.path.exists(saveName):
-                            os.mkdir(saveName)
-                        ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
-                        #if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                        #    feature_values[feature_name] = {}
-                        #    feature_values[feature_name]["var"] = ave
-                        #    feature_values[feature_name]["med"] = med
-                        #    feature_values[feature_name]["ave"] = var
+                ret,self.secondimg = self.cap.read()
+                cv2.imwrite(f"results/camera_result/second/secondimg{i}.jpg",self.secondimg)
+                self.firstevalimgcount += 1
 
-                        if win == 0:
-                            feature_values[feature_name] = {}
+            for fmg in fmg_list:#それぞれの特徴画像に対して処理
+                iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
+                feature_name = str(re.findall(self.saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                print("FEATURED BY: ",feature_name)
+                
+                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
+                    D, ksvd = self.dict_list[feature_name]
+                    ei = EvaluateImg(iw_list[win])
+                    img_rec = ei.reconstruct(D, ksvd, window_size)
+                    saveName = self.saveDir + f"/bcba_difference"
+                    if not os.path.exists(saveName):
+                        os.mkdir(saveName)
+                    saveName = self.saveDir + f"/bcba_difference/{now}"
+                    if not os.path.exists(saveName):
+                        os.mkdir(saveName)
+                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
+                    #if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
+                    #    feature_values[feature_name] = {}
+                    #    feature_values[feature_name]["var"] = ave
+                    #    feature_values[feature_name]["med"] = med
+                    #    feature_values[feature_name]["ave"] = var
 
-                        feature_values[feature_name][f'win_{win+1}'] = {}
-                        feature_values[feature_name][f'win_{win+1}']["var"] = ave
-                        feature_values[feature_name][f'win_{win+1}']["med"] = med
-                        feature_values[feature_name][f'win_{win+1}']["ave"] = var
-                        # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
-                        # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
-                        
+                    if win == 0:
+                        feature_values[feature_name] = {}
+
+                    feature_values[feature_name][f'win_{win+1}'] = {}
+                    feature_values[feature_name][f'win_{win+1}']["var"] = ave
+                    feature_values[feature_name][f'win_{win+1}']["med"] = med
+                    feature_values[feature_name][f'win_{win+1}']["ave"] = var
+                    # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
+                    # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
+
                 self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
                 self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
                 time.sleep(2)
