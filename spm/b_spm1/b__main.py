@@ -19,7 +19,7 @@ from time import time
 '''
 
 
-def spm_first(img_path=None, learn_state=False):
+def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,transform_n_nonzero_coefs=3,max_iter=15):
     # 一旦一枚目だけ学習
     learn_state = True
     # import_paths = sorted(glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg"))
@@ -76,15 +76,15 @@ def spm_first(img_path=None, learn_state=False):
                 #print("PRAT: ",win+1)
                 if learn_state:
                     if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                        ld = LearnDict(iw_list[win])
+                        ld = LearnDict(iw_list[win],patch_size=patch_size,n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
                         D, ksvd = ld.generate()
                         dict_list[feature_name] = [D, ksvd]
                         save_name = saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
                         cv2.imwrite(save_name, iw_list[win])
-                        params = "psize_{id.patch_size}-n_com_{id.n_components}-t_coef_{id.transform_n_nonzero_coefs}-mxiter_{id.max_iter}"
+                        params = f"psize_{ld.patch_size}-ncom_{ld.n_components}-tcoef_{ld.transform_n_nonzero_coefs}-mxiter_{ld.max_iter}"
                 else:
                     D, ksvd = dict_list[feature_name]
-                    ei = EvaluateImg(iw_list[win])
+                    ei = EvaluateImg(iw_list[win],patch_size=patch_size,n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
                     img_rec = ei.reconstruct(D, ksvd, window_size)
                     saveName = saveDir + f"/bcba_difference"
                     if not os.path.exists(saveName):
@@ -112,7 +112,7 @@ def spm_first(img_path=None, learn_state=False):
                     
         if not learn_state:
             # np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
-            np.savez_compressed(saveDir + f"/bcca_secondinput/{params}"+now[5:],array_1=np.array([feature_values]))
+            np.savez_compressed(saveDir + f"/bcca_secondinput/{params}",array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
         
@@ -122,5 +122,13 @@ def spm_first(img_path=None, learn_state=False):
         frame = str(re.findall(".*/frame_(.*).jpg", importPath)[0])
         print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
 
+patch=3
+n_components=1
+transform_n_nonzero_coefs=1
+max_iter=1
+
 if __name__ == "__main__":
-    spm_first()
+    for patch in range(5,105,5):
+        for n_components in range(1,patch+1,2):
+            for transform_n_nonzero_coefs in range(1,n_components+1,2):
+                spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
