@@ -102,12 +102,7 @@ class Learn():
             # print(self.stack_info[win_no][0])
             train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 100
             # print(train_X.shape, train_y.shape)
-            print("###########################  HERE 1  ###########################")
-            print(" ")
-            print("train_y : ",train_y.shape)
-            print(" ")
             self.model_master[win_no].fit(train_X, train_y)
-            print("###########################  HERE 2  ###########################")
             pass
         pass
     
@@ -144,7 +139,7 @@ class Evaluate():
                 print(score)
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
-                print(weight)
+                # print(weight)
                 pass
         # pprint(self.score_master[0])
     
@@ -164,23 +159,21 @@ class Evaluate():
 
 
 # wolvez2022/spmで実行してください
-train_codes=['a','b','c','d','e','f','g','h','i']
-test_codes=['a','b','c','d','e','f','g','h','i']
-stack_starts=[0.,0.,9.,20.,11.,4.,35.,58.,10.,]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
-stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
+# train_codes=['a','b','c','d',]#'e','f','g','h','i']
+# test_codes=['a','b','c','d',]#'e','f','g','h','i']
+# stack_starts=[0.,0.,9.,20.,11.,]#4.,35.,58.,10.,]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
+# stack_ends=[4.,5.,16.,24.,13.,]#6.,36.,120.,11.,]
 
-# train_codes=['e']
-# #test_codes=[]
-# stack_starts=[11.]
-# stack_ends=[13.]
+train_codes=['c',]
+test_codes=['x']
+stack_starts=[9.,]
+stack_ends=[16.,]
 # train_codes=['a','c','d','e','f']
 # test_codes=['a','c','d','e','f']
 # stack_starts=[0.,9.,20.,11.,4.]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
 # stack_ends=[4.,16.,24.,13.,6.]
 
 for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends):
-    print("train data mov code : ",train_code)
-    print("")
     spm_path = os.getcwd()
     train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_code}/*"))
     print(f"{len(train_files)} frames found from mov code {train_code}")
@@ -218,7 +211,7 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+test_dir))
         ### デバッグ用
-        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/test2022-07-09_11-20-14.npz"]
+        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/test2022-07-09_11-52-43.npz"]
         ###
         seq3=Open_npz(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
@@ -229,6 +222,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
 
 
 
+print("###########################  HERE 1  ###########################")
+print("###########################  HERE 2  ###########################")
 
 """
 メモ
