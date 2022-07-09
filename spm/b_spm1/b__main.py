@@ -19,7 +19,7 @@ from time import time
 '''
 
 
-def spm_first(img_path=None, learn_state=False):
+def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,transform_n_nonzero_coefs=3,max_iter=15):
     # 一旦一枚目だけ学習
     learn_state = True
     # import_paths = sorted(glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg"))
@@ -76,7 +76,7 @@ def spm_first(img_path=None, learn_state=False):
                 #print("PRAT: ",win+1)
                 if learn_state:
                     if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                        ld = LearnDict(iw_list[win])
+                        ld = LearnDict(iw_list[win],patch_size=patch_size,n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
                         D, ksvd = ld.generate()
                         dict_list[feature_name] = [D, ksvd]
                         save_name = saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
@@ -84,7 +84,7 @@ def spm_first(img_path=None, learn_state=False):
                         params = f"psize_{ld.patch_size}-n_com_{ld.n_components}-t_coef_{ld.transform_n_nonzero_coefs}-mxiter_{ld.max_iter}"
                 else:
                     D, ksvd = dict_list[feature_name]
-                    ei = EvaluateImg(iw_list[win])
+                    ei = EvaluateImg(iw_list[win],patch_size=patch_size,n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
                     img_rec = ei.reconstruct(D, ksvd, window_size)
                     saveName = saveDir + f"/bcba_difference"
                     if not os.path.exists(saveName):
@@ -112,7 +112,7 @@ def spm_first(img_path=None, learn_state=False):
                     
         if not learn_state:
             # np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
-            np.savez_compressed(saveDir + f"/bcca_secondinput/{params}"+now[5:],array_1=np.array([feature_values]))
+            np.savez_compressed(saveDir + f"/bcca_secondinput/{params}",array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
         

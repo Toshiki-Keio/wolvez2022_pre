@@ -8,10 +8,14 @@ import matplotlib.pyplot as plt
 
 
 class EvaluateImg(LearnDict):
-    def __init__(self, eval_img:np.ndarray):
+    def __init__(self, eval_img:np.ndarray,patch_size=(5,5),n_components=20,transform_n_nonzero_coefs=3,max_iter=15):
+        self.patch_size=patch_size
+        self.n_components=n_components 
+        self.transform_n_nonzero_coefs=transform_n_nonzero_coefs # 一つのエリアを再構成する時に、一度に幾つの基底ベクトルを使って良いか、という指定なので、再構成の精度を下げたいなら値を小さくする
+        self.max_iter=max_iter
         self.Y = super().img_to_Y(eval_img)
     
-        self.patch_size = super().patch_size
+        #self.patch_size = super().patch_size
     
     def reconstruct(self,D,ksvd, original_img_size):
         #print("===== func reconstruct_img starts =====")
