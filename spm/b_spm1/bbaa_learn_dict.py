@@ -5,8 +5,8 @@ from spmimage.decomposition import KSVD
 
 class LearnDict():
     patch_size=(5,5)
-    n_components=3 # 一つのエリアを再構成する時に、一度に幾つの基底ベクトルを使って良いか、という指定なので、再構成の精度を下げたいなら値を小さくする
-    transform_n_nonzero_coefs=3
+    n_components=5 
+    transform_n_nonzero_coefs=2 # 一つのエリアを再構成する時に、一度に幾つの基底ベクトルを使って良いか、という指定なので、再構成の精度を下げたいなら値を小さくする
     max_iter=15
     def __init__(self, img_part:np.ndarray):
         self.train_img = img_part

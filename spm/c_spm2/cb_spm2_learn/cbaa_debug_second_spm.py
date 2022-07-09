@@ -102,7 +102,12 @@ class Learn():
             # print(self.stack_info[win_no][0])
             train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 100
             # print(train_X.shape, train_y.shape)
+            print("###########################  HERE 1  ###########################")
+            print(" ")
+            print("train_y : ",train_y.shape)
+            print(" ")
             self.model_master[win_no].fit(train_X, train_y)
+            print("###########################  HERE 2  ###########################")
             pass
         pass
     
@@ -111,9 +116,10 @@ class Learn():
 
 
 class Evaluate():
-    def __init__(self,model_master,test_data_list_all_win,scaler_master,train_code,test_code):
+    def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
+        self.test_label_list_all_win=test_label_list_all_win
         self.scaler_master=scaler_master
         self.train_code=train_code
         self.test_code=test_code
@@ -135,10 +141,10 @@ class Evaluate():
                 # print(f"test_X win_no\n: {win_no}",test_X)
                 test_X=self.scaler_master[win_no].transform(test_X.reshape(1, -1))
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
-                # print(score)
+                print(score)
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
-                
+                print(weight)
                 pass
         # pprint(self.score_master[0])
     
@@ -149,7 +155,7 @@ class Evaluate():
         plt.ylabel("degree of risk")
         plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
         plt.legend()
-        plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
+        # plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
         plt.cla()
         
         # plt.show()
@@ -165,8 +171,8 @@ stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
 
 train_codes=['e']
 #test_codes=[]
-stack_starts=[11]
-stack_ends=[13]
+stack_starts=[11.]
+stack_ends=[13.]
 # train_codes=['a','c','d','e','f']
 # test_codes=['a','c','d','e','f']
 # stack_starts=[0.,9.,20.,11.,4.]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
@@ -208,15 +214,14 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     spm_path = os.getcwd()
     for test_code in test_codes:
         test_dir=f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"
-        ### デバッグ用
-        test_dir="/b_spm1/b-data/bcca_secondinput/test2022-07-09_11-20-14.npz"
-        ###
         print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+test_dir))
-
+        ### デバッグ用
+        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/test2022-07-09_11-20-14.npz"]
+        ###
         seq3=Open_npz(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
-
+        
         seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code)
         del seq3
         del seq4

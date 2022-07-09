@@ -111,9 +111,10 @@ class Learn():
 
 
 class Evaluate():
-    def __init__(self,model_master,test_data_list_all_win,scaler_master,train_code,test_code):
+    def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
+        self.test_label_list_all_win=test_label_list_all_win
         self.scaler_master=scaler_master
         self.train_code=train_code
         self.test_code=test_code
