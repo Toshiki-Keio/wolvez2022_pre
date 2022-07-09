@@ -14,6 +14,7 @@ from glob import glob
 from math import prod
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
+from b_classes import IntoWindow, LearnDict, EvaluateImg
 from baba_into_window import IntoWindow
 from bbaa_learn_dict import LearnDict
 from bcaa_eval import EvaluateImg
@@ -25,7 +26,6 @@ from motor import motor
 from gps import GPS
 from radio import radio
 from led import led
-
 import constant as ct
 
 class Cansat():
@@ -245,28 +245,20 @@ class Cansat():
                     self.state = 4
                     self.laststate = 4
 
-    def spm_first(self,learn_state):
-        #学習用画像を一枚撮影
-        if self.camerafirst == 0:
-            ret, self.firstimg = self.cap.read()
-            cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
-            self.camerastate = "captured!"
-            self.camerafirst = 1
-        else:
-            self.camerastate = 0
-
+    def spm_first(self,learn_state, PIC_COUNT):
+    
         #フォルダ作成部分
-        if not os.path.exists(self.self.saveDir):
+        if not os.path.exists(self.saveDir):
             os.mkdir(self.saveDir)
-        if not os.path.exists(self.saveDir + f"/bbba_learnimg"):
-            os.mkdir(self.saveDir + f"/bbba_learnimg")
-        if not os.path.exists(self.saveDir + f"/bcca_secondinput"):
-            os.mkdir(self.saveDir + f"/bcca_secondinput")
-        saveName = self.saveDir + f"/bcba_difference"
+        if not os.path.exists(self.saveDir + f"/camera_result/processed/bbba_learnimg"):
+            os.mkdir(self.saveDir + f"/camera_result/processed/bbba_learnimg")
+        if not os.path.exists(self.saveDir + f"/camera_result/processed/bcca_secondinput"):
+            os.mkdir(self.saveDir + f"/camera_result/processed/bcca_secondinput")
+        saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
         if not os.path.exists(saveName):
             os.mkdir(saveName)
 
-        start_time = time()#学習用時間計測。学習開始時間
+        start_time = time.time()#学習用時間計測。学習開始時間
         
         #保存時のファイル名指定（現在は時間）
         now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
@@ -277,7 +269,6 @@ class Cansat():
         
         # Path that img will be read
         #importPath = path.replace("\\", "/")
-        importPath = self.firstlearnimg
         
         # This will change such as datetime
         # print("CURRENT FRAME: "+str(re.findall(".*/frame_(.*).jpg", importPath)[0]))
@@ -291,11 +282,23 @@ class Cansat():
         else:
             print("=====EVALUATING PHASE=====")
             
-        iw = IntoWindow(importPath, self.saveDir, Save) #画像の特徴抽出のインスタンス生成
-        # processing img
-        fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
         
         if learn_state:#学習モデル獲得
+            
+            #学習用画像を一枚撮影
+            if self.camerafirst == 0:
+                ret, self.firstimg = self.cap.read()
+                cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
+                self.camerastate = "captured!"
+                self.camerafirst = 1
+            else:
+                self.camerastate = 0
+            
+            importPath = self.firstlearnimg # np.ndarray
+            iw = IntoWindow(importPath, self.saveDir, Save) #画像の特徴抽出のインスタンス生成
+            # processing img
+            fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
+                
             for fmg in fmg_list:#それぞれの特徴画像に対して処理
                 # breakout by windows
                 iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
@@ -312,33 +315,55 @@ class Cansat():
             learn_state = False
 
         else:#20枚撮影
-            for i in range(ct.const.SPM_FIRST_COUNT_THRE):
-                ret,self.secondimg = self.cap.read()
-                cv2.imwrite(f"results/camera_result/second/secondimg{i}.jpg",self.secondimg)
-                self.firstevalimgcount += 1
+            self.spm_f_eval(PIC_COUNT=PIC_COUNT, now=now, iw_shape=iw_shape)
+                    
+        
+        end_time = time.time()#計算終了
+        print("Calc Time:",end_time-start_time)
+        # Learn state should be changed by main.py
+        learn_state = False#学習終了
+
+    def spm_f_eval(self, PIC_COUNT=1, now="TEST", iw_shape=(2,3)):
+        # 評価枚数分ループ処理
+        for i in range(PIC_COUNT):
+            ret,self.secondimg = self.cap.read()
+            cv2.imwrite(f"results/camera_result/second/secondimg{i}.jpg",self.secondimg)
+            self.firstevalimgcount += 1
+            
+            # ここに走行コード
+            ######
+            ######
+            ######
+            ######
+        
+        second_img_pahts = sorted(glob("results/camera_result/second/secondimg*.jpg"))
+        
+        for importPath in second_img_pahts:
+        
+            feature_values = {}
+            
+            iw = IntoWindow(importPath, self.saveDir, False) #画像の特徴抽出のインスタンス生成
+            # processing img
+            fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
 
             for fmg in fmg_list:#それぞれの特徴画像に対して処理
                 iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
-                feature_name = str(re.findall(self.saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                feature_name = str(re.findall(self.saveDir + f"/camera_result/processed/baca_featuring/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
                 
                 for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
                     D, ksvd = self.dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win])
                     img_rec = ei.reconstruct(D, ksvd, window_size)
-                    saveName = self.saveDir + f"/bcba_difference"
+                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
-                    saveName = self.saveDir + f"/bcba_difference/{now}"
+                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference/{now}"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
                     ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
-                    #if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                    #    feature_values[feature_name] = {}
-                    #    feature_values[feature_name]["var"] = ave
-                    #    feature_values[feature_name]["med"] = med
-                    #    feature_values[feature_name]["ave"] = var
-
+                    
+                    # 特徴量終結/1枚
                     if win == 0:
                         feature_values[feature_name] = {}
 
@@ -354,16 +379,11 @@ class Cansat():
                 time.sleep(2)
                 self.rightMotor.stop()
                 self.leftMotor.stop()
+                
+            #npzファイル形式で計算結果保存
+            # print(feature_values)
+            np.savez_compressed(self.saveDir + f"/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
 
-                    
-        if not learn_state:#npzファイル形式で計算結果保存
-            print(feature_values)
-            np.savez_compressed(self.saveDir + f"/results/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
-        
-        end_time = time()#計算終了
-        print("Calc Time:",end_time-start_time)
-        # Learn state should be changed by main.py
-        learn_state = False#学習終了
 
     def second_spm(self):
         npz_dir = "results/camera_result/processed/secondinput"
@@ -435,7 +455,6 @@ class Cansat():
                   + str(self.gps.Lon) + ","\
 
         self.radio.switchData(datalog) #データを送信
-
     def stuck_detection(self):
         return 0
 
