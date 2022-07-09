@@ -1,6 +1,7 @@
 #Last Update 2022/07/02
 #Author : Toshiki Fukui
 
+from tempfile import TemporaryDirectory
 import RPi.GPIO as GPIO
 import sys
 import cv2
@@ -311,7 +312,7 @@ class Cansat():
                         D, ksvd = ld.generate() #辞書獲得
                         self.dict_list[feature_name] = [D, ksvd]
                         save_name = self.saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
-                        cv2.imwrite(save_name, iw_list[win])
+                        # cv2.imwrite(save_name, iw_list[win])
             learn_state = False
 
         else:#20枚撮影
@@ -342,16 +343,19 @@ class Cansat():
         
             feature_values = {}
             
-            iw = IntoWindow(importPath, self.saveDir, False) #画像の特徴抽出のインスタンス生成
+            self.tempDir = TemporaryDirectory()
+            tempDir_name = self.tempDir.name
+            
+            iw = IntoWindow(importPath, tempDir_name, False) #画像の特徴抽出のインスタンス生成
             # processing img
             fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
 
             for fmg in fmg_list:#それぞれの特徴画像に対して処理
                 iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
-                feature_name = str(re.findall(self.saveDir + f"/camera_result/processed/baca_featuring/(.*)_.*_", fmg)[0])
+                feature_name = str(re.findall(self.tempDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
                 
-                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
+                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
                     D, ksvd = self.dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win])
                     img_rec = ei.reconstruct(D, ksvd, window_size)
@@ -383,6 +387,8 @@ class Cansat():
             #npzファイル形式で計算結果保存
             # print(feature_values)
             np.savez_compressed(self.saveDir + f"/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
+            self.tempDir.cleanup()
+            
 
 
     def second_spm(self):
