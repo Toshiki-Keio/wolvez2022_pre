@@ -180,6 +180,7 @@ stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
 
 for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends):
     print("train data mov code : ",train_code)
+    print("")
     spm_path = os.getcwd()
     train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_code}/*"))
     print(f"{len(train_files)} frames found from mov code {train_code}")
