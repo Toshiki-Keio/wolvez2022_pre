@@ -14,28 +14,18 @@ from glob import glob
 from math import prod
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-<<<<<<< HEAD
 from b_classes import IntoWindow, LearnDict, EvaluateImg
 from baba_into_window import IntoWindow
 from bbaa_learn_dict import LearnDict
 from bcaa_eval import EvaluateImg
 from second_spm import SPM2Open_npz,SPM2Learn,SPM2Evaluate
 
-=======
-from baba_into_window import IntoWindow
-from bbaa_learn_dict import LearnDict
-from bcaa_eval import EvaluateImg
->>>>>>> e11d21ac85c73aac60eae820a97a891f78a34af4
 
 from bno055 import BNO055
 from motor import motor
 from gps import GPS
 from radio import radio
 from led import led
-<<<<<<< HEAD
-
-=======
->>>>>>> e11d21ac85c73aac60eae820a97a891f78a34af4
 import constant as ct
 
 class Cansat():
@@ -66,10 +56,7 @@ class Cansat():
         self.landingTime = 0
         self.landstate = 0
         self.firstlearnimgcount = 0
-<<<<<<< HEAD
         self.firstevalimgcount = 0
-=======
->>>>>>> e11d21ac85c73aac60eae820a97a891f78a34af4
         self.camerastate = 0
         self.camerafirst = 0
         # self.pre_motorTime = 0
@@ -87,12 +74,9 @@ class Cansat():
         self.countPreLoop = 0
         self.countFlyLoop = 0
         self.countDropLoop = 0
-<<<<<<< HEAD
 
         self.dict_list = {}
         self.saveDir = "results"
-=======
->>>>>>> e11d21ac85c73aac60eae820a97a891f78a34af4
     
     def writeData(self):
         #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
