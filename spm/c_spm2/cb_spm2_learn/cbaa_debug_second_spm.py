@@ -243,40 +243,41 @@ model_master,label_list_all_win,scaler_master=seq2.get_data()
 
 end_flg=False
 
-for patch in range(5,105,5):
-    for n_components in range(1,patch+1,2):
-        for transform_n_nonzero_coefs in range(1,n_components+1,2):
-            patch=str(patch).zfill(3)
-            n_components=str(n_components).zfill(3)
-            transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
-            filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_001.npz"
-            test_files=[filepath]
-            try:
-                seq3=Open_npz(test_files)
-            except FileNotFoundError:
-                end_flg=True
-                break
-            test_data_list_all_win,test_label_list_all_win=seq3.get_data()
-    
-            seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
-            scores=seq4.get_score()
-            print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
-            #if n_components=='005':
-            plt.bar(np.arange(6),np.array(scores).reshape(-1))
-            plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
-            plt.draw()
-            plt.pause(0.01)
-            print(scores)
-            del seq3
-            del seq4
+for patch in range(10,101,10):
+    for n_components in range(1,patch+1,3):
+        for transform_n_nonzero_coefs in range(1,n_components+1,3):
+            for max_iter in range(1,10,1):
+                patch=str(patch).zfill(3)
+                n_components=str(n_components).zfill(3)
+                transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
+                filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_{max_iter}.npz"
+                test_files=[filepath]
+                try:
+                    seq3=Open_npz(test_files)
+                except FileNotFoundError:
+                    end_flg=True
+                    break
+                test_data_list_all_win,test_label_list_all_win=seq3.get_data()
+        
+                seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
+                scores=seq4.get_score()
+                print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   max_iter : {max_iter}")
+                if transform_n_nonzero_coefs=='003' and n_components=='003':
+                    plt.bar(np.arange(6),np.array(scores).reshape(-1))
+                    plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
+                    plt.draw()
+                    plt.pause(0.01)
+                print(scores)
+                del seq3
+                del seq4
+            if end_flg:
+                break    
         if end_flg:
             break    
     if end_flg:
         break
 plt.cla()
-os.system('git add .')
-os.system(f'git commit -m "from ytpc2019a" patch={patch} ended')
-os.system('git push origin spm')
+
 
 
 print("###########################  HERE 1  ###########################")

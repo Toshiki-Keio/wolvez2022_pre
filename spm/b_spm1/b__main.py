@@ -123,13 +123,16 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
         frame = str(re.findall(".*/frame_(.*).jpg", importPath)[0])
         print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
 
-patch=
-
-spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
+patch=5
+n_components=5
+transform_n_nonzero_coefs=2
+max_iter=10
 
 if __name__ == "__main__":
+#    spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
+
     for patch in range(5,105,5):
         for n_components in range(1,patch+1,2):
             for transform_n_nonzero_coefs in range(1,n_components+1,2):
+                for max_iter in range()
                 spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
-        
