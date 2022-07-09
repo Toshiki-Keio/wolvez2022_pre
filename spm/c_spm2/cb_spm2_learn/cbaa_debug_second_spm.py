@@ -261,6 +261,7 @@ for patch in range(5,105,5):
             seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
             scores=seq4.get_score()
             print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
+            #if n_components=='005':
             plt.bar(np.arange(6),np.array(scores).reshape(-1))
             plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
             plt.draw()
@@ -272,6 +273,10 @@ for patch in range(5,105,5):
             break    
     if end_flg:
         break
+plt.cla()
+os.system('git add .')
+os.system(f'git commit -m "from ytpc2019a" patch={patch} ended')
+os.system('git push origin spm')
 
 
 print("###########################  HERE 1  ###########################")
