@@ -1,5 +1,6 @@
 import re
 import os
+from tempfile import TemporaryDirectory
 import cv2
 import numpy as np
 from datetime import datetime
@@ -68,14 +69,16 @@ def spm_first(img_path=False,npz_dir=None, learn_state=False,patch_size=(24,32),
         else:
             print("=====EVALUATING PHASE=====")
             
-        iw = IntoWindow(importPath, saveDir, Save)
+        temp_dir = TemporaryDirectory()
+        temp_dir_name = temp_dir.name.replace('//', '/').replace("\\","/")
+        iw = IntoWindow(importPath, temp_dir_name, Save)
         # processing img
         fmg_list = iw.feature_img(frame_num=now)
         
         for fmg in fmg_list:
             # breakout by windows
             iw_list, window_size = iw.breakout(iw.read_img(fmg))
-            feature_name = str(re.findall(saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+            feature_name = str(re.findall(temp_dir_name + f"/baca_featuring/(.*)_.*_", fmg)[0])
             print("FEATURED BY: ",feature_name)
             for win in range(int(prod(iw_shape))):
                 #print("PRAT: ",win+1)
@@ -127,6 +130,7 @@ def spm_first(img_path=False,npz_dir=None, learn_state=False,patch_size=(24,32),
         learn_state = False
         frame = str(re.findall(".*/frame_(.*).jpg", importPath)[0])
         print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
+        temp_dir.cleanup()
 
 patch=60
 n_components=5
