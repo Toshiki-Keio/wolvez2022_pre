@@ -81,6 +81,7 @@ def spm_first(img_path=None, learn_state=False):
                         dict_list[feature_name] = [D, ksvd]
                         save_name = saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
                         cv2.imwrite(save_name, iw_list[win])
+                        params = "psize:{id.patch_size}-n_com:{id.n_components}-t_coef:{id.transform_n_nonzero_coefs}-mxiter:{id.max_iter}"
                 else:
                     D, ksvd = dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win])
@@ -111,7 +112,7 @@ def spm_first(img_path=None, learn_state=False):
                     
         if not learn_state:
             # np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
-            np.savez_compressed(saveDir + f"/bcca_secondinput/test"+now,array_1=np.array([feature_values]))
+            np.savez_compressed(saveDir + f"/bcca_secondinput/{params}"+now[5:],array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
         
