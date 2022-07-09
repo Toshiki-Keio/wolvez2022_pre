@@ -211,6 +211,7 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+test_dir))
         ### デバッグ用
+        # psize_(15, 15)-ncom_9-tcoef_1-mxiter_1.npz
         test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/psize_(5, 5)-n_com_3-t_coef_2-mxiter_1507-09_13-07-34.npz"]
         ###
         seq3=Open_npz(test_files)
