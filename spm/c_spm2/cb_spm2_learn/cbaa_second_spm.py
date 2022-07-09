@@ -110,7 +110,7 @@ class Learn():
         return self.model_master,self.label_list_all_win,self.scaler_master
 
 
-class Evaluate():
+class Evaluate(): # 藤井さんの行動計画側に移設予定
     def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
