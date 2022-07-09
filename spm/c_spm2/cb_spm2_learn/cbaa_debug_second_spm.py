@@ -154,6 +154,9 @@ class Evaluate():
         plt.cla()
         
         # plt.show()
+    
+    def get_score(self):
+        return self.score_master
 
 
 
@@ -218,6 +221,7 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
         
         seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code)
+        print(seq4.get_score())
         del seq3
         del seq4
 

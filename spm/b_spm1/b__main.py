@@ -133,3 +133,6 @@ if __name__ == "__main__":
         for n_components in range(1,patch+1,2):
             for transform_n_nonzero_coefs in range(1,n_components+1,2):
                 spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
+        os.system('git add .')
+        os.system(f'git commit -m "from ytpc2019a" patch={patch} ended')
+        os.system('git push origin spm')
