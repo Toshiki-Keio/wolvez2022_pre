@@ -137,6 +137,8 @@ class Evaluate():
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
                 # print(score)
                 self.score_master[win_no].append(score)
+                weight=self.model_master[win_no].coef_
+                
                 pass
         # pprint(self.score_master[0])
     
@@ -149,6 +151,7 @@ class Evaluate():
         plt.legend()
         plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
         plt.cla()
+        
         # plt.show()
 
 
@@ -164,7 +167,7 @@ stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
 # stack_starts=[0.,9.,20.,11.,4.]#bそもそもスタートがスタック,g白砂利道,hスタック以外の原因で修理・パソコン映り込みも,iスタック以外の原因で停止は学習データ自体が悪い
 # stack_ends=[4.,16.,24.,13.,6.]
 
-for train_code in train_codes:
+for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends):
     print("train data mov code : ",train_code)
     spm_path = os.getcwd()
     train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_code}/*"))
@@ -193,7 +196,7 @@ for train_code in train_codes:
     )
     t[s]で入力すること。
     """
-    seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=5,stack_disappear=6,stack_info=None)
+    seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
     #seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
     model_master,label_list_all_win,scaler_master=seq2.get_data()
 
@@ -212,7 +215,11 @@ for train_code in train_codes:
 
 
 
-
+"""
+メモ
+・stack時刻がミスしていた
+・区間平均の機能を入れてみた
+"""
 
 
 
