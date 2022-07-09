@@ -23,6 +23,7 @@ from motor import motor
 from gps import GPS
 from radio import radio
 from led import led
+
 import constant as ct
 
 class Cansat():
@@ -409,6 +410,9 @@ class Cansat():
         learn_state = False#学習終了
 
     def second_spm(self):
+        return 0        
+
+    def planning(self):
         return 0
 
     def sendRadio(self):
