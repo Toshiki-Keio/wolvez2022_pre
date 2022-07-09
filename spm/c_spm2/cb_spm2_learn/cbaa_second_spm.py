@@ -11,12 +11,10 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-class Open_npz():
-    def __init__(self,files):
-        self.data_list_all_win,self.label_list_all_win=self.unpack(files)
-        # とりあえず片っ端からとってくる
+class SPM2Open_npz(): # second_spm.pyとして実装済み
 
     def unpack(self,files):
+        # self.data_list_all_win,self.label_list_all_win=self.unpack(files)
         data_list_all_time = []
         label_list_all_time = []
         for file in files:
@@ -59,11 +57,11 @@ class Open_npz():
     def get_data(self):
         return self.data_list_all_win,self.label_list_all_win
 
-class Learn():
+class SPM2Learn():# second_spm.pyとして実装済み
     """
     dataからmodelを作る。
     """
-    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
+    def start(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
         self.fps = fps
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
@@ -110,7 +108,7 @@ class Learn():
         return self.model_master,self.label_list_all_win,self.scaler_master
 
 
-class Evaluate():
+class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
     def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
@@ -171,9 +169,10 @@ stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
 for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends):
     print("train data mov code : ",train_code)
     spm_path = os.getcwd()
+    seq1=Open_npz()
     train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_code}/*"))
     print(f"{len(train_files)} frames found from mov code {train_code}")
-    seq1=Open_npz(train_files)
+    seq1.unpack(train_files)
     data_list_all_win,label_list_all_win=seq1.get_data()
 
     """
@@ -197,7 +196,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     )
     t[s]で入力すること。
     """
-    seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
+    seq2=Learn()
+    seq2.start(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
     #seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
     model_master,label_list_all_win,scaler_master=seq2.get_data()
 
@@ -206,7 +206,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"))
 
-        seq3=Open_npz(test_files)
+        seq3=Open_npz()
+        seq3.unpack(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
 
         seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code)
