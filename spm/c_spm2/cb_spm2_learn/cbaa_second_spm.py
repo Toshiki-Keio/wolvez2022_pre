@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-class Open_npz(): # second_spm.pyとして実装済み
+class SPM2Open_npz(): # second_spm.pyとして実装済み
 
     def unpack(self,files):
         # self.data_list_all_win,self.label_list_all_win=self.unpack(files)
@@ -57,7 +57,7 @@ class Open_npz(): # second_spm.pyとして実装済み
     def get_data(self):
         return self.data_list_all_win,self.label_list_all_win
 
-class Learn():# second_spm.pyとして実装済み
+class SPM2Learn():# second_spm.pyとして実装済み
     """
     dataからmodelを作る。
     """
@@ -108,7 +108,7 @@ class Learn():# second_spm.pyとして実装済み
         return self.model_master,self.label_list_all_win,self.scaler_master
 
 
-class Evaluate(): # 藤井さんの行動計画側に移設予定
+class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
     def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
