@@ -141,6 +141,7 @@ class Evaluate():
                 weight=self.model_master[win_no].coef_
                 # print(weight)
                 pass
+
         # pprint(self.score_master[0])
     
     def plot(self):
@@ -240,21 +241,31 @@ data_list_all_win,label_list_all_win=seq1.get_data()
 seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
 model_master,label_list_all_win,scaler_master=seq2.get_data()
 
+end_flg=False
+
 for patch in range(5,105,5):
-        for n_components in range(1,patch+1,2):
-            for transform_n_nonzero_coefs in range(1,n_components+1,2):
-                patch=str(patch).zfill(3)
-                n_components=str(n_components).zfill(3)
-                transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
-                filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_001.npz"
-                test_files=[filepath]
+    for n_components in range(1,patch+1,2):
+        for transform_n_nonzero_coefs in range(1,n_components+1,2):
+            patch=str(patch).zfill(3)
+            n_components=str(n_components).zfill(3)
+            transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
+            filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_001.npz"
+            test_files=[filepath]
+            try:
                 seq3=Open_npz(test_files)
-                test_data_list_all_win,test_label_list_all_win=seq3.get_data()
-        
-                seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
-                print(seq4.get_score())
-                del seq3
-                del seq4
+            except FileNotFoundError:
+                end_flg=True
+                break
+            test_data_list_all_win,test_label_list_all_win=seq3.get_data()
+    
+            seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
+            print(seq4.get_score())
+            del seq3
+            del seq4
+        if end_flg:
+            break    
+    if end_flg:
+        break
 
 
 print("###########################  HERE 1  ###########################")
