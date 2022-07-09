@@ -13,9 +13,9 @@ cansat.setup()
 try:
     while True:
         cansat.sensor()
-        time.sleep(0.05)
+        time.sleep(0.3)
         cansat.sequence()
-        if cansat.state >= 5:
+        if cansat.state >= 4:
             print("Finished")
             cansat.keyboardinterrupt()
             GPIO.cleanup()

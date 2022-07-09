@@ -13,22 +13,20 @@ class LoraSendClass:
     # ES920LRデータ送信メソッド
     def lora_send(self):
         # LoRa初期化
-        self.sendDevice.reset_lora()
+#         self.sendDevice.reset_lora()
         # LoRa設定コマンド
-        set_mode = ['1', 'd', self.channel, 'e', '0001', 'f', '0001', 'g', '0002',
-                    'l', '2', 'n', '2', 'p', '1', 'y', 'z']
-        # LoRa設定
-        self.sendDevice.setup_lora(set_mode)
+#         set_mode = ['1', 'd', self.channel, 'e', '0001', 'f', '0001', 'g', '0002',
+#                     'l', '2', 'n', '2', 'p', '1', 'y', 'z']
+#         # LoRa設定
+#         self.sendDevice.setup_lora(set_mode)
         # LoRa(ES920LR)データ送信
         while True:
             try:
                 # 送るデータ
-                for i in range(50):   
-                    data = str(i)
-                    print('<-- SEND -- [00010002 {} ]'.format(data))
-                    self.sendDevice.cmd_lora('00010002{}'.format(data))
-                    time.sleep(0.5)
+                print('<-- SEND -- [00010002]')
+                self.sendDevice.cmd_lora('00010002{}')
+#                 time .sleep(1)
+                
             except KeyboardInterrupt:
                 self.sendDevice.close()
             # 5秒待機
-            time.sleep(500)

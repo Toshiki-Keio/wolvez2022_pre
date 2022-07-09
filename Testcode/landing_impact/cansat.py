@@ -12,7 +12,7 @@ import os
 from bno055 import BNO055
 from motor import motor
 from gps import GPS
-from radio import radio
+from lora import lora
 from led import led
 import constant as ct
 
@@ -29,7 +29,7 @@ class Cansat():
         self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
         self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
         self.gps = GPS()
-        self.radio = radio()
+        self.lora = lora()
         self.RED_LED = led(ct.const.RED_LED_PIN)
         self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
         self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
@@ -121,7 +121,7 @@ class Cansat():
         self.gps.setupGps()
         # os.system("sudo insmod LoRa_SOFT/soft_uart.ko")
         self.bno055.setupBno()
-#         self.radio.setupRadio()
+        self.lora.sendDevice.setup_lora()
         if self.bno055.begin() is not True:
             print("Error initializing device")
             exit()    
@@ -137,9 +137,9 @@ class Cansat():
         
         self.writeData()#txtファイルへのログの保存
     
-#         if not self.state == 1: #preparingのときは電波を発しない
+        if not self.state == 1: #preparingのときは電波を発しない
 #             if not self.state ==5:#self.sendRadio()#LoRaでログを送信
-#                 self.sendRadio()
+            self.sendLoRa()
 #             else:
 #                 self.switchRadio()
 
@@ -220,8 +220,8 @@ class Cansat():
             
             #カメラ起動後分離シート離脱
             elif self.landstate == 2:
-                self.rightMotor.go(ct.const.MOTOR_VREF)
-                self.leftMotor.go(ct.const.MOTOR_VREF)
+                self.rightMotor.go(ct.const.LANDING_MOTOR_VREF)
+                self.leftMotor.go(ct.const.LANDING_MOTOR_VREF)
                 if time.time()-self.pre_motorTime > ct.const.LANDING_CAMERA_TIME_THRE:#スタックしないと考えて撮影
                     if self.camerafirst == 0:
                         ret, self.firstimg = self.cap.read()
@@ -242,21 +242,21 @@ class Cansat():
             cv2.imshow("img",img)
             time.sleep(1)
 
-    def sendRadio(self):
+    def sendLoRa(self):
         datalog = str(self.state) + ","\
                   + str(self.gps.Time) + ","\
                   + str(self.gps.Lat) + ","\
-                  + str(self.gps.Lon) + ","\
+                  + str(self.gps.Lon)
 
-        self.radio.sendData(datalog) #データを送信
+        self.lora.sendData(datalog) #データを送信
         
-    def switchRadio(self):
-        datalog = str(self.state) + ","\
-                  + str(self.gps.Time) + ","\
-                  + str(self.gps.Lat) + ","\
-                  + str(self.gps.Lon) + ","\
-
-        self.radio.switchData(datalog) #データを送信
+#     def switchRadio(self):
+#         datalog = str(self.state) + ","\
+#                   + str(self.gps.Time) + ","\
+#                   + str(self.gps.Lat) + ","\
+#                   + str(self.gps.Lon) + ","\
+# 
+#         self.radio.switchData(datalog) #データを送信
         
     def run_motor(self):
         self.rightMotor.go(ct.const.MOTOR_VREF)
