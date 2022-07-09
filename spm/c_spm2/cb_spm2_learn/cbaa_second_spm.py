@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-class Open_npz():
+class Open_npz(): # second_spm.pyとして実装済み
     def __init__(self,files):
         self.data_list_all_win,self.label_list_all_win=self.unpack(files)
         # とりあえず片っ端からとってくる
@@ -59,7 +59,7 @@ class Open_npz():
     def get_data(self):
         return self.data_list_all_win,self.label_list_all_win
 
-class Learn():
+class Learn():# second_spm.pyとして実装済み
     """
     dataからmodelを作る。
     """
