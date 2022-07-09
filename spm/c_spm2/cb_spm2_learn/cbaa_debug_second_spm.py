@@ -111,13 +111,13 @@ class Learn():
 
 
 class Evaluate():
-    def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
+    def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master):#,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
         self.test_label_list_all_win=test_label_list_all_win
         self.scaler_master=scaler_master
-        self.train_code=train_code
-        self.test_code=test_code
+        # self.train_code=train_code
+        # self.test_code=test_code
         if len(self.model_master)!=len(self.test_data_list_all_win):
             print("学習済みモデルのウィンドウ数と、テストデータのウィンドウ数が一致しません")
             return None
@@ -136,11 +136,12 @@ class Evaluate():
                 # print(f"test_X win_no\n: {win_no}",test_X)
                 test_X=self.scaler_master[win_no].transform(test_X.reshape(1, -1))
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
-                print(score)
+                # print(score)
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
                 # print(weight)
                 pass
+
         # pprint(self.score_master[0])
     
     def plot(self):
@@ -148,7 +149,7 @@ class Evaluate():
             plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i+1}")
         plt.xlabel("time")
         plt.ylabel("degree of risk")
-        plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
+        # plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
         plt.legend()
         # plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
         plt.cla()
@@ -159,7 +160,7 @@ class Evaluate():
         return self.score_master
 
 
-
+"""
 
 # wolvez2022/spmで実行してください
 # train_codes=['a','b','c','d',]#'e','f','g','h','i']
@@ -182,8 +183,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     print(f"{len(train_files)} frames found from mov code {train_code}")
     seq1=Open_npz(train_files)
     data_list_all_win,label_list_all_win=seq1.get_data()
-
-    """
+"""
+"""
     stack_info=np.array([[12., 18.],
         [12., 18.],
         [12., 18.],
@@ -203,7 +204,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         ]
     )
     t[s]で入力すること。
-    """
+"""
+"""
     seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
     #seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
     model_master,label_list_all_win,scaler_master=seq2.get_data()
@@ -211,11 +213,12 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     spm_path = os.getcwd()
     for test_code in test_codes:
         test_dir=f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"
-        print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+test_dir))
+        print('test data mov code : ',test_code)
         ### デバッグ用
         #psize_('005', '005')-ncom_001-tcoef_001-mxiter_001.npz
-        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/psize_(5, 5)-n_com_3-t_coef_2-mxiter_1507-09_13-07-34.npz"]
+        debug_dir=f"/b_spm1/b-data/bczz_h_param/*"
+        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/psize_(5, 5)-n_com_3-t_coef_2-mxiter_15.npz"]
         ###
         seq3=Open_npz(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
@@ -224,6 +227,56 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         print(seq4.get_score())
         del seq3
         del seq4
+"""
+
+stack_start=9
+stack_end=16
+
+spm_path = os.getcwd()
+train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bccc/*"))
+
+seq1=Open_npz(train_files)
+data_list_all_win,label_list_all_win=seq1.get_data()
+
+seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
+model_master,label_list_all_win,scaler_master=seq2.get_data()
+
+end_flg=False
+
+for patch in range(10,101,10):
+    for n_components in range(1,patch+1,3):
+        for transform_n_nonzero_coefs in range(1,n_components+1,3):
+            for max_iter in range(1,10,1):
+                patch=str(patch).zfill(3)
+                n_components=str(n_components).zfill(3)
+                transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
+                filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_{max_iter}.npz"
+                test_files=[filepath]
+                try:
+                    seq3=Open_npz(test_files)
+                except FileNotFoundError:
+                    end_flg=True
+                    break
+                test_data_list_all_win,test_label_list_all_win=seq3.get_data()
+        
+                seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
+                scores=seq4.get_score()
+                print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   max_iter : {max_iter}")
+                if transform_n_nonzero_coefs=='003' and n_components=='003':
+                    plt.bar(np.arange(6),np.array(scores).reshape(-1))
+                    plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
+                    plt.draw()
+                    plt.pause(0.01)
+                print(scores)
+                del seq3
+                del seq4
+            if end_flg:
+                break    
+        if end_flg:
+            break    
+    if end_flg:
+        break
+plt.cla()
 
 
 

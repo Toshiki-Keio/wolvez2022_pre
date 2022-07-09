@@ -109,7 +109,7 @@ class SPM2Learn():# second_spm.pyとして実装済み
 
 
 class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
-    def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
+    def start(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
         self.test_label_list_all_win=test_label_list_all_win
@@ -138,7 +138,8 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
                 
-                pass
+    def get_score(self):
+        return self.score_master
         # pprint(self.score_master[0])
     
     def plot(self):
@@ -148,7 +149,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         plt.ylabel("degree of risk")
         plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
         plt.legend()
-        plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
+        #plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
         plt.cla()
         
         # plt.show()
@@ -169,7 +170,7 @@ stack_ends=[4.,5.,16.,24.,13.,6.,36.,120.,11.,]
 for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends):
     print("train data mov code : ",train_code)
     spm_path = os.getcwd()
-    seq1=Open_npz()
+    seq1=SPM2Open_npz()
     train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_code}/*"))
     print(f"{len(train_files)} frames found from mov code {train_code}")
     seq1.unpack(train_files)
@@ -196,7 +197,7 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     )
     t[s]で入力すること。
     """
-    seq2=Learn()
+    seq2=SPM2Learn()
     seq2.start(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
     #seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
     model_master,label_list_all_win,scaler_master=seq2.get_data()
@@ -206,11 +207,12 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"))
 
-        seq3=Open_npz()
+        seq3=SPM2Open_npz()
         seq3.unpack(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
 
-        seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code)
+        seq4=SPM2Evaluate()
+        seq4.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code)
         del seq3
         del seq4
 
