@@ -81,7 +81,8 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
                         dict_list[feature_name] = [D, ksvd]
                         save_name = saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
                         cv2.imwrite(save_name, iw_list[win])
-                        params = f"psize_{ld.patch_size}-ncom_{ld.n_components}-tcoef_{ld.transform_n_nonzero_coefs}-mxiter_{ld.max_iter}"
+                        
+                        params = f"psize_{(str(ld.patch_size).zfill(3),str(ld.patch_size).zfill(3))}-ncom_{str(ld.n_components).zfill(3)}-tcoef_{str(ld.transform_n_nonzero_coefs).zfill(3)}-mxiter_{str(ld.max_iter).zfill(3)}"
                 else:
                     D, ksvd = dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win],patch_size=patch_size,n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
