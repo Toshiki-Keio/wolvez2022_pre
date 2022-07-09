@@ -259,7 +259,13 @@ for patch in range(5,105,5):
             test_data_list_all_win,test_label_list_all_win=seq3.get_data()
     
             seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
-            print(seq4.get_score())
+            scores=seq4.get_score()
+            print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
+            plt.bar(np.arange(6),np.array(scores).reshape(-1))
+            plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
+            plt.draw()
+            plt.pause(0.01)
+            print(scores)
             del seq3
             del seq4
         if end_flg:
