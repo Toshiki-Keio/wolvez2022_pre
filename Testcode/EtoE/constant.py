@@ -26,12 +26,10 @@ const.BLUE_LED_PIN = 9
 const.GREEN_LED_PIN = 11
 
 #Releasing Pin
-const.SEPARATION_PIN = 25
+const.SEPARATION_PIN = 26
 
 #Flight Pin
 const.FLIGHTPIN_PIN = 4
-
-const.LANDING_MOTOR_VREF = 90
 
 
 ##Variable Threshold
@@ -43,7 +41,7 @@ const.START_CONST_LONG = 5 #Startingステートにおける帯の幅　±5
 
 
 ##State Threshold
-const.PREPARING_GPS_COUNT_THRE= 30
+const.PREPARING_GPS_COUNT_THRE= 10
 const.PREPARING_TIME_THRE = 10
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 const.DROPPING_ACC_COUNT_THRE = 20
