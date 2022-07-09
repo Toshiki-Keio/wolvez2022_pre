@@ -17,6 +17,8 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from baba_into_window import IntoWindow
 from bbaa_learn_dict import LearnDict
 from bcaa_eval import EvaluateImg
+from second_spm import Open_npz, Learn
+
 
 from bno055 import BNO055
 from motor import motor
