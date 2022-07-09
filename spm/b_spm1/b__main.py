@@ -19,10 +19,11 @@ from time import time
 '''
 
 
-def spm_first(img_path=None):
+def spm_first(img_path=None, learn_state=False):
     # 一旦一枚目だけ学習
     learn_state = True
-    import_paths = glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg")
+    # import_paths = sorted(glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg"))
+    import_paths = sorted(glob('test/*.jpg'))
     #import_paths = import_paths[10:]
     import_paths = import_paths# ここの[:10]を外しましたby林出
     dict_list = {}
@@ -38,7 +39,7 @@ def spm_first(img_path=None):
     if not os.path.exists(saveName):
         os.mkdir(saveName)
 
-    for path in range(10,len(import_paths)):
+    for path in import_paths:
         start_time = time()
         
         now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
@@ -48,8 +49,7 @@ def spm_first(img_path=None):
         Save = True
         
         # Path that img will be read
-        #importPath = path.replace("\\", "/")
-        importPath = f"../a_prepare/ac_pictures/aca_normal/movie_3/frame_{path}.jpg".replace("\\","/")
+        importPath = path.replace("\\", "/")
         
         # This will change such as datetime
         print("CURRENT FRAME: "+str(re.findall(".*/frame_(.*).jpg", importPath)[0]))
@@ -104,14 +104,14 @@ def spm_first(img_path=None):
                     feature_values[feature_name][f'win_{win+1}']["var"] = ave
                     feature_values[feature_name][f'win_{win+1}']["med"] = med
                     feature_values[feature_name][f'win_{win+1}']["ave"] = var
-                    feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
-                    feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
+                    # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
+                    # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
         
         
                     
         if not learn_state:
-            print(feature_values)
-            np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
+            # np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
+            np.savez_compressed(saveDir + f"/bcca_secondinput/test"+now,array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
         
