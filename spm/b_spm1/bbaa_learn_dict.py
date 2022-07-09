@@ -5,7 +5,7 @@ from spmimage.decomposition import KSVD
 
 class LearnDict():
     patch_size=(5,5)
-    n_components=7
+    n_components=5
     transform_n_nonzero_coefs=3
     max_iter=15
     def __init__(self, img_part:np.ndarray):
