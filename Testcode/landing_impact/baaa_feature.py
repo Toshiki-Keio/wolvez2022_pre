@@ -11,12 +11,9 @@ class ReadFeaturedImg():
         saveDir (str): Save directory path that allowed tmp
         Save(bool):Save or not, defalt:False
     """
-    def __init__(self, importPath:str=None, saveDir:str=None, Save:bool=False):
+    def __init__(self, importPath:str=None, saveDir:str=None, Save:any=False):
         self.imp_p = importPath
-        if Save:
-            self.sav_d = saveDir
-        #else:
-        #    self.sav_d = tempfile.TemporaryDirectory()
+        self.sav_d = saveDir
         self.save = Save
     
     def feature_img(self, frame_num, feature_name=None):
