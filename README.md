@@ -3,7 +3,7 @@ Mission code in Python for Keio Wolve'Z CanSat project 2022
 
 ## Hardware Requirements
 - Microcomputer
-  - Raspberry Pi 3B
+  - Raspberry Pi 4B
   <div align="left">
   <img src="https://user-images.githubusercontent.com/57528969/90947202-008d8980-e46f-11ea-964d-d67bf354345d.png" width="20%" title="Raspberry Pi 3B">
   </div>
@@ -21,7 +21,7 @@ Mission code in Python for Keio Wolve'Z CanSat project 2022
 ## Software Requirements
 Firstly, you need to clone this repository
 ```
-git clone https://github.com/Hi-kimu/wolvez2021.git
+git clone git@github.com:Toshiki-Keio/wolvez2022.git
 ```
 ### Setups
 **1. OpenCV**  
