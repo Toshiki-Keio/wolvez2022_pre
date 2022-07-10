@@ -12,8 +12,8 @@ from sklearn.preprocessing import StandardScaler
 class SPM2Open_npz(): # second_spm.pyとして実装済み
 
     def unpack(self,files):
-        print("===== npzファイルの解体を行います =====")
-        # self.data_list_all_win,self.label_list_all_win=self.unpack(files)
+        print("===== npzファイルの解体 =====")
+        print("読み込むフレーム数 : ",len(files))
         data_list_all_time = []
         label_list_all_time = []
         for file in files:
@@ -23,7 +23,8 @@ class SPM2Open_npz(): # second_spm.pyとして実装済み
         data_list_all_time = np.array(data_list_all_time)
         label_list_all_time = np.array(label_list_all_time)
 
-        # windowごとにまとめる
+        print("===== windowごとに集計 =====")
+        print("window数 : 6 (固定中。変更の場合はコード編集が必要）")
         self.data_list_all_win = [[], [], [], [], [], []]
         self.label_list_all_win = [[], [], [], [], [], []]
         for pic, lab_pic in zip(data_list_all_time, label_list_all_time):
@@ -34,8 +35,7 @@ class SPM2Open_npz(): # second_spm.pyとして実装済み
                 pass
         self.data_list_all_win = np.array(self.data_list_all_win)
         self.label_list_all_win = np.array(self.label_list_all_win)
-        print("===== npzファイルの解体を終了します =====")
-        print("===== データとラベルのリストを返します =====")
+        print("===== 終了 =====")
 
         return self.data_list_all_win,self.label_list_all_win
     
@@ -64,10 +64,11 @@ class SPM2Learn():# second_spm.pyとして実装済み
     """
     dataからmodelを作る。
     """
-    def start(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
+    def start(self,data_list_all_win,label_list_all_win,alpha=1.0,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
         self.fps = fps
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
+        self.alpha = alpha
         # print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
         if stack_info==None:
             self.stack_appear = stack_appear
@@ -91,7 +92,7 @@ class SPM2Learn():# second_spm.pyとして実装済み
         self.standardization_master=[]
         self.scaler_master=[]
         for i in range(self.data_list_all_win.shape[0]):
-            self.model_master.append(Lasso(max_iter=100000))
+            self.model_master.append(Lasso(alpha=self.alpha,max_iter=100000))
             self.standardization_master.append(StandardScaler())
             self.scaler_master.append("")
     
@@ -113,18 +114,16 @@ class SPM2Learn():# second_spm.pyとして実装済み
 """
 
 class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
-    def start(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
+    def start(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
         self.test_label_list_all_win=test_label_list_all_win
         self.scaler_master=scaler_master
-        self.train_code=train_code
-        self.test_code=test_code
         if len(self.model_master)!=len(self.test_data_list_all_win):
             print("学習済みモデルのウィンドウ数と、テストデータのウィンドウ数が一致しません")
             return None
         self.test()
-        self.plot()
+        # self.plot()
         return self.score_master
 
 
@@ -147,29 +146,31 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         return self.score_master
         # pprint(self.score_master[0])
     """    
-    def plot(self):
+    def plot(self,save_dir):
         for i, win_score in enumerate(self.score_master):
             plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i+1}")
         plt.xlabel("time")
         plt.ylabel("degree of risk")
-        plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
+        global train_mov_code,test_mov_code
+        plt.title(f"")
         plt.legend()
-        plt.savefig(f"c_spm2/cc_spm2_after/ccb_-100_100/ccb{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
+        
+        plt.savefig(save_dir+"")
         plt.cla()
         
         # plt.show()
 
 ############  settings  #############
-train_mov_code='c'
-test_mov_code='d'
-
+train_mov_code = 'c'
+test_mov_code = 'd'
+alpha = 1.0
 
 
 ############ definitions ############
 spm_path = os.getcwd()
 train_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_mov_code}"
 test_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_mov_code}"
-
+fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
 
 ############   spm 2_1   ############
 train_files = sorted(glob.glob(train_dir_path+"/*"))
@@ -177,16 +178,16 @@ spm2_prep = SPM2Open_npz()
 train_datas,train_datas_label=spm2_prep.unpack(train_files)
 
 spm2_1 = SPM2Learn()
-model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label)
+model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha)
 
 ############   spm 2_2   ############
 test_files = sorted(glob.glob(test_dir_path+"/*"))
 test_datas,test_datas_label=spm2_prep.unpack(test_files)
 
 spm2_2 = SPM2Evaluate()
-model_master, _, scaler_master = spm2_2.start(train_datas,train_datas_label)
+score_master = spm2_2.start(model_master,test_datas,test_datas_label,scaler_master)
 
-
+print(score_master)
 
 
 """
