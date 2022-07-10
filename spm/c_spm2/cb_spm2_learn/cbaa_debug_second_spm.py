@@ -247,9 +247,9 @@ for alpha in np.arange(0,10,0.1):
     model_master,label_list_all_win,scaler_master=seq2.get_data()
 
     end_flg=False
-    for patch in range(40,50,1):
-        for n_components in range(1,10,2):
-            for transform_n_nonzero_coefs in range(1,10,2):
+    for patch in range(60,101,10):
+        for n_components in range(1,patch+1,4):
+            for transform_n_nonzero_coefs in range(1,n_components+1,4):
                 patch=str(patch).zfill(3)
                 n_components=str(n_components).zfill(3)
                 transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
@@ -277,10 +277,10 @@ for alpha in np.arange(0,10,0.1):
                 print(scores)
                 del seq3
                 del seq4
-            if end_flg:
-                break    
-        if end_flg:
-            break    
+            # if end_flg:
+            #     break    
+        # if end_flg:
+        #     break    
 
 
 plt.cla()
