@@ -137,10 +137,8 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         for test_no in range(np.array(self.test_data_list_all_win).shape[1]):
             for win_no, win in enumerate(self.test_data_list_all_win):
                 test_X = win[test_no]
-                # print(f"test_X win_no\n: {win_no}",test_X)
                 test_X=self.scaler_master[win_no].transform(test_X.reshape(1, -1))
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
-                # print(score)
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
     """                
@@ -167,15 +165,24 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         fn = samplerate / 2   #ナイキスト周波数
         wp = fp / fn  #ナイキスト周波数で通過域端周波数を正規化
         ws = fs / fn  #ナイキスト周波数で阻止域端周波数を正規化
-        print(wp,ws)
         N, Wn = signal.buttord(wp, ws, gpass, gstop)  #オーダーとバターワースの正規化周波数を計算
-        print(N,Wn)
         b, a = signal.butter(N, Wn, "low")            #フィルタ伝達関数の分子と分母を計算
         y = signal.filtfilt(b, a, x)                  #信号に対してフィルタをかける
         return y  
     
     def get_nonzero_w(self):
-        pass
+        self.nonzero_w=[]
+        self.nonzero_w_label=[]
+        for win_no,(win_model,labels) in enumerate(zip(self.model_master,self.test_label_list_all_win)):
+            self.nonzero_w.append([])
+            self.nonzero_w_label.append([])
+            weight=win_model.coef_
+            for (w,label) in zip(weight,labels):
+                if w>1e-3:
+                    self.nonzero_w[win_no].append(w)
+                    self.nonzero_w_label[win_no].append(label)
+
+        return self.nonzero_w,self.nonzero_w_label
 
 ############  settings  #############
 train_mov_code = 'c'
@@ -204,8 +211,12 @@ test_datas,test_datas_label=spm2_prep.unpack(test_files)
 spm2_2 = SPM2Evaluate()
 score_master = spm2_2.start(model_master,test_datas,test_datas_label,scaler_master)
 spm2_2.plot(save_dir=fig_dir_path)
-# pprint(score_master)
-
+nonzero_w,nonzero_w_label=spm2_2.get_nonzero_w()
+nonzero_w_num=np.array([
+    [len(nonzero_w_label[0]),len(nonzero_w_label[1]),len(nonzero_w_label[2])],
+    [len(nonzero_w_label[3]),len(nonzero_w_label[4]),len(nonzero_w_label[5])]
+    ])
+print(nonzero_w_num)
 
 """
 メモ
