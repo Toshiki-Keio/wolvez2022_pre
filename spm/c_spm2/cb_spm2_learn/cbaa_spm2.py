@@ -141,11 +141,11 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
-    """                
+    """        
     def get_score(self):
         return self.score_master
         # pprint(self.score_master[0])
-    """    
+    """
     def plot(self,save_dir):
         for i, win_score in enumerate(self.score_master):
             win_score_low=self.lowpass(np.array(win_score).flatten(),25600,100,600,3,40)
@@ -158,7 +158,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         plt.legend()
         plt.savefig(save_dir+f"/cca{train_mov_code}{test_mov_code}_.jpg")
         plt.cla()
-        
+
         # plt.show()
     
     def lowpass(self,x, samplerate, fp, fs, gpass, gstop):
@@ -169,7 +169,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         b, a = signal.butter(N, Wn, "low")            #フィルタ伝達関数の分子と分母を計算
         y = signal.filtfilt(b, a, x)                  #信号に対してフィルタをかける
         return y  
-    
+
     def get_nonzero_w(self):
         self.nonzero_w=[]
         self.nonzero_w_label=[]
@@ -204,6 +204,7 @@ for train_mov_code in train_mov_codes:
 
     spm2_1 = SPM2Learn()
     model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha,stack_appear=9,stack_disappear=16)
+
     for test_mov_code in test_mov_codes:
         ############   spm 2_2   ############
         test_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_mov_code}"
@@ -215,7 +216,7 @@ for train_mov_code in train_mov_codes:
         fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
         spm2_2.plot(save_dir=fig_dir_path)
         nonzero_w,nonzero_w_label,nonzero_w_num=spm2_2.get_nonzero_w()
-        
+
         print(nonzero_w_num)
 
 """
