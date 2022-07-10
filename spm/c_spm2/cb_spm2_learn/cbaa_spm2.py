@@ -156,7 +156,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         global train_mov_code,test_mov_code,alpha
         plt.title(f"{train_mov_code} -->> {test_mov_code}  alpha={alpha}")
         plt.legend()
-        plt.savefig(save_dir+"/sample.jpg")
+        plt.savefig(save_dir+f"/cca{train_mov_code}{test_mov_code}_.jpg")
         plt.cla()
         
         # plt.show()
@@ -181,14 +181,51 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
                 if w>1e-3:
                     self.nonzero_w[win_no].append(w)
                     self.nonzero_w_label[win_no].append(label)
+        self.nonzero_w_num=np.array([
+            [len(self.nonzero_w_label[0]),len(self.nonzero_w_label[1]),len(self.nonzero_w_label[2])],
+            [len(self.nonzero_w_label[3]),len(self.nonzero_w_label[4]),len(self.nonzero_w_label[5])]
+            ])
+        return self.nonzero_w,self.nonzero_w_label,self.nonzero_w_num
 
-        return self.nonzero_w,self.nonzero_w_label
+
 
 ############  settings  #############
-train_mov_code = 'c'
-test_mov_code = 'd'
+train_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
+test_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
 alpha = 5.0
+spm_path = os.getcwd()
 
+for train_mov_code in train_mov_codes:
+    ############   spm 2_1   ############
+    train_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_mov_code}"
+    train_files = sorted(glob.glob(train_dir_path+"/*"))
+    spm2_prep = SPM2Open_npz()
+    train_datas,train_datas_label=spm2_prep.unpack(train_files)
+
+    spm2_1 = SPM2Learn()
+    model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha,stack_appear=9,stack_disappear=16)
+    for test_mov_code in test_mov_codes:
+        ############   spm 2_2   ############
+        test_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_mov_code}"
+        test_files = sorted(glob.glob(test_dir_path+"/*"))
+        test_datas,test_datas_label=spm2_prep.unpack(test_files)
+
+        spm2_2 = SPM2Evaluate()
+        score_master = spm2_2.start(model_master,test_datas,test_datas_label,scaler_master)
+        fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
+        spm2_2.plot(save_dir=fig_dir_path)
+        nonzero_w,nonzero_w_label,nonzero_w_num=spm2_2.get_nonzero_w()
+        
+        print(nonzero_w_num)
+
+"""
+# 単品モード
+############  settings  #############
+train_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
+test_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
+alpha = 5.0
+for train_mov_code in train_mov_codes:
+    for test_mov_code for test_mov_codes:
 
 ############ definitions ############
 spm_path = os.getcwd()
@@ -216,8 +253,10 @@ nonzero_w_num=np.array([
     [len(nonzero_w_label[0]),len(nonzero_w_label[1]),len(nonzero_w_label[2])],
     [len(nonzero_w_label[3]),len(nonzero_w_label[4]),len(nonzero_w_label[5])]
     ])
+
 print(nonzero_w_num)
 
+"""
 """
 メモ
 ・labelの表示関数
