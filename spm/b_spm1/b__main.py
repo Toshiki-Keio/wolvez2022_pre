@@ -138,17 +138,9 @@ transform_n_nonzero_coefs=4
 max_iter=15
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-#    spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
-    for patch in range(50,105,10):
-        for n_components in range(1,patch+1,4):
-            for transform_n_nonzero_coefs in range(1,n_components+1,4):
-                spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
-=======
     #    spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
 
     # for patch in range(5,105,5):
     #     for n_components in range(1,patch+1,2):
     #         for transform_n_nonzero_coefs in range(1,n_components+1,2):
     spm_first(patch_size=(40,71),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
->>>>>>> 552ce80e05dd758c9474dfb3ccd5d985eb31a1e5
