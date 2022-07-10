@@ -52,7 +52,7 @@ def decide_behavior_raspi(direction_real, target_azimuth, phi, MotorR, MotorL, b
             MotorR.back(70)
             MotorL.go(70)
             bno055.bnoread()
-            bno055.ex = round(bno055.ex,3)       
+            bno055.ex = round(bno055.ex,3)
         MotorR.stop()
         MotorL.stop()
     elif direction_real == 1:
@@ -73,7 +73,7 @@ def decide_behavior_raspi(direction_real, target_azimuth, phi, MotorR, MotorL, b
             MotorR.go(70)
             MotorL.back(70)
             bno055.bnoread()
-            bno055.ex = round(bno055.ex,3)       
+            bno055.ex = round(bno055.ex,3)
         MotorR.stop()
         MotorL.stop()
     elif direction_real == 3:
@@ -83,7 +83,7 @@ def decide_behavior_raspi(direction_real, target_azimuth, phi, MotorR, MotorL, b
             MotorR.back(70)
             MotorL.go(70)
             bno055.bnoread()
-            bno055.ex = round(bno055.ex,3)   
+            bno055.ex = round(bno055.ex,3)
         MotorR.stop()
         MotorL.stop()
         
