@@ -125,6 +125,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
             return None
         self.test()
         self.plot()
+        return self.score_master
 
 
     def test(self):
@@ -141,11 +142,11 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
                 # print(score)
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
-                
+    """                
     def get_score(self):
         return self.score_master
         # pprint(self.score_master[0])
-    
+    """    
     def plot(self):
         for i, win_score in enumerate(self.score_master):
             plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i+1}")
@@ -172,12 +173,18 @@ test_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{test_mov_code}"
 
 ############   spm 2_1   ############
 train_files = sorted(glob.glob(train_dir_path+"/*"))
-spm2_1_prep = SPM2Open_npz()
-train_datas,train_datas_label=spm2_1_prep.unpack(train_files)
+spm2_prep = SPM2Open_npz()
+train_datas,train_datas_label=spm2_prep.unpack(train_files)
 
 spm2_1 = SPM2Learn()
-model_master, label_list_all_win, scaler_master = spm2_1.start(train_datas,train_datas_label)
+model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label)
 
+############   spm 2_2   ############
+test_files = sorted(glob.glob(test_dir_path+"/*"))
+test_datas,test_datas_label=spm2_prep.unpack(test_files)
+
+spm2_2 = SPM2Evaluate()
+model_master, _, scaler_master = spm2_2.start(train_datas,train_datas_label)
 
 
 
