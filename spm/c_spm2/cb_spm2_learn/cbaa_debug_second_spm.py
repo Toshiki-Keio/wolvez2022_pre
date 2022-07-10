@@ -63,8 +63,9 @@ class Learn():
     """
     dataからmodelを作る。
     """
-    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
+    def __init__(self,data_list_all_win,label_list_all_win,alpha,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
         self.fps = fps
+        self.alpha=alpha
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
         # print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
@@ -89,7 +90,7 @@ class Learn():
         self.standardization_master=[]
         self.scaler_master=[]
         for i in range(self.data_list_all_win.shape[0]):
-            self.model_master.append(Lasso(max_iter=100000))
+            self.model_master.append(Lasso(alpha=self.alpha,max_iter=100000))
             self.standardization_master.append(StandardScaler())
             self.scaler_master.append("")
     
@@ -229,44 +230,46 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         del seq4
 """
 
-stack_start=9
-stack_end=16
 
-spm_path = os.getcwd()
-train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bccc/*"))
+for alpha in np.arange(0,10,0.1):
+    stack_start=9
+    stack_end=16
 
-seq1=Open_npz(train_files)
-data_list_all_win,label_list_all_win=seq1.get_data()
+    spm_path = os.getcwd()
+    train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bccc/*"))
 
-seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
-model_master,label_list_all_win,scaler_master=seq2.get_data()
+    seq1=Open_npz(train_files)
+    data_list_all_win,label_list_all_win=seq1.get_data()
 
-end_flg=False
+    seq2=Learn(data_list_all_win,label_list_all_win,alpha=alpha,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
+    model_master,label_list_all_win,scaler_master=seq2.get_data()
 
-for patch in range(10,101,10):
-    for n_components in range(1,patch+1,3):
-        for transform_n_nonzero_coefs in range(1,n_components+1,3):
-            for max_iter in range(1,10,1):
+    end_flg=False
+    for patch in range(40,50,1):
+        for n_components in range(1,10,2):
+            for transform_n_nonzero_coefs in range(1,10,2):
                 patch=str(patch).zfill(3)
                 n_components=str(n_components).zfill(3)
                 transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
-                filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_{max_iter}.npz"
+                filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_001.npz"
+                print(filepath)
                 test_files=[filepath]
                 try:
                     seq3=Open_npz(test_files)
                 except FileNotFoundError:
                     end_flg=True
+                    print("here")
                     break
                 test_data_list_all_win,test_label_list_all_win=seq3.get_data()
         
                 seq4=Evaluate(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
                 scores=seq4.get_score()
-                print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   max_iter : {max_iter}")
-                if transform_n_nonzero_coefs=='003' and n_components=='003':
-                    plt.bar(np.arange(6),np.array(scores).reshape(-1))
-                    plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}")
-                    plt.draw()
-                    plt.pause(0.01)
+                print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   alpha : {alpha}")
+                plt.bar(np.arange(6),np.array(scores).reshape(-1))
+                plt.title(f"patch : {patch}  n_components : {n_components}    alpha : {alpha}")
+                # plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   alpha : {alpha}")
+                plt.draw()
+                plt.pause(0.0001)
                 print(scores)
                 del seq3
                 del seq4
@@ -274,8 +277,8 @@ for patch in range(10,101,10):
                 break    
         if end_flg:
             break    
-    if end_flg:
-        break
+
+
 plt.cla()
 
 

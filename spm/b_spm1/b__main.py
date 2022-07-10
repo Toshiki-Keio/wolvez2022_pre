@@ -1,5 +1,6 @@
 import re
 import os
+from tempfile import TemporaryDirectory
 import cv2
 import numpy as np
 from datetime import datetime
@@ -19,12 +20,16 @@ from time import time
 '''
 
 
-def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,transform_n_nonzero_coefs=3,max_iter=15):
+def spm_first(img_path=False,npz_dir=None, learn_state=False,patch_size=(24,32),n_components=5,transform_n_nonzero_coefs=4,max_iter=15):
     # 一旦一枚目だけ学習
     learn_state = True
     # import_paths = sorted(glob("../a_prepare/ac_pictures/aca_normal/movie_3/*.jpg"))
-    import_paths = sorted(glob('test/*.jpg'))
-    #import_paths = import_paths[10:]
+    if not img_path:
+        import_paths = sorted(glob('test/*.jpg'))
+    else:
+        import_paths = sorted(glob(img_path))
+    if len(import_paths) > 1000:
+        import_paths = import_paths[:1000]
     import_paths = import_paths# ここの[:10]を外しましたby林出
     dict_list = {}
     saveDir = "b-data"
@@ -43,6 +48,7 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
         start_time = time()
         
         now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
+        print(now)
         saveName = saveDir + f"/bcba_difference/{now}"
         if not os.path.exists(saveName):
             os.mkdir(saveName)
@@ -63,14 +69,16 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
         else:
             print("=====EVALUATING PHASE=====")
             
-        iw = IntoWindow(importPath, saveDir, Save)
+        temp_dir = TemporaryDirectory()
+        temp_dir_name = temp_dir.name.replace('//', '/').replace("\\","/")
+        iw = IntoWindow(importPath, temp_dir_name, Save)
         # processing img
         fmg_list = iw.feature_img(frame_num=now)
         
         for fmg in fmg_list:
             # breakout by windows
             iw_list, window_size = iw.breakout(iw.read_img(fmg))
-            feature_name = str(re.findall(saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+            feature_name = str(re.findall(temp_dir_name + f"/baca_featuring/(.*)_.*_", fmg)[0])
             print("FEATURED BY: ",feature_name)
             for win in range(int(prod(iw_shape))):
                 #print("PRAT: ",win+1)
@@ -112,8 +120,8 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
         
                     
         if not learn_state:
-            # np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
-            np.savez_compressed(saveDir + f"/bczz_h_param/{params}",array_1=np.array([feature_values]))
+            np.savez_compressed(npz_dir+now,array_1=np.array([feature_values]))
+            # np.savez_compressed(saveDir + f"/bczz_h_param/{params}",array_1=np.array([feature_values]))
             #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
             #    pickle.dump(feature_values, tf)
         
@@ -122,16 +130,17 @@ def spm_first(img_path=None, learn_state=False,patch_size=(5,5),n_components=20,
         learn_state = False
         frame = str(re.findall(".*/frame_(.*).jpg", importPath)[0])
         print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
+        temp_dir.cleanup()
 
-patch=5
+patch=60
 n_components=5
-transform_n_nonzero_coefs=2
-max_iter=10
+transform_n_nonzero_coefs=4
+max_iter=15
 
 if __name__ == "__main__":
-#    spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
+    #    spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
 
-    for patch in range(50,105,10):
-        for n_components in range(1,patch+1,4):
-            for transform_n_nonzero_coefs in range(1,n_components+1,4):
-                spm_first(patch_size=(patch,patch),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
+    # for patch in range(5,105,5):
+    #     for n_components in range(1,patch+1,2):
+    #         for transform_n_nonzero_coefs in range(1,n_components+1,2):
+    spm_first(patch_size=(40,71),n_components=n_components,transform_n_nonzero_coefs=transform_n_nonzero_coefs,max_iter=max_iter)
