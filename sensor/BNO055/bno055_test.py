@@ -5,9 +5,7 @@ import numpy as np
 import bno055
 
 GPIO.setmode(GPIO.BCM) #GPIOの設定
-
 bno055 = bno055.BNO055()
-GPIO.setmode(GPIO.BCM) #GPIOの設定
 bno055.setupBno()
 
 if bno055.begin() is not True:

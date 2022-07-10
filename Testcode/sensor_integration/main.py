@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #import gps
 #from MicropyGPS import MicropyGPS
 #from LoRa_SOFT.LoRa import LoRa
@@ -100,3 +101,22 @@ class Cansat():
 cansat = Cansat()
 if __name__ == "__main__":
     cansat.run()
+=======
+import cv2
+import RPi.GPIO as GPIO
+from cansat import Cansat
+
+cansat = Cansat()
+cansat.setup()
+
+try:
+    while True:
+        cansat.run()
+        if cv2.waitKey(10) & 0xFF == ord('q'):
+            break
+    
+except KeyboardInterrupt:
+    print("Finished")
+    cansat.keyboardinterrupt()
+    GPIO.cleanup()
+>>>>>>> e7b8c238c395715f12a161b39c7ace711d1d4d3c

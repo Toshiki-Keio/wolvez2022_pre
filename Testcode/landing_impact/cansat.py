@@ -1,6 +1,7 @@
 #Last Update 2022/07/02
 #Author : Toshiki Fukui
 
+from tempfile import TemporaryDirectory
 import RPi.GPIO as GPIO
 import sys
 import cv2
@@ -14,14 +15,17 @@ from glob import glob
 from math import prod
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
+from b_classes import IntoWindow, LearnDict, EvaluateImg
 from baba_into_window import IntoWindow
 from bbaa_learn_dict import LearnDict
 from bcaa_eval import EvaluateImg
+from second_spm import SPM2Open_npz,SPM2Learn,SPM2Evaluate
+
 
 from bno055 import BNO055
 from motor import motor
 from gps import GPS
-from radio import radio
+from lora import lora
 from led import led
 import constant as ct
 
@@ -38,7 +42,7 @@ class Cansat():
         self.rightMotor = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
         self.leftMotor = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
         self.gps = GPS()
-        self.radio = radio()
+        self.lora = lora()
         self.RED_LED = led(ct.const.RED_LED_PIN)
         self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
         self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
@@ -53,6 +57,7 @@ class Cansat():
         self.landingTime = 0
         self.landstate = 0
         self.firstlearnimgcount = 0
+        self.firstevalimgcount = 0
         self.camerastate = 0
         self.camerafirst = 0
         # self.pre_motorTime = 0
@@ -70,6 +75,9 @@ class Cansat():
         self.countPreLoop = 0
         self.countFlyLoop = 0
         self.countDropLoop = 0
+
+        self.dict_list = {}
+        self.saveDir = "results"
     
     def writeData(self):
         #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
@@ -114,11 +122,11 @@ class Cansat():
         elif self.state == 3:#パラシュートから離れる。カメラでの撮影行う
             self.landing()
         elif self.state == 4:#スパースモデリング第一段階
-            self.spm_first()
-        # elif self.state == 5:#スパースモデリング第二段階
-        #     self.spm_second()
-        # elif self.state == 6:#経路計画段階
-        #     self.running()
+            self.spm_first(True)
+        elif self.state == 5:#スパースモデリング第二段階
+            model_master,scaler_master = self.spm_second()
+        elif self.state == 6:#経路計画段階
+            self.running(model_master,scaler_master)
         # elif self.state == 7:
         #     self.re_learning()
         # elif self.state == 8:#終了
@@ -130,7 +138,7 @@ class Cansat():
         self.gps.setupGps()
         # os.system("sudo insmod LoRa_SOFT/soft_uart.ko")
         self.bno055.setupBno()
-#         self.radio.setupRadio()
+        self.lora.sendDevice.setup_lora()
         if self.bno055.begin() is not True:
             print("Error initializing device")
             exit()    
@@ -146,9 +154,9 @@ class Cansat():
         
         self.writeData()#txtファイルへのログの保存
     
-#         if not self.state == 1: #preparingのときは電波を発しない
+        if not self.state == 1: #preparingのときは電波を発しない
 #             if not self.state ==5:#self.sendRadio()#LoRaでログを送信
-#                 self.sendRadio()
+            self.sendLoRa()
 #             else:
 #                 self.switchRadio()
 
@@ -229,8 +237,8 @@ class Cansat():
             
             #カメラ起動後分離シート離脱
             elif self.landstate == 2:
-                self.rightMotor.go(ct.const.MOTOR_VREF)
-                self.leftMotor.go(ct.const.MOTOR_VREF)
+                self.rightMotor.go(ct.const.LANDING_MOTOR_VREF)
+                self.leftMotor.go(ct.const.LANDING_MOTOR_VREF)
 
                 if time.time()-self.pre_motorTime > ct.const.LANDING_PRE_MOTOR_TIME_THRE: #5秒間モータ回して分離シートから十分離れる
                     self.rightMotor.stop()
@@ -238,138 +246,214 @@ class Cansat():
                     self.state = 4
                     self.laststate = 4
 
-    def spm_first(self,img_path=None,learn_state):
-        if self.camerafirst == 0:
-            ret, self.firstlearnimg = self.cap.read()
-            cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstlearnimg)
-            self.camerastate = "captured!"
-            self.camerafirst = 1
-        else:
-            self.camerastate = 0
-
-        # #import_paths = import_paths[10:]
-        # import_paths = import_paths# ここの[:10]を外しましたby林出
-        dict_list = {}
-        saveDir = "b-data"
-
-        if not os.path.exists(saveDir):
-            os.mkdir(saveDir)
-        if not os.path.exists(saveDir + f"/bbba_learnimg"):
-            os.mkdir(saveDir + f"/bbba_learnimg")
-        if not os.path.exists(saveDir + f"/bcca_secondinput"):
-            os.mkdir(saveDir + f"/bcca_secondinput")
-        saveName = saveDir + f"/bcba_difference"
+    def spm_first(self,learn_state, PIC_COUNT):
+    
+        #フォルダ作成部分
+        if not os.path.exists(self.saveDir):
+            os.mkdir(self.saveDir)
+        if not os.path.exists(self.saveDir + f"/camera_result/processed/bbba_learnimg"):
+            os.mkdir(self.saveDir + f"/camera_result/processed/bbba_learnimg")
+        if not os.path.exists(self.saveDir + f"/camera_result/processed/bcca_secondinput"):
+            os.mkdir(self.saveDir + f"/camera_result/processed/bcca_secondinput")
+        saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
         if not os.path.exists(saveName):
             os.mkdir(saveName)
 
-        for path in range(10,len(import_paths)):
-            start_time = time()
-            
-            now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
-            saveName = saveDir + f"/bcba_difference/{now}"
-            if not os.path.exists(saveName):
-                os.mkdir(saveName)
-            Save = True
-            
-            # Path that img will be read
-            #importPath = path.replace("\\", "/")
-            importPath = f"../a_prepare/ac_pictures/aca_normal/movie_3/frame_{path}.jpg".replace("\\","/")
-            
-            # This will change such as datetime
-            print("CURRENT FRAME: "+str(re.findall(".*/frame_(.*).jpg", importPath)[0]))
-            
-            iw_shape = (2, 3)
-            D, ksvd = None, None
-            feature_values = {}
+        start_time = time.time()#学習用時間計測。学習開始時間
+        
+        #保存時のファイル名指定（現在は時間）
+        now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
+        saveName = self.saveDir + f"/bcba_difference/{now}"
+        if not os.path.exists(saveName):
+            os.mkdir(saveName)
+        Save = True
+        
+        # Path that img will be read
+        #importPath = path.replace("\\", "/")
+        
+        # This will change such as datetime
+        # print("CURRENT FRAME: "+str(re.findall(".*/frame_(.*).jpg", importPath)[0]))
+        
+        iw_shape = (2, 3)#ウィンドウのシェイプ
+        D, ksvd = None, None #最初に指定しないと怒られちゃうから
+        feature_values = {}
 
-            if learn_state:
-                print("=====LEARNING PHASE=====")
+        if learn_state:
+            print("=====LEARNING PHASE=====")
+        else:
+            print("=====EVALUATING PHASE=====")
+            
+        
+        if learn_state:#学習モデル獲得
+            
+            #学習用画像を一枚撮影
+            if self.camerafirst == 0:
+                ret, self.firstimg = self.cap.read()
+                cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
+                self.camerastate = "captured!"
+                self.camerafirst = 1
             else:
-                print("=====EVALUATING PHASE=====")
-                
-            iw = IntoWindow(importPath, saveDir, Save)
+                self.camerastate = 0
+            
+            importPath = self.firstlearnimg # np.ndarray
+            iw = IntoWindow(importPath, self.saveDir, Save) #画像の特徴抽出のインスタンス生成
             # processing img
-            fmg_list = iw.feature_img(frame_num=now)
-            
-            for fmg in fmg_list:
+            fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
+                
+            for fmg in fmg_list:#それぞれの特徴画像に対して処理
                 # breakout by windows
-                iw_list, window_size = iw.breakout(iw.read_img(fmg))
-                feature_name = str(re.findall(saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
+                feature_name = str(re.findall(self.saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
-                for win in range(int(prod(iw_shape))):
-                    #print("PRAT: ",win+1)
-                    if learn_state:
-                        if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                            ld = LearnDict(iw_list[win])
-                            D, ksvd = ld.generate()
-                            dict_list[feature_name] = [D, ksvd]
-                            save_name = saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
-                            cv2.imwrite(save_name, iw_list[win])
-                    else:
-                        D, ksvd = dict_list[feature_name]
-                        ei = EvaluateImg(iw_list[win])
-                        img_rec = ei.reconstruct(D, ksvd, window_size)
-                        saveName = saveDir + f"/bcba_difference"
-                        if not os.path.exists(saveName):
-                            os.mkdir(saveName)
-                        saveName = saveDir + f"/bcba_difference/{now}"
-                        if not os.path.exists(saveName):
-                            os.mkdir(saveName)
-                        ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, saveDir)
-                        #if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
-                        #    feature_values[feature_name] = {}
-                        #    feature_values[feature_name]["var"] = ave
-                        #    feature_values[feature_name]["med"] = med
-                        #    feature_values[feature_name]["ave"] = var
-                        
-                        if  win == 0:
-                            feature_values[feature_name] = {}
-                        feature_values[feature_name][f'win_{win+1}'] = {}
-                        feature_values[feature_name][f'win_{win+1}']["var"] = ave
-                        feature_values[feature_name][f'win_{win+1}']["med"] = med
-                        feature_values[feature_name][f'win_{win+1}']["ave"] = var
-                        feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
-                        feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
-            
-            
-                        
-            if not learn_state:
-                print(feature_values)
-                np.savez_compressed(saveDir + f"/bcca_secondinput/"+now,array_1=np.array([feature_values]))
-                #with open(saveDir + f"/bcca_secondinput/"+now, "wb") as tf:
-                #    pickle.dump(feature_values, tf)
-            
-            end_time = time()
-            # Learn state should be changed by main.py
+
+                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
+                    if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
+                        ld = LearnDict(iw_list[win])
+                        D, ksvd = ld.generate() #辞書獲得
+                        self.dict_list[feature_name] = [D, ksvd]
+                        save_name = self.saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
+                        # cv2.imwrite(save_name, iw_list[win])
             learn_state = False
-            frame = str(re.findall(".*/frame_(.*).jpg", importPath)[0])
-            print(f"\n\n==={now}_data was evaluated===\nframe number is {frame}.\nIt cost {end_time-start_time} seconds.\n\n")
 
-    def sendRadio(self):
+        else:#20枚撮影
+            self.spm_f_eval(PIC_COUNT=PIC_COUNT, now=now, iw_shape=iw_shape)
+                    
+        
+        end_time = time.time()#計算終了
+        print("Calc Time:",end_time-start_time)
+        # Learn state should be changed by main.py
+        learn_state = False#学習終了
+
+    def spm_f_eval(self, PIC_COUNT=1, now="TEST", iw_shape=(2,3)):
+        # 評価枚数分ループ処理
+        for i in range(PIC_COUNT):
+            ret,self.secondimg = self.cap.read()
+            cv2.imwrite(f"results/camera_result/second/secondimg{i}.jpg",self.secondimg)
+            self.firstevalimgcount += 1
+            
+            # ここに走行コード
+            ######
+            ######
+            ######
+            ######
+        
+        second_img_pahts = sorted(glob("results/camera_result/second/secondimg*.jpg"))
+        
+        for importPath in second_img_pahts:
+        
+            feature_values = {}
+            
+            self.tempDir = TemporaryDirectory()
+            tempDir_name = self.tempDir.name
+            
+            iw = IntoWindow(importPath, tempDir_name, False) #画像の特徴抽出のインスタンス生成
+            # processing img
+            fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
+
+            for fmg in fmg_list:#それぞれの特徴画像に対して処理
+                iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
+                feature_name = str(re.findall(self.tempDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                print("FEATURED BY: ",feature_name)
+                
+                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
+                    D, ksvd = self.dict_list[feature_name]
+                    ei = EvaluateImg(iw_list[win])
+                    img_rec = ei.reconstruct(D, ksvd, window_size)
+                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
+                    if not os.path.exists(saveName):
+                        os.mkdir(saveName)
+                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference/{now}"
+                    if not os.path.exists(saveName):
+                        os.mkdir(saveName)
+                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
+                    
+                    # 特徴量終結/1枚
+                    if win == 0:
+                        feature_values[feature_name] = {}
+
+                    feature_values[feature_name][f'win_{win+1}'] = {}
+                    feature_values[feature_name][f'win_{win+1}']["var"] = ave
+                    feature_values[feature_name][f'win_{win+1}']["med"] = med
+                    feature_values[feature_name][f'win_{win+1}']["ave"] = var
+                    # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
+                    # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
+
+                self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                time.sleep(2)
+                self.rightMotor.stop()
+                self.leftMotor.stop()
+                
+            #npzファイル形式で計算結果保存
+            # print(feature_values)
+            np.savez_compressed(self.saveDir + f"/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
+            self.tempDir.cleanup()
+            
+
+
+    def second_spm(self):
+        npz_dir = "results/camera_result/processed/secondinput"
+        # wolvez2022/spmで実行してください
+        train_npz = sorted(glob.glob(npz_dir))
+        spm2_prepare = SPM2Open_npz()
+        data_list_all_win,label_list_all_win = spm2_prepare.unpack(train_npz)
+
+        spm2_learn = SPM2Learn()
+
+        #ウィンドウによってスタックと教示する時間帯を変えず、一括とする場合
+        stack_start = 11
+        stack_end = 11
+
+        #ウィンドウによってスタックすると教示する時間帯を変える場合はnp.arrayを定義
+        stack_info = None
+        """
+            stack_info=np.array([[12., 18.],
+                [12., 18.],
+                [12., 18.],
+                [12., 18.],
+                [12., 18.],
+                [12, 18.]])
+            「stackした」と学習させるフレームの指定方法
+            1. 全ウィンドウで一斉にラベリングする場合
+                Learnの引数でstack_appearおよびstack_disappearを[s]で指定する。
+            2. ウィンドウごとに個別にラベリングする場合
+            stack_info=np.array(
+                [
+                    [win_1_stack_start,win_1_stack_end],
+                    [win_2_stack_start,win_2_stack_end],
+                    ...
+                    [win_6_stack_start,win_6_stack_end],
+                ]
+            )
+            t[s]で入力すること。
+        """
+        spm2_learn.start(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=stack_info)#どっちかは外すのがいいのか
+        model_master,label_list_all_win,scaler_master=spm2_learn.get_data()
+        """
+            model_master: 各ウィンドウを学習したモデル（俗にいう"model.predict()"とかの"model.predict()"とかのmodelに相当するのがリストで入ってる）
+            label_list_all_win: 重み行列の各成分を、その意味（ex.window_1のrgb画像のaverage）の説明で書き換えた配列
+            scaler_master: 各ウィンドウを標準化した時のモデル（scaler.transform()の"scaler"に相当するのがリストで入って）
+        """
+        return model_master,scaler_master
+
+    def running(self,model_master,scaler_master):
+        SPM2_predict_prepare = SPM2Open_npz()
+        test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack()
+
+        spm2_predict = SPM2Evaluate()
+        spm2_predict.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)
+        score_map = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
+
+        ###藤井が書いてくれてるやつを組み込み
+
+    def sendLoRa(self):
         datalog = str(self.state) + ","\
                   + str(self.gps.Time) + ","\
                   + str(self.gps.Lat) + ","\
-                  + str(self.gps.Lon) + ","\
+                  + str(self.gps.Lon)
 
-        self.radio.sendData(datalog) #データを送信
+        self.lora.sendData(datalog) #データを送信
         
-    def switchRadio(self):
-        datalog = str(self.state) + ","\
-                  + str(self.gps.Time) + ","\
-                  + str(self.gps.Lat) + ","\
-                  + str(self.gps.Lon) + ","\
-
-        self.radio.switchData(datalog) #データを送信
-        
-    def run_motor(self):
-        self.rightMotor.go(ct.const.MOTOR_VREF)
-        self.leftMotor.go(ct.const.MOTOR_VREF)
-    
-    def camera(self,cap):
-        ret, img = cap.read()      
-        cv2.imshow('camera', img)
-        return img
-    
     def stuck_detection(self):
         return 0
 

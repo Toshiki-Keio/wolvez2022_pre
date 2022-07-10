@@ -827,4 +827,8 @@ class MicropyGPS(object):
                           }
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     pass
+=======
+    pass
+>>>>>>> e7b8c238c395715f12a161b39c7ace711d1d4d3c
