@@ -8,6 +8,7 @@ import glob
 from pprint import pprint
 from sklearn.preprocessing import StandardScaler
 from scipy import signal
+from datetime import datetime
 
 
 class SPM2Open_npz(): # second_spm.pyとして実装済み
@@ -156,7 +157,8 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         global train_mov_code,test_mov_code,alpha
         plt.title(f"{train_mov_code} -->> {test_mov_code}  alpha={alpha}")
         plt.legend()
-        plt.savefig(save_dir+f"/cca{train_mov_code}{test_mov_code}_.jpg")
+        name=str(datetime.now()).replace(" ","").replace(":","").replace("-","").replace(".","")[:16]
+        plt.savefig(save_dir+f"/cca{train_mov_code}{test_mov_code}_{name}.jpg")
         plt.cla()
 
         # plt.show()
@@ -190,12 +192,14 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
 
 
 ############  settings  #############
-train_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
-test_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
+train_mov_codes = ['a','b','c','d','e','f','g','h','i','l','n','p',]# 'j','k','m','o',
+test_mov_codes = ['a','b','c','d','e','f','g','h','i','l','n','p',]# 'j','k','m','o',
+stack_starts = [0.,0.,9.,20.,11.,4.,35.,58.,10.,3.,6.,12.,16.,]
+stack_ends = [4.,5.,16.,24.,13.,6.,36.,120.,11.,6.,8.,14.,19.,]
 alpha = 5.0
 spm_path = os.getcwd()
 
-for train_mov_code in train_mov_codes:
+for train_mov_code,stack_start, stack_end in zip(train_mov_codes,stack_starts,stack_ends):
     ############   spm 2_1   ############
     train_dir_path = spm_path+f"/b_spm1/b-data/bcca_secondinput/bcc{train_mov_code}"
     train_files = sorted(glob.glob(train_dir_path+"/*"))
@@ -203,7 +207,7 @@ for train_mov_code in train_mov_codes:
     train_datas,train_datas_label=spm2_prep.unpack(train_files)
 
     spm2_1 = SPM2Learn()
-    model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha,stack_appear=9,stack_disappear=16)
+    model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha,stack_appear=stack_start,stack_disappear=stack_end)
 
     for test_mov_code in test_mov_codes:
         ############   spm 2_2   ############
@@ -216,7 +220,6 @@ for train_mov_code in train_mov_codes:
         fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
         spm2_2.plot(save_dir=fig_dir_path)
         nonzero_w,nonzero_w_label,nonzero_w_num=spm2_2.get_nonzero_w()
-
         print(nonzero_w_num)
 
 """
