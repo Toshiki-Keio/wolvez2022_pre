@@ -99,6 +99,9 @@ gps = gps.GPS()
 gps.setupGps()
 
 
+
+
+
 # ゴールの緯度・経度を設定
 goal_position = (35.55518,139.65578)
 
@@ -135,7 +138,14 @@ while count < 2:
 
     # 危険度行列を取得
     # risk : spm2から出力された危険度
-    risk = np.random.randint(0,100,(2,3))
+    SPM2_predict_prepare = SPM2Open_npz()
+    test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack()
+
+    spm2_predict = SPM2Evaluate()
+    spm2_predict.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)
+    score_map = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
+
+    # risk = np.random.randint(0,100,(2,3))
     print("risk:\n"+str(risk)+"\n")
     # 下の分割領域と上の分割領域にそれぞれ分けて考える
     upper_risk = risk[0,:]
