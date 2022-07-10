@@ -96,7 +96,7 @@ class SPM2Learn():# second_spm.pyとして実装済み
             train_X = win
             self.scaler_master[win_no]=self.standardization_master[win_no].fit(train_X)
             train_X=self.scaler_master[win_no].transform(train_X)
-            train_y = np.zeros((train_X.shape[0], 1))
+            train_y = np.full((train_X.shape[0], 1),-100)
             # print(self.stack_info[win_no][0])
             train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 100
             # print(train_X.shape, train_y.shape)
@@ -149,7 +149,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         plt.ylabel("degree of risk")
         plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
         plt.legend()
-        #plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
+        plt.savefig(f"c_spm2/cc_spm2_after/ccb_-100_100/ccb{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
         plt.cla()
         
         # plt.show()
