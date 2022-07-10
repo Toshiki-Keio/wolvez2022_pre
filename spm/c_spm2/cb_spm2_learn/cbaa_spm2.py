@@ -7,6 +7,7 @@ import os
 import glob
 from pprint import pprint
 from sklearn.preprocessing import StandardScaler
+from scipy import signal
 
 
 class SPM2Open_npz(): # second_spm.pyとして実装済み
@@ -124,6 +125,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
             return None
         self.test()
         # self.plot()
+        print(len(self.score_master))
         return self.score_master
 
 
@@ -148,22 +150,37 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
     """    
     def plot(self,save_dir):
         for i, win_score in enumerate(self.score_master):
-            plt.plot(np.arange(len(win_score)), win_score, label=f"win_{i+1}")
+            win_score_low=self.lowpass(np.array(win_score).flatten(),25600,100,600,3,40)
+            plt.plot(np.arange(len(win_score)), win_score_low, label=f"win_{i+1}")
         plt.xlabel("time")
         plt.ylabel("degree of risk")
-        global train_mov_code,test_mov_code
-        plt.title(f"")
+        plt.ylim((-200,200))
+        global train_mov_code,test_mov_code,alpha
+        plt.title(f"{train_mov_code} -->> {test_mov_code}  alpha={alpha}")
         plt.legend()
-        
-        plt.savefig(save_dir+"")
+        plt.savefig(save_dir+"/sample.jpg")
         plt.cla()
         
         # plt.show()
+    
+    def lowpass(self,x, samplerate, fp, fs, gpass, gstop):
+        fn = samplerate / 2   #ナイキスト周波数
+        wp = fp / fn  #ナイキスト周波数で通過域端周波数を正規化
+        ws = fs / fn  #ナイキスト周波数で阻止域端周波数を正規化
+        print(wp,ws)
+        N, Wn = signal.buttord(wp, ws, gpass, gstop)  #オーダーとバターワースの正規化周波数を計算
+        print(N,Wn)
+        b, a = signal.butter(N, Wn, "low")            #フィルタ伝達関数の分子と分母を計算
+        y = signal.filtfilt(b, a, x)                  #信号に対してフィルタをかける
+        return y  
+    
+    def get_nonzero_w(self):
+        pass
 
 ############  settings  #############
 train_mov_code = 'c'
 test_mov_code = 'd'
-alpha = 1.0
+alpha = 5.0
 
 
 ############ definitions ############
@@ -178,7 +195,7 @@ spm2_prep = SPM2Open_npz()
 train_datas,train_datas_label=spm2_prep.unpack(train_files)
 
 spm2_1 = SPM2Learn()
-model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha)
+model_master, _, scaler_master = spm2_1.start(train_datas,train_datas_label,alpha=alpha,stack_appear=9,stack_disappear=16)
 
 ############   spm 2_2   ############
 test_files = sorted(glob.glob(test_dir_path+"/*"))
@@ -186,8 +203,8 @@ test_datas,test_datas_label=spm2_prep.unpack(test_files)
 
 spm2_2 = SPM2Evaluate()
 score_master = spm2_2.start(model_master,test_datas,test_datas_label,scaler_master)
-
-print(score_master)
+spm2_2.plot(save_dir=fig_dir_path)
+# pprint(score_master)
 
 
 """
