@@ -101,7 +101,7 @@ def spm_first(img_path=False,npz_dir=None, learn_state=False,patch_size=(24,32),
                     saveName = saveDir + f"/bcba_difference/{now}"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
-                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, saveDir)
+                    ave, med, var, mode, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, saveDir)
                     #if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
                     #    feature_values[feature_name] = {}
                     #    feature_values[feature_name]["var"] = ave
@@ -114,6 +114,7 @@ def spm_first(img_path=False,npz_dir=None, learn_state=False,patch_size=(24,32),
                     feature_values[feature_name][f'win_{win+1}']["var"] = ave
                     feature_values[feature_name][f'win_{win+1}']["med"] = med
                     feature_values[feature_name][f'win_{win+1}']["ave"] = var
+                    feature_values[feature_name][f'win_{win+1}']["mode"] = mode
                     feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
                     feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
         
