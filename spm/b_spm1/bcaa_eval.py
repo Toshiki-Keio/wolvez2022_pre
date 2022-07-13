@@ -57,7 +57,7 @@ class EvaluateImg(LearnDict):
         
         diff=abs(img-img_rec)
         diff_df = pd.DataFrame(diff.reshape(-1,))
-        val, count = np.unique(diff, retern_counts=True)
+        val, count = np.unique(diff, return_counts=True)
         index = np.argmax(count)
         mode = val[index]
         
