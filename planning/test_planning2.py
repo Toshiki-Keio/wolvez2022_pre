@@ -17,6 +17,33 @@ from turtle import distance
 import numpy as np
 
 
+from tempfile import TemporaryDirectory
+import sys
+import cv2
+sys.path.append("/home/pi/Desktop/wolvez2021/Testcode/sensor_integration/LoRa_SOFT")
+
+import os
+import re
+from datetime import datetime
+from glob import glob
+from math import prod
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+
+from b_classes import IntoWindow, LearnDict, EvaluateImg
+from baba_into_window import IntoWindow
+from bbaa_learn_dict import LearnDict
+from bcaa_eval import EvaluateImg
+from second_spm import SPM2Open_npz,SPM2Learn,SPM2Evaluate
+
+
+# from bno055 import BNO055
+# from motor import motor
+# from gps import GPS
+# from lora import lora
+# from led import led
+# import constant as ct
+
+
 
 # ゴール方向の角度から行く方向を決定する関数
 def decide_direction(phi):
@@ -101,7 +128,6 @@ gps.setupGps()
 
 
 
-
 # ゴールの緯度・経度を設定
 goal_position = (35.55518,139.65578)
 
@@ -143,7 +169,7 @@ while count < 2:
 
     spm2_predict = SPM2Evaluate()
     spm2_predict.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)
-    score_map = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
+    risk = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
 
     # risk = np.random.randint(0,100,(2,3))
     print("risk:\n"+str(risk)+"\n")
