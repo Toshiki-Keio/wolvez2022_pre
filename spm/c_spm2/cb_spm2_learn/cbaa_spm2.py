@@ -168,7 +168,7 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
         # plt.show()
     
     def moving_average(self,x,num=50):
-        ave_data=np.convolve(x,np.ones(num)/num,)
+        ave_data=np.convolve(x,np.ones(num)/num,mode="valid")
         print(ave_data)
         return ave_data
 
