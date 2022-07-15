@@ -225,8 +225,8 @@ for train_mov_code,stack_start, stack_end in zip(train_mov_codes,stack_starts,st
 """
 # 単品モード
 ############  settings  #############
-train_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
-test_mov_codes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',]
+train_mov_codes = 'c'
+test_mov_codes = 'x'
 alpha = 5.0
 for train_mov_code in train_mov_codes:
     for test_mov_code for test_mov_codes:
