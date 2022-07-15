@@ -149,7 +149,11 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
     """
     def plot(self,save_dir):
         for i, win_score in enumerate(self.score_master):
-            win_score_low=self.lowpass(np.array(win_score).flatten(),25600,100,600,3,40)
+            win_score=np.array(win_score).flatten()
+            print("win_score",win_score)
+            win_score_mov_ave=self.moving_average(win_score)
+            win_score_low=self.lowpass(win_score,25600,100,600,3,40)
+            plt.plot(np.arange(len(win_score_mov_ave)), win_score_mov_ave, label=f"win_{i+1}",color="r")
             plt.plot(np.arange(len(win_score)), win_score_low, label=f"win_{i+1}")
         plt.xlabel("time")
         plt.ylabel("degree of risk")
@@ -163,6 +167,12 @@ class SPM2Evaluate(): # 藤井さんの行動計画側に移設予定
 
         # plt.show()
     
+    def moving_average(self,x,num=50):
+        ave_data=np.convolve(x,np.ones(num)/num,)
+        print(ave_data)
+        return ave_data
+
+
     def lowpass(self,x, samplerate, fp, fs, gpass, gstop):
         fn = samplerate / 2   #ナイキスト周波数
         wp = fp / fn  #ナイキスト周波数で通過域端周波数を正規化
