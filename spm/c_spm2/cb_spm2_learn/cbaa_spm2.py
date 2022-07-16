@@ -15,7 +15,6 @@ print("######## debug ROI start ########")
 print("######## debug ROI end   ########")
 
 class SPM2Open_npz():  # second_spm.pyとして実装済み
-
     def unpack(self, files):
         print("===== npzファイルの解体 =====")
         print("読み込むフレーム数 : ", len(files))
@@ -27,7 +26,6 @@ class SPM2Open_npz():  # second_spm.pyとして実装済み
             label_list_all_time.append(label_list_per_pic)
         data_list_all_time = np.array(data_list_all_time)
         label_list_all_time = np.array(label_list_all_time)
-        
 
         print("===== windowごとに集計 =====")
         print("window数 : 6 (固定中。変更の場合はコード編集が必要）")
@@ -39,6 +37,7 @@ class SPM2Open_npz():  # second_spm.pyとして実装済み
                 self.label_list_all_win[win_no].append(label_win.flatten())
                 # print(train_X.shape)
                 pass
+
         self.data_list_all_win = np.array(self.data_list_all_win)
         self.label_list_all_win = np.array(self.label_list_all_win)
 
@@ -125,7 +124,27 @@ class SPM2Learn():  # second_spm.pyとして実装済み
             self.model_master[win_no].fit(train_X, train_y)
             pass
         pass
-
+    def get_nonzero_w(self):
+        self.nonzero_w = []
+        self.nonzero_w_label = []
+        for win_no, (win_model, labels) in enumerate(zip(self.model_master, self.label_list_all_win)):
+            self.nonzero_w.append([])
+            self.nonzero_w_label.append([])
+            weight = win_model.coef_
+            labels = labels[0]
+            for (w, label) in zip(weight, labels):
+                if w > 1:
+                    print("weight: \n", weight.shape)
+                    print("labels: \n", labels.shape)
+                    self.nonzero_w[win_no].append(w)
+                    self.nonzero_w_label[win_no].append(label)
+        self.nonzero_w_num = np.array([
+            [len(self.nonzero_w_label[0]), len(
+                self.nonzero_w_label[1]), len(self.nonzero_w_label[2])],
+            [len(self.nonzero_w_label[3]), len(
+                self.nonzero_w_label[4]), len(self.nonzero_w_label[5])]
+        ])
+        return self.nonzero_w, self.nonzero_w_label, self.nonzero_w_num
 
 """    
     def get_data(self):
@@ -243,6 +262,9 @@ for train_mov_code, stack_start, stack_end in zip(train_mov_codes, stack_starts,
     spm2_1 = SPM2Learn()
     model_master, _, scaler_master = spm2_1.start(
         train_datas, train_datas_label, alpha=alpha, stack_appear=stack_start, stack_disappear=stack_end)
+    nonzero_w, nonzero_w_label, nonzero_w_num = spm2_1.get_nonzero_w()
+    print(nonzero_w_num)
+
 
     for test_mov_code in test_mov_codes:
         ############   spm 2_2   ############
@@ -256,7 +278,6 @@ for train_mov_code, stack_start, stack_end in zip(train_mov_codes, stack_starts,
         fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
         spm2_2.plot(save_dir=fig_dir_path)
         nonzero_w, nonzero_w_label, nonzero_w_num = spm2_2.get_nonzero_w()
-        print(nonzero_w_num)
 
 """
 # 単品モード
