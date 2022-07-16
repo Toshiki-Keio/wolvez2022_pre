@@ -277,12 +277,7 @@ for train_mov_code, stack_start, stack_end in zip(train_mov_codes, stack_starts,
             model_master, test_datas, test_datas_label, scaler_master)
         fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
         spm2_2.plot(save_dir=fig_dir_path)
-<<<<<<< HEAD
         nonzero_w, nonzero_w_label, nonzero_w_num = spm2_2.get_nonzero_w()
-=======
-        nonzero_w,nonzero_w_label,nonzero_w_num=spm2_2.get_nonzero_w()
-        
->>>>>>> 9e42f2b0c44df1f33dca714e0d4c408004c22b3b
 
 """
 # 単品モード
