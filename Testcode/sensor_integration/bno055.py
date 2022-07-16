@@ -301,7 +301,5 @@ class BNO055:
         self.ax,self.ay,self.az = self.getVector(BNO055.VECTOR_GYROSCOPE)
         self.gx,self.gy,self.gz = self.getVector(BNO055.VECTOR_GRAVITY)
         self.ex,self.ey,self.ez = self.getVector(BNO055.VECTOR_EULER)
-<<<<<<< HEAD
         self.mx,self.my,self.mz = self.getVector(BNO055.VECTOR_MAGNETOMETER)
-=======
->>>>>>> e7b8c238c395715f12a161b39c7ace711d1d4d3c
+
