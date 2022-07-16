@@ -42,9 +42,9 @@ class IntoWindow(ReadFeaturedImg):
     
 
 class LearnDict():
-    patch_size=(5,5)
-    n_components=7
-    transform_n_nonzero_coefs=3
+    patch_size=(40,71)
+    n_components=5
+    transform_n_nonzero_coefs=4
     max_iter=15
     def __init__(self, img_part:np.ndarray):
         self.train_img = img_part
@@ -99,7 +99,7 @@ class EvaluateImg(LearnDict):
     def __init__(self, eval_img:np.ndarray):
         self.Y = super().img_to_Y(eval_img)
     
-        self.patch_size = super().patch_size
+        self.patch_size = super(LearnDict).patch_size
     
     def reconstruct(self,D,ksvd, original_img_size):
         #print("===== func reconstruct_img starts =====")
@@ -140,6 +140,9 @@ class EvaluateImg(LearnDict):
         #ax2.set_title("reconstructed img")
         diff=abs(img-img_rec)
         diff_df = pd.DataFrame(diff.reshape(-1,))
+        val, count = np.unique(diff, return_counts=True)
+        index = np.argmax(count)
+        mode = val[index]
         #ax3.imshow(diff*255,cmap='gray')
         #ax3.set_title("difference")
         #ax4.hist(diff.reshape(-1,),bins=255,range=(0,255))
@@ -151,4 +154,4 @@ class EvaluateImg(LearnDict):
         #print("average: ",np.average(diff))
         #print("median: ",np.median(diff))
         #print("variance: ",np.var(diff))
-        return np.average(diff),np.median(diff),np.var(diff),diff_df.kurt().to_numpy()[0],diff_df.skew().to_numpy()[0]
+        return np.average(diff),np.median(diff),np.var(diff),mode,diff_df.kurt().to_numpy()[0],diff_df.skew().to_numpy()[0]
