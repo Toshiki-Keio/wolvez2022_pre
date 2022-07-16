@@ -57,6 +57,9 @@ class EvaluateImg(LearnDict):
         
         diff=abs(img-img_rec)
         diff_df = pd.DataFrame(diff.reshape(-1,))
+        val, count = np.unique(diff, return_counts=True)
+        index = np.argmax(count)
+        mode = val[index]
         
         # ax3.imshow(diff*255,cmap='gray')
         # ax3.set_title("difference")
@@ -69,4 +72,4 @@ class EvaluateImg(LearnDict):
         # print("average: ",np.average(diff))
         # print("median: ",np.median(diff))
         # print("variance: ",np.var(diff))
-        return np.average(diff),np.median(diff),np.var(diff),diff_df.kurt().to_numpy()[0],diff_df.skew().to_numpy()[0]
+        return np.average(diff),np.median(diff),np.var(diff),mode,diff_df.kurt().to_numpy()[0],diff_df.skew().to_numpy()[0]
