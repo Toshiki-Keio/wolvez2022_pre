@@ -32,6 +32,8 @@ const.SEPARATION_PIN = 25
 const.FLIGHTPIN_PIN = 4
 
 const.LANDING_MOTOR_VREF = 90
+const.RUNNING_MOTOR_VREF = 70
+const.STUCK_MOTOR_VREF = 100
 
 
 ##Variable Threshold
@@ -50,8 +52,15 @@ const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 1 #加速度の値
 const.SEPARATION_TIME_THRE = 10 #焼き切り時間
 const.LANDING_CAMERA_TIME_THRE = 2
+
+const.LANDING_MOTOR_TIME_THRE = 5 #分離シートから離れるためにモータを回転させる時間
+const.SPM_FIRST_COUNT_THRE = 20
+const.STUCK_ACC_THRE = 0.1
+const.STUCK_COUNT_THRE = 30
+const.STUCK_MOTOR_TIME_THRE = 5 #分離シートから離れるためにモータを回転させる時間
 const.LANDING_PRE_MOTOR_TIME_THRE = 5 #分離シートから離れるためにモータを回転させる時間
 const.SPM_FIRST_COUNT_THRE = 20
+const.SPMFIRST_PIC_COUNT = 30
 const.STARTING_TIME_THRE = 60
 const.MEASURING_SWITCH_COUNT_THRE = 20 #1地点での測位回数
 const.MEASURING_MAX_MEASURING_COUNT_THRE = 6 #最大測位点

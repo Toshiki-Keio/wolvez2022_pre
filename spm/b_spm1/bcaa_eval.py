@@ -60,7 +60,10 @@ class EvaluateImg(LearnDict):
         val, count = np.unique(diff, return_counts=True)
         index = np.argmax(count)
         mode = val[index]
+<<<<<<< HEAD
         
+=======
+>>>>>>> 6d17e328b705482999f7e93234c1d3a7bdb36b49
         
         # ax3.imshow(diff*255,cmap='gray')
         # ax3.set_title("difference")
