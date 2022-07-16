@@ -61,6 +61,7 @@ class Cansat():
         self.firstevalimgcount = 0
         self.camerastate = 0
         self.camerafirst = 0
+        self.stuckTime = 0
         # self.pre_motorTime = 0
         # self.startingTime = 0
         # self.measureringTime = 0
@@ -76,6 +77,7 @@ class Cansat():
         self.countPreLoop = 0
         self.countFlyLoop = 0
         self.countDropLoop = 0
+        self.countstuckloop = 0
 
         self.dict_list = {}
         self.saveDir = "results"
@@ -240,8 +242,9 @@ class Cansat():
             elif self.landstate == 2:
                 self.rightMotor.go(ct.const.LANDING_MOTOR_VREF)
                 self.leftMotor.go(ct.const.LANDING_MOTOR_VREF)
+                self.stuck_detection()
 
-                if time.time()-self.pre_motorTime > ct.const.LANDING_PRE_MOTOR_TIME_THRE: #5秒間モータ回して分離シートから十分離れる
+                if time.time()-self.pre_motorTime > ct.const.LANDING_MOTOR_TIME_THRE: #5秒間モータ回して分離シートから十分離れる
                     self.rightMotor.stop()
                     self.leftMotor.stop()
                     self.state = 4
@@ -381,6 +384,7 @@ class Cansat():
 
                 self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
                 self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.stuck_detection()
                 time.sleep(2)
                 self.rightMotor.stop()
                 self.leftMotor.stop()
@@ -389,8 +393,6 @@ class Cansat():
             # print(feature_values)
             np.savez_compressed(self.saveDir + f"/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
             self.tempDir.cleanup()
-            
-
 
     def second_spm(self):
         npz_dir = "results/camera_result/processed/secondinput"
@@ -444,9 +446,9 @@ class Cansat():
         spm2_predict = SPM2Evaluate()
         spm2_predict.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)
         risk = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
-
-        ###藤井が書いてくれてるやつを組み込み
+        # 走行
         planning(risk, self.rightMotor, self.leftMotor, self.bno055, self.gps)
+        self.stuck_detection()#ここは注意
 
     def sendLoRa(self):
         datalog = str(self.state) + ","\
@@ -456,8 +458,21 @@ class Cansat():
 
         self.lora.sendData(datalog) #データを送信
         
-    def stuck_detection(self):
-        return 0
+    def stuck_detection(self):        
+        if pow(self.ax**2+self.ay**2+self.az**2) <= ct.const.STUCK_ACC_THRE:
+            self.countstuckloop += 1
+            if self.countstuckLoop > ct.const.STUCK_COUNT_THRE: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+                if self.stuckTime == 0:
+                    self.stuckTime = time.time()#スタック検知最初の時間計測
+                #トルネード実施
+                self.rightMotor.go(ct.const.STUCK_MOTOR_VREF)
+                self.leftMotor.back(ct.const.STUCK_MOTOR_VREF)
+
+                if time.time() - self.stuckTime > ct.const.STUCK_MOTOR_TIME_THRE:#閾値以上の時間モータを回転させたら
+                    self.rightMotor.stop()
+                    self.leftMotor.stop()
+                    self.stuckTime = 0
+                    self.countstuckloop = 0
 
     def keyboardinterrupt(self):
         self.rightMotor.stop()

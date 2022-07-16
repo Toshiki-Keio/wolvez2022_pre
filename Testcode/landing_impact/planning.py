@@ -16,13 +16,13 @@ from math import fabs
 from turtle import distance
 import numpy as np
 
-GPIO.setwarnings(False)
-MotorR = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
-MotorL = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN,ct.const.LEFT_MOTOR_VREF_PIN)
-bno055 = bno055.BNO055()
-bno055.setupBno()
-gps = gps.GPS()
-gps.setupGps()
+# GPIO.setwarnings(False)
+# MotorR = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
+# MotorL = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN,ct.const.LEFT_MOTOR_VREF_PIN)
+# bno055 = bno055.BNO055()
+# bno055.setupBno()
+# gps = gps.GPS()
+# gps.setupGps()
 
 # ゴール方向の角度から行く方向を決定する関数
 def decide_direction(phi):
