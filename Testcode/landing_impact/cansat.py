@@ -125,7 +125,7 @@ class Cansat():
         elif self.state == 3:#パラシュートから離れる。カメラでの撮影行う
             self.landing()
         elif self.state == 4:#スパースモデリング第一段階
-            self.spm_first(True)
+            self.spm_first(ct.const.SPMFIRST_PIC_COUNT,True)
         elif self.state == 5:#スパースモデリング第二段階
             model_master,scaler_master = self.spm_second()
         elif self.state == 6:#経路計画段階
@@ -251,8 +251,7 @@ class Cansat():
                     self.state = 4
                     self.laststate = 4
 
-    def spm_first(self, learn_state):
-    
+    def spm_first(self, PIC_COUNT, learn_state):
         #フォルダ作成部分
         if not os.path.exists(self.saveDir):
             os.mkdir(self.saveDir)
@@ -293,8 +292,8 @@ class Cansat():
             
             #学習用画像を一枚撮影
             if self.camerafirst == 0:
-                ret, self.firstimg = self.cap.read()
-                cv2.imwrite(f"results/camera_result/first/learn{self.learncount}/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
+                ret, firstimg = self.cap.read()
+                cv2.imwrite(f"results/camera_result/first/learn{self.learncount}/firstimg{self.firstlearnimgcount}.jpg",firstimg)
                 self.camerastate = "captured!"
                 self.firstlearnimgcount += 1
                 self.camerafirst = 1
@@ -319,20 +318,21 @@ class Cansat():
                         self.dict_list[feature_name] = [D, ksvd]
                         save_name = self.saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
                         # cv2.imwrite(save_name, iw_list[win])
-            learn_state = False
+            # learn_state = False
 
         else:#20枚撮影
-            self.spm_f_eval(PIC_COUNT=ct.const.SPMFIRST_PIC_COUNT, now=now, iw_shape=iw_shape) #第2段階用の画像を撮影
-            self.state = 5
-            laststate = 5
+            self.spm_f_eval(PIC_COUNT=PIC_COUNT, now=now, iw_shape=iw_shape) #第2段階用の画像を撮影
+            if self.state == 4:
+                self.state = 5
+                self.laststate = 5
                     
         
         end_time = time.time()#計算終了
         print("Calc Time:",end_time-start_time)
         # Learn state should be changed by main.py
-        self.learn_state = False#学習終了
+        # learn_state = False#学習終了
 
-    def second_spm(self):
+    def spm_second(self):
         npz_dir = f"results/camera_result/processed/learn{self.learncount}/secondinput"
         # wolvez2022/spmで実行してください
         train_npz = sorted(glob.glob(npz_dir))
@@ -375,10 +375,11 @@ class Cansat():
             label_list_all_win: 重み行列の各成分を、その意味（ex.window_1のrgb画像のaverage）の説明で書き換えた配列
             scaler_master: 各ウィンドウを標準化した時のモデル（scaler.transform()の"scaler"に相当するのがリストで入って）
         """
-        self.learncount += 1
         return model_master,scaler_master
 
     def running(self,model_master,scaler_master):
+        # self.spm_first(1,False)
+        ret,runimg = self.cap.read()
         SPM2_predict_prepare = SPM2Open_npz()
         test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack()
 
@@ -396,11 +397,13 @@ class Cansat():
             cv2.imwrite(f"results/camera_result/second/learn{self.learncount}/secondimg{i}.jpg",self.secondimg)
             self.firstevalimgcount += 1
             
-            # ここに走行コード
-            ######
-            ######
-            ######
-            ######
+            # if self.state == 4:
+            #     self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+            #     self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+            #     self.stuck_detection()
+            #     time.sleep(2)
+            #     self.rightMotor.stop()
+            #     self.leftMotor.stop()
         
         second_img_paths = sorted(glob(f"results/camera_result/second/learn{self.learncount}/secondimg*.jpg"))
         
@@ -442,13 +445,6 @@ class Cansat():
                     feature_values[feature_name][f'win_{win+1}']["ave"] = var
                     # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
                     # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
-
-                self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                self.stuck_detection()
-                time.sleep(2)
-                self.rightMotor.stop()
-                self.leftMotor.stop()
                 
             #npzファイル形式で計算結果保存
             # print(feature_values)
