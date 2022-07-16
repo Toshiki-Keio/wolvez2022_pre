@@ -1,11 +1,5 @@
 #Last Update 2022/07/02
 #Author : Toshiki Fukui
-"""
-To 統合担当者
-SPM2に関し以下の改善をおこなったため、確認をお願いします。
-L448 SPM2Learn()のstart関数について、alpha(LassoのL0ノルムの重みパラメータ)の指定ができるようになりました。現状1.0をデフォとしていますが実装では5.0が良さそうです
-
-"""
 
 from tempfile import TemporaryDirectory
 import RPi.GPIO as GPIO
