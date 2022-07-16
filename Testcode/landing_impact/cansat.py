@@ -1,5 +1,11 @@
 #Last Update 2022/07/02
 #Author : Toshiki Fukui
+"""
+To 統合担当者
+SPM2に関し以下の改善をおこなったため、確認をお願いします。
+L448 SPM2Learn()のstart関数について、alpha(LassoのL0ノルムの重みパラメータ)の指定ができるようになりました。現状1.0をデフォとしていますが実装では5.0が良さそうです
+
+"""
 
 from tempfile import TemporaryDirectory
 import RPi.GPIO as GPIO
@@ -439,8 +445,10 @@ class Cansat():
             )
             t[s]で入力すること。
         """
-        spm2_learn.start(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=stack_info)#どっちかは外すのがいいのか
+        spm2_learn.start(data_list_all_win,label_list_all_win,fps=30,alpha=5.0,stack_appear=stack_start,stack_disappear=stack_end,stack_info=stack_info)#どっちかは外すのがいいのか
         model_master,label_list_all_win,scaler_master=spm2_learn.get_data()
+        nonzero_w, nonzero_w_label, nonzero_w_num = spm2_learn.get_nonzero_w()
+        print(nonzero_w_num)
         """
             model_master: 各ウィンドウを学習したモデル（俗にいう"model.predict()"とかの"model.predict()"とかのmodelに相当するのがリストで入ってる）
             label_list_all_win: 重み行列の各成分を、その意味（ex.window_1のrgb画像のaverage）の説明で書き換えた配列
@@ -457,6 +465,7 @@ class Cansat():
         spm2_predict = SPM2Evaluate()
         spm2_predict.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)
         risk = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
+
         # 走行
         planning(risk, self.rightMotor, self.leftMotor, self.bno055, self.gps)
         self.stuck_detection()#ここは注意
