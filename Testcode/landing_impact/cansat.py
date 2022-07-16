@@ -333,7 +333,8 @@ class Cansat():
         # 評価枚数分ループ処理
         for i in range(PIC_COUNT):
             ret,self.secondimg = self.cap.read()
-            cv2.imwrite(f"results/camera_result/second/secondimg{i}.jpg",self.secondimg)
+            save_file = f"results/camera_result/second/secondimg{i}.jpg"
+            cv2.imwrite(save_file,self.secondimg)
             self.firstevalimgcount += 1
             
             # ここに走行コード
@@ -341,8 +342,13 @@ class Cansat():
             ######
             ######
             ######
-        
-        second_img_pahts = sorted(glob("results/camera_result/second/secondimg*.jpg"))
+            
+            
+        if not PIC_COUNT == 1:
+            second_img_pahts = sorted(glob("results/camera_result/second/secondimg*.jpg"))
+        else:
+            second_img_pahts = [save_file]
+            
         
         for importPath in second_img_pahts:
         
@@ -370,18 +376,19 @@ class Cansat():
                     saveName = self.saveDir + f"/camera_result/processed/bcba_difference/{now}"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
-                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
+                    ave, med, var, mode, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
                     
                     # 特徴量終結/1枚
                     if win == 0:
                         feature_values[feature_name] = {}
 
                     feature_values[feature_name][f'win_{win+1}'] = {}
-                    feature_values[feature_name][f'win_{win+1}']["var"] = ave
-                    feature_values[feature_name][f'win_{win+1}']["med"] = med
-                    feature_values[feature_name][f'win_{win+1}']["ave"] = var
-                    # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
-                    # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
+                    feature_values[feature_name][f'win_{win+1}']["var"] = ave  # 平均値
+                    feature_values[feature_name][f'win_{win+1}']["med"] = med  # 中央値
+                    feature_values[feature_name][f'win_{win+1}']["ave"] = var  # 分散値
+                    feature_values[feature_name][f'win_{win+1}']["mode"] = mode  # 最頻値
+                    feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
+                    feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
 
                 self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
                 self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
