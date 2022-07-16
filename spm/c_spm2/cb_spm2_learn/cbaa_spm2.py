@@ -35,6 +35,7 @@ class SPM2Open_npz(): # second_spm.pyとして実装済み
                 self.label_list_all_win[win_no].append(label_win.flatten())
                 # print(train_X.shape)
                 pass
+
         self.data_list_all_win = np.array(self.data_list_all_win)
         self.label_list_all_win = np.array(self.label_list_all_win)
         print("===== 終了 =====")
@@ -230,7 +231,7 @@ for train_mov_code,stack_start, stack_end in zip(train_mov_codes,stack_starts,st
         fig_dir_path = spm_path+"/c_spm2/cc_spm2_after/cca_output_of_spm2"
         spm2_2.plot(save_dir=fig_dir_path)
         nonzero_w,nonzero_w_label,nonzero_w_num=spm2_2.get_nonzero_w()
-        print(nonzero_w_num)
+        
 
 """
 # 単品モード

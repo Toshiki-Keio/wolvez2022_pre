@@ -338,13 +338,13 @@ class Cansat():
             cv2.imwrite(save_file,self.secondimg)
             self.firstevalimgcount += 1
             
-            # if self.state == 4:
-            #     self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-            #     self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-            #     self.stuck_detection()
-            #     time.sleep(2)
-            #     self.rightMotor.stop()
-            #     self.leftMotor.stop()
+            if self.state == 4:
+                self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.stuck_detection()
+                time.sleep(2)
+                self.rightMotor.stop()
+                self.leftMotor.stop()
             
             
         if not PIC_COUNT == 1:
@@ -441,6 +441,7 @@ class Cansat():
             model_master: 各ウィンドウを学習したモデル（俗にいう"model.predict()"とかの"model.predict()"とかのmodelに相当するのがリストで入ってる）
             label_list_all_win: 重み行列の各成分を、その意味（ex.window_1のrgb画像のaverage）の説明で書き換えた配列
             scaler_master: 各ウィンドウを標準化した時のモデル（scaler.transform()の"scaler"に相当するのがリストで入って）
+            feature_names: 特徴処理の名前をリストに格納
         """
         return model_master,scaler_master,feature_names
 
