@@ -277,8 +277,8 @@ for alpha in np.arange(0,10,0.1):
                 print(scores)
                 del seq3
                 del seq4
-            # if end_flg:
-            #     break    
+        #     if end_flg:
+        #         break    
         # if end_flg:
         #     break    
 
