@@ -22,7 +22,6 @@ from bcaa_eval import EvaluateImg
 from second_spm import SPM2Open_npz,SPM2Learn,SPM2Evaluate
 
 import planning
-
 from bno055 import BNO055
 from motor import motor
 from gps import GPS
@@ -61,6 +60,7 @@ class Cansat():
         self.firstevalimgcount = 0
         self.camerastate = 0
         self.camerafirst = 0
+        
         self.stuckTime = 0
         # self.pre_motorTime = 0
         # self.startingTime = 0
@@ -242,6 +242,7 @@ class Cansat():
             elif self.landstate == 2:
                 self.rightMotor.go(ct.const.LANDING_MOTOR_VREF)
                 self.leftMotor.go(ct.const.LANDING_MOTOR_VREF)
+
                 self.stuck_detection()
 
                 if time.time()-self.pre_motorTime > ct.const.LANDING_MOTOR_TIME_THRE: #5秒間モータ回して分離シートから十分離れる

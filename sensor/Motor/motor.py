@@ -12,9 +12,9 @@ class motor():
         GPIO.setup(vref, GPIO.OUT)
         self.pin1 = pin1 #入力1
         self.pin2 = pin2 #入力2
-        self.vref = vref #電圧を参照するピン
+        self.vref = vref #電圧を参照するピン PWM
         self.velocity = 0
-        self.pwm = GPIO.PWM(vref,1000) #電圧を参照するピンを周波数50HZに指定（Arduinoはデフォルトで490だけど、ラズパイはネットだと50HZがメジャーそうだった）
+        self.pwm = GPIO.PWM(vref,200) #電圧を参照するピンを周波数50HZに指定（Arduinoはデフォルトで490だけど、ラズパイはネットだと50HZがメジャーそうだった）
         GPIO.output(self.pin1,GPIO.LOW)
         GPIO.output(self.pin2,GPIO.LOW)
         
@@ -39,7 +39,7 @@ class motor():
         GPIO.output(self.pin1,GPIO.LOW)
         GPIO.output(self.pin2,GPIO.HIGH)
         self.pwm.start(v)
-        #print(v)
+        print(v)
         
 #回転ストップ
     def stop(self):

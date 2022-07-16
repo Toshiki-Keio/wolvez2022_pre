@@ -4,11 +4,11 @@ from sklearn.preprocessing import StandardScaler
 from spmimage.decomposition import KSVD
 
 class LearnDict():
-    patch_size=(5,5)
-    n_components=7
-    transform_n_nonzero_coefs=3
-    max_iter=15
-    def __init__(self, img_part:np.ndarray):
+    def __init__(self, img_part:np.ndarray,patch_size=(5,5),n_components=20,transform_n_nonzero_coefs=3,max_iter=15):
+        self.patch_size=patch_size
+        self.n_components=n_components 
+        self.transform_n_nonzero_coefs=transform_n_nonzero_coefs # 一つのエリアを再構成する時に、一度に幾つの基底ベクトルを使って良いか、という指定なので、再構成の精度を下げたいなら値を小さくする
+        self.max_iter=max_iter
         self.train_img = img_part
         self.Y = self.img_to_Y(self.train_img, self.patch_size)
     
@@ -20,9 +20,9 @@ class LearnDict():
     def img_to_Y(self, train_img, patch_size=(5,5)):
         self.scl=StandardScaler()
         #print("===== func img_to_Y starts =====")
-        self.patches=extract_simple_patches_2d(train_img,patch_size=patch_size)# 画像をpatch_sizeに分割
-        self.patches=self.patches.reshape(-1, np.prod(patch_size))# 2次元に直す。(枚数,patchの積) つまりパッチを2→1次元にしている
-        #print("patch_size: ",patches.shape)# (枚数,patch_size[0],patch_size[1])つまり３じげん
+        self.patches=extract_simple_patches_2d(train_img,patch_size=self.patch_size)# 画像をpatch_sizeに分割
+        self.patches=self.patches.reshape(-1, np.prod(self.patch_size))# 2次元に直す。(枚数,patchの積) つまりパッチを2→1次元にしている
+        #print("self.patch_size: ",patches.shape)# (枚数,self.patch_size[0],self.patch_size[1])つまり３じげん
         self.Y=self.scl.fit_transform(self.patches)# 各パッチの標準化（スケールの違いを標準化する）
         #print("patches were standardized")
         return self.Y
@@ -34,17 +34,17 @@ class LearnDict():
         機能 : 画像データ群Yを構成する基底ベクトルの集合Dを生成
             Yを再構成するためにどうDの中身を組み合わせるか、を示すXも生成
             この際、基底ベクトルの数をn_componentsで指定できる
-            また、各画素の再構成に使える基底ベクトルの本数をtransform_n_nonzero_coefsで指定できる
-            max_iterは詳細不明
+            また、各画素の再構成に使える基底ベクトルの本数をself.transform_n_nonzero_coefsで指定できる
+            self.max_iterは詳細不明
         """
         #print("===== func generate_dict starts =====")
         # 学習モデルの定義
-        self.ksvd = KSVD(n_components=n_components,
-                    transform_n_nonzero_coefs=transform_n_nonzero_coefs, max_iter=max_iter)
+        self.ksvd = KSVD(n_components=self.n_components,
+                    transform_n_nonzero_coefs=self.transform_n_nonzero_coefs, max_iter=self.max_iter)
         #print("model established. Parameters are:")
-        #print("n_components: ", n_components)
-        #print("transform_n_nonzero_coefs: ", transform_n_nonzero_coefs)
-        #print("max_iter: ", max_iter)
+        #print("self.n_components: ", self.n_components)
+        #print("self.transform_n_nonzero_coefs: ", self.transform_n_nonzero_coefs)
+        #print("self.max_iter: ", self.max_iter)
         # 抽出行列を求める
         self.X = self.ksvd.fit_transform(Y)
         #print("X shape: ", self.X.shape)
