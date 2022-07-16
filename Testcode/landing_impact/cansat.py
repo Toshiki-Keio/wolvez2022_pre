@@ -60,8 +60,8 @@ class Cansat():
         self.firstevalimgcount = 0
         self.camerastate = 0
         self.camerafirst = 0
-        
         self.stuckTime = 0
+        self.learncount = 1
         # self.pre_motorTime = 0
         # self.startingTime = 0
         # self.measureringTime = 0
@@ -251,7 +251,7 @@ class Cansat():
                     self.state = 4
                     self.laststate = 4
 
-    def spm_first(self,learn_state, PIC_COUNT):
+    def spm_first(self, learn_state):
     
         #フォルダ作成部分
         if not os.path.exists(self.saveDir):
@@ -294,8 +294,9 @@ class Cansat():
             #学習用画像を一枚撮影
             if self.camerafirst == 0:
                 ret, self.firstimg = self.cap.read()
-                cv2.imwrite(f"results/camera_result/first/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
+                cv2.imwrite(f"results/camera_result/first/learn{self.learncount}/firstimg{self.firstlearnimgcount}.jpg",self.firstimg)
                 self.camerastate = "captured!"
+                self.firstlearnimgcount += 1
                 self.camerafirst = 1
             else:
                 self.camerastate = 0
@@ -321,82 +322,18 @@ class Cansat():
             learn_state = False
 
         else:#20枚撮影
-            self.spm_f_eval(PIC_COUNT=PIC_COUNT, now=now, iw_shape=iw_shape)
+            self.spm_f_eval(PIC_COUNT=ct.const.SPMFIRST_PIC_COUNT, now=now, iw_shape=iw_shape) #第2段階用の画像を撮影
+            self.state = 5
+            laststate = 5
                     
         
         end_time = time.time()#計算終了
         print("Calc Time:",end_time-start_time)
         # Learn state should be changed by main.py
-        learn_state = False#学習終了
-
-    def spm_f_eval(self, PIC_COUNT=1, now="TEST", iw_shape=(2,3)):
-        # 評価枚数分ループ処理
-        for i in range(PIC_COUNT):
-            ret,self.secondimg = self.cap.read()
-            cv2.imwrite(f"results/camera_result/second/secondimg{i}.jpg",self.secondimg)
-            self.firstevalimgcount += 1
-            
-            # ここに走行コード
-            ######
-            ######
-            ######
-            ######
-        
-        second_img_pahts = sorted(glob("results/camera_result/second/secondimg*.jpg"))
-        
-        for importPath in second_img_pahts:
-        
-            feature_values = {}
-            
-            self.tempDir = TemporaryDirectory()
-            tempDir_name = self.tempDir.name
-            
-            iw = IntoWindow(importPath, tempDir_name, False) #画像の特徴抽出のインスタンス生成
-            # processing img
-            fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
-
-            for fmg in fmg_list:#それぞれの特徴画像に対して処理
-                iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
-                feature_name = str(re.findall(self.tempDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
-                print("FEATURED BY: ",feature_name)
-                
-                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
-                    D, ksvd = self.dict_list[feature_name]
-                    ei = EvaluateImg(iw_list[win])
-                    img_rec = ei.reconstruct(D, ksvd, window_size)
-                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
-                    if not os.path.exists(saveName):
-                        os.mkdir(saveName)
-                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference/{now}"
-                    if not os.path.exists(saveName):
-                        os.mkdir(saveName)
-                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
-                    
-                    # 特徴量終結/1枚
-                    if win == 0:
-                        feature_values[feature_name] = {}
-
-                    feature_values[feature_name][f'win_{win+1}'] = {}
-                    feature_values[feature_name][f'win_{win+1}']["var"] = ave
-                    feature_values[feature_name][f'win_{win+1}']["med"] = med
-                    feature_values[feature_name][f'win_{win+1}']["ave"] = var
-                    # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
-                    # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
-
-                self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                self.stuck_detection()
-                time.sleep(2)
-                self.rightMotor.stop()
-                self.leftMotor.stop()
-                
-            #npzファイル形式で計算結果保存
-            # print(feature_values)
-            np.savez_compressed(self.saveDir + f"/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
-            self.tempDir.cleanup()
+        self.learn_state = False#学習終了
 
     def second_spm(self):
-        npz_dir = "results/camera_result/processed/secondinput"
+        npz_dir = f"results/camera_result/processed/learn{self.learncount}/secondinput"
         # wolvez2022/spmで実行してください
         train_npz = sorted(glob.glob(npz_dir))
         spm2_prepare = SPM2Open_npz()
@@ -438,6 +375,7 @@ class Cansat():
             label_list_all_win: 重み行列の各成分を、その意味（ex.window_1のrgb画像のaverage）の説明で書き換えた配列
             scaler_master: 各ウィンドウを標準化した時のモデル（scaler.transform()の"scaler"に相当するのがリストで入って）
         """
+        self.learncount += 1
         return model_master,scaler_master
 
     def running(self,model_master,scaler_master):
@@ -451,6 +389,72 @@ class Cansat():
         planning(risk, self.rightMotor, self.leftMotor, self.bno055, self.gps)
         self.stuck_detection()#ここは注意
 
+    def spm_f_eval(self, PIC_COUNT=1, now="TEST", iw_shape=(2,3)):
+        # 評価枚数分ループ処理
+        for i in range(PIC_COUNT):
+            ret,self.secondimg = self.cap.read() #画像を撮影したら
+            cv2.imwrite(f"results/camera_result/second/learn{self.learncount}/secondimg{i}.jpg",self.secondimg)
+            self.firstevalimgcount += 1
+            
+            # ここに走行コード
+            ######
+            ######
+            ######
+            ######
+        
+        second_img_paths = sorted(glob(f"results/camera_result/second/learn{self.learncount}/secondimg*.jpg"))
+        
+        for importPath in second_img_paths:
+        
+            feature_values = {}
+            
+            self.tempDir = TemporaryDirectory()
+            tempDir_name = self.tempDir.name
+            
+            iw = IntoWindow(importPath, tempDir_name, False) #画像の特徴抽出のインスタンス生成
+            # processing img
+            fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
+
+            for fmg in fmg_list:#それぞれの特徴画像に対して処理
+                iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
+                feature_name = str(re.findall(self.tempDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                print("FEATURED BY: ",feature_name)
+                
+                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
+                    D, ksvd = self.dict_list[feature_name]
+                    ei = EvaluateImg(iw_list[win])
+                    img_rec = ei.reconstruct(D, ksvd, window_size)
+                    saveName = self.saveDir + f"/camera_result/processed/learn{self.learncount}/bcba_difference"
+                    if not os.path.exists(saveName):
+                        os.mkdir(saveName)
+                    saveName = self.saveDir + f"/camera_result/processed/learn{self.learncount}/bcba_difference/{now}"
+                    if not os.path.exists(saveName):
+                        os.mkdir(saveName)
+                    ave, med, var, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
+                    
+                    # 特徴量終結/1枚
+                    if win == 0:
+                        feature_values[feature_name] = {}
+
+                    feature_values[feature_name][f'win_{win+1}'] = {}
+                    feature_values[feature_name][f'win_{win+1}']["var"] = ave
+                    feature_values[feature_name][f'win_{win+1}']["med"] = med
+                    feature_values[feature_name][f'win_{win+1}']["ave"] = var
+                    # feature_values[feature_name][f'win_{win+1}']["kurt"] = kurt  # 尖度
+                    # feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
+
+                self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.stuck_detection()
+                time.sleep(2)
+                self.rightMotor.stop()
+                self.leftMotor.stop()
+                
+            #npzファイル形式で計算結果保存
+            # print(feature_values)
+            np.savez_compressed(self.saveDir + f"/camera_result/processed/learn{self.learncount}/secondinput/"+now,array_1=np.array([feature_values]))
+            self.tempDir.cleanup()
+    
     def sendLoRa(self):
         datalog = str(self.state) + ","\
                   + str(self.gps.Time) + ","\
