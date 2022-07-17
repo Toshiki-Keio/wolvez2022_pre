@@ -123,8 +123,8 @@ class Cansat():
             self.landing()
         elif self.state == 4:#スパースモデリング第一段階
             self.spm_first(ct.const.SPMFIRST_PIC_COUNT)
-#         elif self.state == 5:#スパースモデリング第二段階
-#             model_master,scaler_master,feature_names = self.spm_second()
+        elif self.state == 5:#スパースモデリング第二段階
+            model_master,scaler_master,feature_names = self.spm_second()
 #         elif self.state == 6:#経路計画段階
 #             self.running(model_master,scaler_master,feature_names)
         # elif self.state == 7:
@@ -245,25 +245,24 @@ class Cansat():
 
     def spm_first(self, PIC_COUNT):
         #フォルダ作成部分
-        if not os.path.exists(self.saveDir):
-            os.mkdir(self.saveDir)
-        if not os.path.exists(self.saveDir + f"/camera_result/processed/bbba_learnimg"):
-            os.mkdir(self.saveDir + f"/camera_result/processed/bbba_learnimg")
-        if not os.path.exists(self.saveDir + f"/camera_result/processed/secondinput"): #to spm2
-            os.mkdir(self.saveDir + f"/camera_result/processed/secondinput")
-        if not os.path.exists(self.saveDir + f"/camera_result/second"): #to spm2
-            os.mkdir(self.saveDir + f"/camera_result/second")
-        saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
-        if not os.path.exists(saveName):
-            os.mkdir(saveName)
+        folder_paths =[f"results/camera_result/first_spm",
+                       f"results/camera_result/first_spm/learn{self.learncount}",
+                       f"results/camera_result/first_spm/learn{self.learncount}/evaluate",
+                       f"results/camera_result/first_spm/learn{self.learncount}/processed",
+                       f"results/camera_result/second_spm",
+                       f"results/camera_result/second_spm/learn{self.learncount}",
+                       f"results/camera_result/planning"]
+        
+        for folder_path in folder_paths:
+            if not os.path.exists(folder_path):
+                os.mkdir(folder_path)
+    
 
         start_time = time.time()#学習用時間計測。学習開始時間
         
         #保存時のファイル名指定（現在は時間）
         now=str(datetime.now())[:19].replace(" ","_").replace(":","-")
-#         saveName = self.saveDir + f"/processed/bcba_difference/{now}"
-#         if not os.path.exists(saveName):
-#             os.mkdir(saveName)
+
         Save = True
         
         # Path that img will be read
@@ -288,24 +287,23 @@ class Cansat():
             if self.camerafirst == 0:
                 self.cap = cv2.VideoCapture(0)
                 ret, firstimg = self.cap.read()
-                if not os.path.exists(f"results/camera_result/first/learn{self.learncount}"):
-                    os.mkdir(f"results/camera_result/first/learn{self.learncount}")
-                cv2.imwrite(f"results/camera_result/first/learn{self.learncount}/firstimg{self.firstlearnimgcount}.jpg",firstimg)
+                cv2.imwrite(f"results/camera_result/first_spm/learn{self.learncount}/firstimg{self.firstlearnimgcount}.jpg",firstimg)
                 self.camerastate = "captured!"
                 self.firstlearnimgcount += 1
                 self.camerafirst = 1
             else:
                 self.camerastate = 0
             
-            importPath = f"results/camera_result/first/learn{self.learncount}/firstimg{self.firstlearnimgcount-1}.jpg"
-            iw = IntoWindow(importPath, self.saveDir, Save) #画像の特徴抽出のインスタンス生成
+            importPath = f"results/camera_result/first_spm/learn{self.learncount}/firstimg{self.firstlearnimgcount-1}.jpg"
+            processed_Dir = f"results/camera_result/first_spm/learn{self.learncount}/processed"
+            iw = IntoWindow(importPath, processed_Dir, Save) #画像の特徴抽出のインスタンス生成
             # processing img
             fmg_list = iw.feature_img(frame_num=now) #特徴抽出。リストに特徴画像が入る
                 
             for fmg in fmg_list:#それぞれの特徴画像に対して処理
                 # breakout by windows
                 iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
-                feature_name = str(re.findall(self.saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                feature_name = str(re.findall(self.saveDir + f"/camera_result/first_spm/learn{self.learncount}/processed/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
 
                 for win in range(int(np.prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
@@ -313,7 +311,7 @@ class Cansat():
                         ld = LearnDict(iw_list[win])
                         D, ksvd = ld.generate() #辞書獲得
                         self.dict_list[feature_name] = [D, ksvd]
-                        save_name = self.saveDir + f"/bbba_learnimg/{feature_name}_part_{win+1}_{now}.jpg"
+                        save_name = self.saveDir + f"/learn{self.learncount}/learnimg/{feature_name}_part_{win+1}_{now}.jpg"
                         # cv2.imwrite(save_name, iw_list[win])
             self.learn_state = False
 
@@ -328,13 +326,13 @@ class Cansat():
         print("Calc Time:",end_time-start_time)
 
     def spm_f_eval(self, PIC_COUNT=1, now="TEST", iw_shape=(2,3),feature_names = None):
-        # 評価枚数分ループ処理
-        if not os.path.exists(f"results/camera_result/second/learn{self.learncount}"):
-            os.mkdir(f"results/camera_result/second/learn{self.learncount}")
-            
         for i in range(PIC_COUNT):
             ret,self.secondimg = self.cap.read()
-            save_file = f"results/camera_result/second/learn{self.learncount}/secondimg{i}.jpg"
+            if self.state == 4:
+                save_file = f"results/camera_result/first_spm/learn{self.learncount}/evaluate/evaluateimg{i}.jpg"
+            elif self.state == 6:
+                save_file = f"results/camera_result/planning/learn{self.learncount}/planningimg{i}.jpg"
+
             cv2.imwrite(save_file,self.secondimg)
             self.firstevalimgcount += 1
             
@@ -345,14 +343,12 @@ class Cansat():
                 self.rightMotor.stop()
                 self.leftMotor.stop()
             
-            
         if not PIC_COUNT == 1:
-            second_img_pahts = sorted(glob("results/camera_result/second/secondimg*.jpg"))
+            second_img_paths = sorted(glob(f"results/camera_result/first_spm/learn{self.learncount}/evaluate/evaluateimg*.jpg"))
         else:
-            second_img_pahts = [save_file]
-            
+            second_img_paths = [save_file]
         
-        for importPath in second_img_pahts:
+        for importPath in second_img_paths:
         
             feature_values = {}
             
@@ -361,21 +357,22 @@ class Cansat():
             
             iw = IntoWindow(importPath, tempDir_name, False) #画像の特徴抽出のインスタンス生成
             # processing img
-            fmg_list = iw.feature_img(frame_num=now,feature_names=feature_names) #特徴抽出。リストに特徴画像が入る
 
+            fmg_list = iw.feature_img(frame_num=now,feature_names=feature_names) #特徴抽出。リストに特徴画像が入る
+            
             for fmg in fmg_list:#それぞれの特徴画像に対して処理
                 iw_list, window_size = iw.breakout(iw.read_img(fmg)) #ブレイクアウト
-                feature_name = str(re.findall(tempDir_name + f"/baca_featuring/(.*)_.*_", fmg)[0])
+                feature_name = str(re.findall(tempDir_name + f"/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
                 
                 for win in range(int(np.prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
                     D, ksvd = self.dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win])
                     img_rec = ei.reconstruct(D, ksvd, window_size)
-                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference"
+                    saveName = self.saveDir + f"/camera_result/first_spm/learn{self.learncount}/processed/difference"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
-                    saveName = self.saveDir + f"/camera_result/processed/bcba_difference/{now}"
+                    saveName = self.saveDir + f"/camera_result/first_spm/learn{self.learncount}/processed/difference/{now}"
                     if not os.path.exists(saveName):
                         os.mkdir(saveName)
                     ave, med, var, mode, kurt, skew = ei.evaluate(iw_list[win], img_rec, win+1, feature_name, now, self.saveDir)
@@ -393,14 +390,13 @@ class Cansat():
                     feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
                 
             #npzファイル形式で計算結果保存
-            # print(feature_values)
-            np.savez_compressed(self.saveDir + f"/camera_result/processed/secondinput/"+now,array_1=np.array([feature_values]))
+            np.savez_compressed(self.saveDir + f"/camera_result/second_spm/learn{self.learncount}/"+str(time.time()),array_1=np.array([feature_values]))
             self.tempDir.cleanup()
 
     def spm_second(self):
-        npz_dir = f"results/camera_result/processed/learn{self.learncount}/secondinput"
+        npz_dir = f"results/camera_result/second_spm/learn{self.learncount}/*"
         # wolvez2022/spmで実行してください
-        train_npz = sorted(glob.glob(npz_dir))
+        train_npz = sorted(glob(npz_dir))
         spm2_prepare = SPM2Open_npz()
         data_list_all_win,label_list_all_win = spm2_prepare.unpack(train_npz)
 
@@ -436,13 +432,29 @@ class Cansat():
         spm2_learn.start(data_list_all_win,label_list_all_win,fps=30,alpha=5.0,stack_appear=stack_start,stack_disappear=stack_end,stack_info=stack_info)#どっちかは外すのがいいのか
         model_master,label_list_all_win,scaler_master=spm2_learn.get_data()
         nonzero_w, nonzero_w_label, nonzero_w_num = spm2_learn.get_nonzero_w()
+        print(nonzero_w_label)
+        feature_names = nonzero_w_label
+        
+        """
+        spm2_prep = SPM2Open_npz()
+        train_datas, train_datas_label = spm2_prep.unpack(train_files)
+
+        spm2_1 = SPM2Learn()
+        model_master, _, scaler_master = spm2_1.start(
+            train_datas, train_datas_label, alpha=alpha, stack_appear=stack_start, stack_disappear=stack_end)
+        nonzero_w, nonzero_w_label, nonzero_w_num = spm2_1.get_nonzero_w()
         print(nonzero_w_num)
+        """
+        
         """
             model_master: 各ウィンドウを学習したモデル（俗にいう"model.predict()"とかの"model.predict()"とかのmodelに相当するのがリストで入ってる）
             label_list_all_win: 重み行列の各成分を、その意味（ex.window_1のrgb画像のaverage）の説明で書き換えた配列
             scaler_master: 各ウィンドウを標準化した時のモデル（scaler.transform()の"scaler"に相当するのがリストで入って）
             feature_names: 特徴処理の名前をリストに格納
         """
+        
+        self.state = 6
+        self.laststate = 6
         return model_master,scaler_master,feature_names
 
     def running(self,model_master,scaler_master,feature_names):

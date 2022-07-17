@@ -55,7 +55,7 @@ class LearnDict():
                                                  transform_n_nonzero_coefs=self.transform_n_nonzero_coefs, max_iter=self.max_iter)
         return self.D, self.ksvd
     
-    def img_to_Y(self, train_img, patch_size=(5,5)):
+    def img_to_Y(self, train_img, patch_size=(40,71)):
         self.scl=StandardScaler()
         #print("===== func img_to_Y starts =====")
         self.patches=extract_simple_patches_2d(train_img,patch_size=patch_size)# 画像をpatch_sizeに分割
@@ -99,7 +99,7 @@ class EvaluateImg(LearnDict):
     def __init__(self, eval_img:np.ndarray):
         self.Y = super().img_to_Y(eval_img)
     
-        self.patch_size = super(LearnDict).patch_size
+        self.patch_size = super().patch_size
     
     def reconstruct(self,D,ksvd, original_img_size):
         #print("===== func reconstruct_img starts =====")
