@@ -5,14 +5,13 @@ from tempfile import TemporaryDirectory
 import RPi.GPIO as GPIO
 import sys
 import cv2
-sys.path.append("/home/pi/Desktop/wolvez2021/Testcode/sensor_integration/LoRa_SOFT")
 import time
 import numpy as np
 import os
 import re
 from datetime import datetime
 from glob import glob
-from math import prod
+# from math import prod
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 from b_classes import IntoWindow, LearnDict, EvaluateImg
@@ -77,7 +76,7 @@ class Cansat():
         self.countPreLoop = 0
         self.countFlyLoop = 0
         self.countDropLoop = 0
-        self.countstuckloop = 0
+        self.countstuckLoop = 0
 
         self.dict_list = {}
         self.saveDir = "results"
@@ -89,12 +88,12 @@ class Cansat():
                   + "Time:"+str(self.gps.Time) + ","\
                   + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
                   + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
-                  + "ax:"+str(round(self.bno055.ax,6)).rjust(6) + ","\
-                  + "ay:"+str(round(self.bno055.ay,6)).rjust(6) + ","\
-                  + "az:"+str(round(self.bno055.az,6)).rjust(6) + ","\
+                  + "ax:"+str(round(self.ax,6)).rjust(6) + ","\
+                  + "ay:"+str(round(self.ay,6)).rjust(6) + ","\
+                  + "az:"+str(round(self.az,6)).rjust(6) + ","\
+                  + "q:" + str(self.ex).rjust(6) + ","\
                   + "rV:" + str(round(self.rightMotor.velocity,2)).rjust(6) + ","\
                   + "lV:" + str(round(self.leftMotor.velocity,2)).rjust(6) + ","\
-                  + "q:" + str(self.bno055.ex).rjust(6) + ","\
                   + "Camera:" + str(self.camerastate)
 
         print(print_datalog)
@@ -107,9 +106,9 @@ class Cansat():
                   + "ax:"+str(self.bno055.ax).rjust(6) + ","\
                   + "ay:"+str(self.bno055.ay).rjust(6) + ","\
                   + "az:"+str(self.bno055.az).rjust(6) + ","\
+                  + "q:"+str(self.bno055.ex).rjust(6) + ","\
                   + "rV:"+str(round(self.rightMotor.velocity,3)).rjust(6) + ","\
                   + "lV:"+str(round(self.leftMotor.velocity,3)).rjust(6) + ","\
-                  + "q:"+str(self.bno055.ex).rjust(6) + ","\
                   + "Camera:" + str(self.camerastate)
         
         with open('results/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -126,10 +125,10 @@ class Cansat():
             self.landing()
         elif self.state == 4:#スパースモデリング第一段階
             self.spm_first(ct.const.SPMFIRST_PIC_COUNT,True)
-        elif self.state == 5:#スパースモデリング第二段階
-            model_master,scaler_master,feature_names = self.spm_second()
-        elif self.state == 6:#経路計画段階
-            self.running(model_master,scaler_master,feature_names)
+#         elif self.state == 5:#スパースモデリング第二段階
+#             model_master,scaler_master,feature_names = self.spm_second()
+#         elif self.state == 6:#経路計画段階
+#             self.running(model_master,scaler_master,feature_names)
         # elif self.state == 7:
         #     self.re_learning()
         # elif self.state == 8:#終了
@@ -209,7 +208,7 @@ class Cansat():
             self.GREEN_LED.led_off()
       
         #加速度が小さくなったら着地判定
-        if (pow(self.bno055.ax,2) + pow(self.bno055.ay,2) + pow(self.bno055.az,2)) < pow(ct.const.DROPPING_ACC_THRE,2):#加速度が閾値以下で着地判定
+        if (self.bno055.ax**2 + self.bno055.ay**2 + self.bno055.az**2) < ct.const.DROPPING_ACC_THRE**2:#加速度が閾値以下で着地判定
             self.countDropLoop+=1            
             if self.countDropLoop > ct.const.DROPPING_ACC_COUNT_THRE:#着地判定が複数回行われたらステート以降
                 self.state = 3
@@ -311,7 +310,7 @@ class Cansat():
                 feature_name = str(re.findall(self.saveDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
 
-                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
+                for win in range(int(np.prod(iw_shape))): #それぞれのウィンドウに対して学習を実施
                     if win+1 == int((iw_shape[0]-1)*iw_shape[1]) + int(iw_shape[1]/2) + 1:
                         ld = LearnDict(iw_list[win])
                         D, ksvd = ld.generate() #辞書獲得
@@ -369,7 +368,7 @@ class Cansat():
                 feature_name = str(re.findall(self.tempDir + f"/baca_featuring/(.*)_.*_", fmg)[0])
                 print("FEATURED BY: ",feature_name)
                 
-                for win in range(int(prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
+                for win in range(int(np.prod(iw_shape))): #それぞれのウィンドウに対して評価を実施
                     D, ksvd = self.dict_list[feature_name]
                     ei = EvaluateImg(iw_list[win])
                     img_rec = ei.reconstruct(D, ksvd, window_size)
@@ -468,8 +467,8 @@ class Cansat():
         self.lora.sendData(datalog) #データを送信
         
     def stuck_detection(self):        
-        if pow(self.ax**2+self.ay**2+self.az**2) <= ct.const.STUCK_ACC_THRE:
-            self.countstuckloop += 1
+        if (self.bno055.ax**2+self.bno055.ay**2+self.bno055.az**2) <= ct.const.STUCK_ACC_THRE**2:
+            self.countstuckLoop+= 1
             if self.countstuckLoop > ct.const.STUCK_COUNT_THRE: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
                 if self.stuckTime == 0:
                     self.stuckTime = time.time()#スタック検知最初の時間計測
@@ -481,7 +480,7 @@ class Cansat():
                     self.rightMotor.stop()
                     self.leftMotor.stop()
                     self.stuckTime = 0
-                    self.countstuckloop = 0
+                    self.countstuckLoop = 0
 
     def keyboardinterrupt(self):
         self.rightMotor.stop()

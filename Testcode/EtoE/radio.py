@@ -47,6 +47,7 @@ class radio(object):
         # LoRa(ES920LR)データ送信
         #print(datalog)
         self.sendDevice.cmd_lora(datalog)
+        print("send:{}".format(datalog))
     
     def switchData(self, datalog):
         self.sendDevice.cmd_lora(datalog)

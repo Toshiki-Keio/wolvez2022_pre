@@ -1,1 +1,0 @@
-cmd_/home/pi/Desktop/nakamura/LoRa_SOFT/soft_uart.ko := ld -r  -EL  --build-id=sha1  -T scripts/module.lds -o /home/pi/Desktop/nakamura/LoRa_SOFT/soft_uart.ko /home/pi/Desktop/nakamura/LoRa_SOFT/soft_uart.o /home/pi/Desktop/nakamura/LoRa_SOFT/soft_uart.mod.o;  true
