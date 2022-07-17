@@ -96,12 +96,11 @@ class Feature_img():
         self.imp_p = imp_p
         self.frame_num = frame_num
         self.sav_d = saveDir
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
+
     
     def normalRGB(self):
         self.org_img = np.array(Image.open(self.imp_p))
-        self.save_name = self.sav_d + f"/baca_featuring/normalRGB_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/normalRGB_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -113,7 +112,7 @@ class Feature_img():
         self.org_img = np.array(Image.open(self.imp_p))
         self.org_img[:, :, 1] = np.zeros((self.org_img.shape[0],self.org_img.shape[1]))
         self.org_img[:, :, 2] = np.zeros((self.org_img.shape[0],self.org_img.shape[1]))
-        self.save_name = self.sav_d + f"/baca_featuring/red_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/red_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -125,7 +124,7 @@ class Feature_img():
         self.org_img = np.array(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
         self.org_img[:, :, 1] = 0
-        self.save_name = self.sav_d + f"/baca_featuring/blue_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/blue_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -137,9 +136,7 @@ class Feature_img():
         self.org_img = np.array(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
         self.org_img[:, :, 2] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
-        self.save_name = self.sav_d + f"/baca_featuring/green_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/green_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -150,7 +147,7 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.array(Image.open(self.imp_p))
         self.org_img[:, :, 1] = 0
-        self.save_name = self.sav_d + f"/baca_featuring/purple_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/purple_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -161,7 +158,7 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.array(Image.open(self.imp_p))
         self.org_img[:, :, 0] = 0
-        self.save_name = self.sav_d + f"/baca_featuring/emerald_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/emerald_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -172,9 +169,7 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = np.array(Image.open(self.imp_p))
         self.org_img[:, :, 2] = 0
-        if not os.path.exists(self.sav_d + f"/baca_featuring"):
-            os.mkdir(self.sav_d + f"/baca_featuring")
-        self.save_name = self.sav_d + f"/baca_featuring/yellow_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/yellow_{self.frame_num}.jpg"
         self.output_img = Image.fromarray(self.org_img)
         self.output_img.save(self.save_name)
         #cv2.imwrite(self.save_name, self.output_img)
@@ -224,7 +219,7 @@ class Feature_img():
         #cv2.imshow("self.org_img", cv2.resize(self.org_img,dsize=(534,400)))
         #cv2.imshow("VARI_img",cv2.resize(self.output_img,dsize=(534,460)))
 
-        self.save_name = self.sav_d + f"/baca_featuring/vari_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/vari_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
         self.output_img_list.append(self.save_name)
         
@@ -245,7 +240,7 @@ class Feature_img():
                     rgbvi = 0 
                 self.vari_list_np[i][j] = rgbvi
                 self.output_img[i][j] = np.uint8(self.rgbvi_list_np[i][j])
-        self.save_name = self.sav_d + f"/baca_featuring/rgbvi_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/rgbvi_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
         self.output_img_list.append(self.save_name)
 
@@ -263,7 +258,7 @@ class Feature_img():
                 grvi = (g-r)/(g+r)     # ここがGRVIの計算式
                 self.grvi_list_np[i][j] = grvi
                 self.output_img[i][j] = np.uint8(self.grvi_list_np[i][j])
-        self.save_name = self.sav_d + f"/baca_featuring/grvi_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/grvi_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img) 
         self.output_img_list.append(self.save_name)
 
@@ -281,7 +276,7 @@ class Feature_img():
                 ior = (g-r)/(g+r)     # ここがGRVIの計算式
                 self.ior_list_np[i][j] = ior
                 self.output_img[i][j] = np.uint8(self.ior_list_np[i][j])
-        self.save_name = self.sav_d + f"/baca_featuring/ior_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/ior_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img) 
         self.output_img_list.append(self.save_name)
     
@@ -294,7 +289,7 @@ class Feature_img():
                             [2, -8, 2],
                             [0, 2, 0]], np.float32)
         self.output_img = cv2.filter2D(self.org_img, -1, kernel)
-        self.save_name = self.sav_d + f"/baca_featuring/enphasis_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/enphasis_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name, self.output_img)
         self.output_img_list.append(self.save_name)
     
@@ -304,7 +299,7 @@ class Feature_img():
         self.org_img = cv2.imread(self.imp_p, 1)
         self.img_gray = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2GRAY)
         self.gray=cv2.Canny(self.img_gray,100,200)
-        self.save_name = self.sav_d + f"/baca_featuring/edge_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/edge_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name,self.gray)
         self.output_img_list.append(self.save_name)
         
@@ -312,7 +307,7 @@ class Feature_img():
         #self.output_img_list = []
         self.org_img = cv2.imread(self.imp_p, 1)
         self.img_hsv = cv2.cvtColor(self.org_img, cv2.COLOR_BGR2HSV)
-        self.save_name = self.sav_d + f"/baca_featuring/hsv_{self.frame_num}.jpg"
+        self.save_name = self.sav_d + f"/hsv_{self.frame_num}.jpg"
         cv2.imwrite(self.save_name,self.img_hsv)
         self.output_img_list.append(self.save_name)
     
