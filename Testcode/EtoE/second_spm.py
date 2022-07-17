@@ -103,7 +103,7 @@ class SPM2Learn():
             # print(train_X.shape, train_y.shape)
             self.model_master[win_no].fit(train_X, train_y)
             pass
-        pass
+        pass 
     
     def get_nonzero_w(self):
         self.nonzero_w = []
