@@ -129,8 +129,8 @@ class SPM2Learn():  # second_spm.pyとして実装済み
             labels = labels[0]
             for (w, label) in zip(weight, labels):
                 if w > 1:
-                    print("weight: \n", weight.shape)
-                    print("labels: \n", labels.shape)
+#                     print("weight: \n", weight.shape)
+#                     print("labels: \n", labels.shape)
                     self.nonzero_w[win_no].append(w)
                     self.nonzero_w_label[win_no].append(label)
         self.nonzero_w_num = np.array([

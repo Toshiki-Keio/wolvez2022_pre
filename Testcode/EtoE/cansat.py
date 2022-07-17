@@ -399,7 +399,6 @@ class Cansat():
         train_npz = sorted(glob(npz_dir))
         spm2_prepare = SPM2Open_npz()
         data_list_all_win,label_list_all_win = spm2_prepare.unpack(train_npz)
-        print("shape:",data_list_all_win.shape)
         spm2_learn = SPM2Learn()
 
         #ウィンドウによってスタックと教示する時間帯を変えず、一括とする場合
@@ -432,7 +431,7 @@ class Cansat():
         spm2_learn.start(data_list_all_win,label_list_all_win,fps=30,alpha=5.0,stack_appear=stack_start,stack_disappear=stack_end,stack_info=stack_info)#どっちかは外すのがいいのか
         model_master,label_list_all_win,scaler_master=spm2_learn.get_data()
         nonzero_w, nonzero_w_label, nonzero_w_num = spm2_learn.get_nonzero_w()
-        print(nonzero_w_label)
+        print(np.array(nonzero_w_label,dtype=object).reshape(6,1))
         feature_names = nonzero_w_label
         
         """
@@ -500,5 +499,5 @@ class Cansat():
         self.RED_LED.led_off()
         self.BLUE_LED.led_off()
         self.GREEN_LED.led_off()
-        self.cap.release()
-        cv2.destroyAllWindows()
+#         self.cap.release()
+#         cv2.destroyAllWindows()
