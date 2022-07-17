@@ -17,9 +17,6 @@ const.LEFT_MOTOR_VREF_PIN = 12
 const.LEFT_MOTOR_ENCODER_A_PIN = 7
 const.LEFT_MOTOR_ENCODER_B_PIN = 8
 
-const.LANDING_MOTOR_VREF = 90
-const.SPM_MOTOR_VREF = 70
-
 #LED
 const.RED_LED_PIN =  10
 const.BLUE_LED_PIN = 9
@@ -31,9 +28,12 @@ const.SEPARATION_PIN = 25
 #Flight Pin
 const.FLIGHTPIN_PIN = 4
 
+#Motor
 const.LANDING_MOTOR_VREF = 90
+const.SPM_MOTOR_VREF = 70
 const.RUNNING_MOTOR_VREF = 70
 const.STUCK_MOTOR_VREF = 100
+
 
 
 ##Variable Threshold
@@ -54,7 +54,6 @@ const.SEPARATION_TIME_THRE = 10 #焼き切り時間
 const.LANDING_CAMERA_TIME_THRE = 2
 
 const.LANDING_MOTOR_TIME_THRE = 5 #分離シートから離れるためにモータを回転させる時間
-const.SPM_FIRST_COUNT_THRE = 20
 const.STUCK_ACC_THRE = 0.1
 const.STUCK_COUNT_THRE = 30
 const.STUCK_MOTOR_TIME_THRE = 5 #分離シートから離れるためにモータを回転させる時間
