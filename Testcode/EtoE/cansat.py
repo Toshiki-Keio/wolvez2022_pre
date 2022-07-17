@@ -339,7 +339,7 @@ class Cansat():
             if self.state == 4:
                 self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
                 self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                time.sleep(1)
+                time.sleep(0.4)
                 self.rightMotor.stop()
                 self.leftMotor.stop()
             
@@ -402,8 +402,8 @@ class Cansat():
         spm2_learn = SPM2Learn()
 
         #ウィンドウによってスタックと教示する時間帯を変えず、一括とする場合
-        stack_start = 11
-        stack_end = 13
+        stack_start = ct.const.STUCK_START
+        stack_end = ct.const.STUCK_END
 
         #ウィンドウによってスタックすると教示する時間帯を変える場合はnp.arrayを定義
         stack_info = None
