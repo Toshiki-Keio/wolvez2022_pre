@@ -339,7 +339,7 @@ class Cansat():
             if self.state == 4:
                 self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
                 self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                time.sleep(2)
+                time.sleep(1)
                 self.rightMotor.stop()
                 self.leftMotor.stop()
             
@@ -399,12 +399,12 @@ class Cansat():
         train_npz = sorted(glob(npz_dir))
         spm2_prepare = SPM2Open_npz()
         data_list_all_win,label_list_all_win = spm2_prepare.unpack(train_npz)
-
+        print("shape:",data_list_all_win.shape)
         spm2_learn = SPM2Learn()
 
         #ウィンドウによってスタックと教示する時間帯を変えず、一括とする場合
         stack_start = 11
-        stack_end = 11
+        stack_end = 13
 
         #ウィンドウによってスタックすると教示する時間帯を変える場合はnp.arrayを定義
         stack_info = None
