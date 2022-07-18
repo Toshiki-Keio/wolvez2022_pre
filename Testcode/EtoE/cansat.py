@@ -79,7 +79,7 @@ class Cansat():
         self.dict_list = {}
         self.saveDir = "results"
         self.mkdir()
-    
+
     def mkdir(self):
         #フォルダ作成部分
         folder_paths =[f"results/camera_result/first_spm",
@@ -92,7 +92,7 @@ class Cansat():
                        f"results/camera_result/planning/learn{self.learncount}",
                        f"results/camera_result/planning/learn{self.learncount}/planning_npz",
                        f"results/camera_result/planning/learn{self.learncount}/planning_pics"]
-        
+
         for folder_path in folder_paths:
             if not os.path.exists(folder_path):
                 os.mkdir(folder_path)
