@@ -461,7 +461,8 @@ class Cansat():
         return model_master,scaler_master,feature_names
 
     def planning(self,model_master,scaler_master,feature_names):
-        self.spm_f_eval(folder = "running",now = time.time(),feature_names = feature_names)#特徴的な処理を行ってnpzを作成
+        planning_dir = f"results/camera_result/planning/learn{self.learncount}/planning_npz/*"
+        self.spm_f_eval(now = time.time(),feature_names = feature_names)#特徴的な処理を行ってnpzを作成
         SPM2_predict_prepare = SPM2Open_npz()#第一段階で作成したnpzを取得
         test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack()
 
