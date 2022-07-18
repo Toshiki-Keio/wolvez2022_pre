@@ -56,7 +56,7 @@ class SPM2Open_npz():  # second_spm.pyとして実装済み
                 list_master[i].append(list(pic[f_key][w_key].values()))
                 labels=[]
                 for feature in list(pic[f_key][w_key].keys()):
-                    labels.append(f"{w_key}-{f_key}-{feature}")
+                    labels.append(f"{f_key}")
                 list_master_label[i].append(labels)
         list_master = np.array(list_master)
         return list_master, list_master_label

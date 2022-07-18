@@ -78,6 +78,24 @@ class Cansat():
 
         self.dict_list = {}
         self.saveDir = "results"
+        self.mkdir()
+
+    def mkdir(self):
+        #フォルダ作成部分
+        folder_paths =[f"results/camera_result/first_spm",
+                       f"results/camera_result/first_spm/learn{self.learncount}",
+                       f"results/camera_result/first_spm/learn{self.learncount}/evaluate",
+                       f"results/camera_result/first_spm/learn{self.learncount}/processed",
+                       f"results/camera_result/second_spm",
+                       f"results/camera_result/second_spm/learn{self.learncount}",
+                       f"results/camera_result/planning",
+                       f"results/camera_result/planning/learn{self.learncount}",
+                       f"results/camera_result/planning/learn{self.learncount}/planning_pics",
+                       f"results/camera_result/planning/learn{self.learncount}/planning_npz"]
+        
+        for folder_path in folder_paths:
+            if not os.path.exists(folder_path):
+                os.mkdir(folder_path)
     
     def writeData(self):
         #ログデータ作成。\マークを入れることで改行してもコードを続けて書くことができる
@@ -124,9 +142,9 @@ class Cansat():
         elif self.state == 4:#スパースモデリング第一段階
             self.spm_first(ct.const.SPMFIRST_PIC_COUNT)
         elif self.state == 5:#スパースモデリング第二段階
-            model_master,scaler_master,feature_names = self.spm_second()
-#         elif self.state == 6:#経路計画段階
-#             self.running(model_master,scaler_master,feature_names)
+            self.model_master,self.scaler_master,self.feature_names = self.spm_second()
+        elif self.state == 6:#経路計画段階
+            self.planning(self.model_master,self.scaler_master,self.feature_names)
         # elif self.state == 7:
         #     self.re_learning()
         # elif self.state == 8:#終了
@@ -244,20 +262,6 @@ class Cansat():
                     self.laststate = 4
 
     def spm_first(self, PIC_COUNT):
-        #フォルダ作成部分
-        folder_paths =[f"results/camera_result/first_spm",
-                       f"results/camera_result/first_spm/learn{self.learncount}",
-                       f"results/camera_result/first_spm/learn{self.learncount}/evaluate",
-                       f"results/camera_result/first_spm/learn{self.learncount}/processed",
-                       f"results/camera_result/second_spm",
-                       f"results/camera_result/second_spm/learn{self.learncount}",
-                       f"results/camera_result/planning"]
-        
-        for folder_path in folder_paths:
-            if not os.path.exists(folder_path):
-                os.mkdir(folder_path)
-    
-
         start_time = time.time()#学習用時間計測。学習開始時間
         
         #保存時のファイル名指定（現在は時間）
@@ -456,7 +460,7 @@ class Cansat():
         self.laststate = 6
         return model_master,scaler_master,feature_names
 
-    def running(self,model_master,scaler_master,feature_names):
+    def planning(self,model_master,scaler_master,feature_names):
         self.spm_f_eval(folder = "running",now = time.time(),feature_names = feature_names)#特徴的な処理を行ってnpzを作成
         SPM2_predict_prepare = SPM2Open_npz()#第一段階で作成したnpzを取得
         test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack()
