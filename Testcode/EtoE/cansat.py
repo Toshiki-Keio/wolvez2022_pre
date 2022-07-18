@@ -90,8 +90,8 @@ class Cansat():
                        f"results/camera_result/second_spm/learn{self.learncount}",
                        f"results/camera_result/planning",
                        f"results/camera_result/planning/learn{self.learncount}",
-                       f"results/camera_result/planning/learn{self.learncount}/planning_pics",
-                       f"results/camera_result/planning/learn{self.learncount}/planning_npz"]
+                       f"results/camera_result/planning/learn{self.learncount}/planning_npz",
+                       f"results/camera_result/planning/learn{self.learncount}/planning_pics"]
         
         for folder_path in folder_paths:
             if not os.path.exists(folder_path):
@@ -331,18 +331,20 @@ class Cansat():
 
     def spm_f_eval(self, PIC_COUNT=1, now="TEST", iw_shape=(2,3),feature_names = None):
         for i in range(PIC_COUNT):
+            print(i,"枚目")
+            self.cap = cv2.VideoCapture(0)
             ret,self.secondimg = self.cap.read()
             if self.state == 4:
                 save_file = f"results/camera_result/first_spm/learn{self.learncount}/evaluate/evaluateimg{i}.jpg"
             elif self.state == 6:
-                save_file = f"results/camera_result/planning/learn{self.learncount}/planningimg{i}.jpg"
+                save_file = f"results/camera_result/planning/learn{self.learncount}/planning_pics/planningimg{i}.jpg"
 
             cv2.imwrite(save_file,self.secondimg)
             self.firstevalimgcount += 1
             
             if self.state == 4:
-                self.rightMotor.go(ct.const.SPM_MOTOR_VREF)#走行
-                self.leftMotor.go(ct.const.SPM_MOTOR_VREF)#走行
+                self.rightMotor.go(70)#走行
+                self.leftMotor.go(50)#走行
                 time.sleep(0.4)
                 self.rightMotor.stop()
                 self.leftMotor.stop()
@@ -394,7 +396,12 @@ class Cansat():
                     feature_values[feature_name][f'win_{win+1}']["skew"] = skew  # 歪度
                 
             #npzファイル形式で計算結果保存
-            np.savez_compressed(self.saveDir + f"/camera_result/second_spm/learn{self.learncount}/"+str(time.time()),array_1=np.array([feature_values]))
+            if self.state == 4:
+                self.savenpz_dir = self.saveDir + f"/camera_result/second_spm/learn{self.learncount}/"
+            elif self.state == 6:
+                self.savenpz_dir = self.saveDir + f"/camera_result/planning/learn{self.learncount}/planning_npz/"
+                
+            np.savez_compressed(self.savenpz_dir + str(time.time()),array_1=np.array([feature_values]))
             self.tempDir.cleanup()
 
     def spm_second(self):
@@ -438,16 +445,7 @@ class Cansat():
         print(np.array(nonzero_w_label,dtype=object).reshape(6,1))
         feature_names = nonzero_w_label
         
-        """
-        spm2_prep = SPM2Open_npz()
-        train_datas, train_datas_label = spm2_prep.unpack(train_files)
 
-        spm2_1 = SPM2Learn()
-        model_master, _, scaler_master = spm2_1.start(
-            train_datas, train_datas_label, alpha=alpha, stack_appear=stack_start, stack_disappear=stack_end)
-        nonzero_w, nonzero_w_label, nonzero_w_num = spm2_1.get_nonzero_w()
-        print(nonzero_w_num)
-        """
         
         """
             model_master: 各ウィンドウを学習したモデル（俗にいう"model.predict()"とかの"model.predict()"とかのmodelに相当するのがリストで入ってる）
@@ -462,10 +460,17 @@ class Cansat():
 
     def planning(self,model_master,scaler_master,feature_names):
         planning_dir = f"results/camera_result/planning/learn{self.learncount}/planning_npz/*"
+        planning_npz = sorted(glob(planning_dir))
         self.spm_f_eval(now = time.time(),feature_names = feature_names)#特徴的な処理を行ってnpzを作成
         SPM2_predict_prepare = SPM2Open_npz()#第一段階で作成したnpzを取得
-        test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack()
-
+        
+        pic = np.load(planning_npz[-1], allow_pickle=True)
+        feature_keys = list(pic.keys())
+        for f_key in feature_keys:
+            window_keys = list(pic[f_key])
+            print(window_keys)
+        test_data_list_all_win,test_label_list_all_win = SPM2_predict_prepare.unpack(planning_npz[-1])
+        print("----------b------------")
         spm2_predict = SPM2Evaluate()
         spm2_predict.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)
         risk = np.array(spm2_predict.get_score()).reshape(2,3)#win1~win6の危険度マップができる
