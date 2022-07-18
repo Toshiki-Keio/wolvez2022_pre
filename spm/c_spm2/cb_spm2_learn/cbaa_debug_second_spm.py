@@ -11,12 +11,10 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-class Open_npz():
-    def __init__(self,files):
-        self.data_list_all_win,self.label_list_all_win=self.unpack(files)
-        # とりあえず片っ端からとってくる
+class SPM2Open_npz():
 
     def unpack(self,files):
+        # self.data_list_all_win,self.label_list_all_win=self.unpack(files)
         data_list_all_time = []
         label_list_all_time = []
         for file in files:
@@ -59,12 +57,13 @@ class Open_npz():
     def get_data(self):
         return self.data_list_all_win,self.label_list_all_win
 
-class Learn():
+class SPM2Learn():
     """
     dataからmodelを作る。
     """
-    def __init__(self,data_list_all_win,label_list_all_win,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
+    def start(self,data_list_all_win,label_list_all_win,alpha,fps=30,stack_appear=23,stack_disappear=27,stack_info=None) -> None:
         self.fps = fps
+        self.alpha=alpha
         self.data_list_all_win=data_list_all_win
         self.label_list_all_win=label_list_all_win
         # print(data_list_all_win.shape)#(win,pic_num,feature)=(6,886,30)
@@ -89,7 +88,7 @@ class Learn():
         self.standardization_master=[]
         self.scaler_master=[]
         for i in range(self.data_list_all_win.shape[0]):
-            self.model_master.append(Lasso(max_iter=100000))
+            self.model_master.append(Lasso(alpha=self.alpha,max_iter=100000))
             self.standardization_master.append(StandardScaler())
             self.scaler_master.append("")
     
@@ -98,7 +97,7 @@ class Learn():
             train_X = win
             self.scaler_master[win_no]=self.standardization_master[win_no].fit(train_X)
             train_X=self.scaler_master[win_no].transform(train_X)
-            train_y = np.zeros((train_X.shape[0], 1))
+            train_y = np.full((train_X.shape[0], 1),-100)
             # print(self.stack_info[win_no][0])
             train_y[int(self.stack_info[win_no][0]):int(self.stack_info[win_no][1])] = 100
             # print(train_X.shape, train_y.shape)
@@ -110,14 +109,14 @@ class Learn():
         return self.model_master,self.label_list_all_win,self.scaler_master
 
 
-class Evaluate():
-    def __init__(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master,train_code,test_code):
+class SPM2Evaluate():
+    def start(self,model_master,test_data_list_all_win,test_label_list_all_win,scaler_master):#,train_code,test_code):
         self.model_master=model_master
         self.test_data_list_all_win=test_data_list_all_win
         self.test_label_list_all_win=test_label_list_all_win
         self.scaler_master=scaler_master
-        self.train_code=train_code
-        self.test_code=test_code
+        # self.train_code=train_code
+        # self.test_code=test_code
         if len(self.model_master)!=len(self.test_data_list_all_win):
             print("学習済みモデルのウィンドウ数と、テストデータのウィンドウ数が一致しません")
             return None
@@ -136,11 +135,14 @@ class Evaluate():
                 # print(f"test_X win_no\n: {win_no}",test_X)
                 test_X=self.scaler_master[win_no].transform(test_X.reshape(1, -1))
                 score = self.model_master[win_no].predict(test_X.reshape(1, -1))
-                print(score)
+                # print(score)
                 self.score_master[win_no].append(score)
                 weight=self.model_master[win_no].coef_
                 # print(weight)
                 pass
+
+    def get_score(self):
+        return self.score_master
         # pprint(self.score_master[0])
     
     def plot(self):
@@ -150,7 +152,7 @@ class Evaluate():
         plt.ylabel("degree of risk")
         plt.title(f"Learn from mov bcc{self.train_code}, Predict mov bcc{self.test_code}")
         plt.legend()
-        # plt.savefig(f"c_spm2/cc_spm2_after/cca_output_of_spm2/cca{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
+        plt.savefig(f"c_spm2/cc_spm2_after/ccb_-100_100/ccb{self.train_code}{self.test_code}_L-bcc{self.train_code}_P-bcc{self.test_code}.png")
         plt.cla()
         
         # plt.show()
@@ -159,7 +161,7 @@ class Evaluate():
         return self.score_master
 
 
-
+"""
 
 # wolvez2022/spmで実行してください
 # train_codes=['a','b','c','d',]#'e','f','g','h','i']
@@ -182,8 +184,8 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
     print(f"{len(train_files)} frames found from mov code {train_code}")
     seq1=Open_npz(train_files)
     data_list_all_win,label_list_all_win=seq1.get_data()
-
-    """
+"""
+"""
     stack_info=np.array([[12., 18.],
         [12., 18.],
         [12., 18.],
@@ -192,7 +194,7 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         [12, 18.]])
     「stackした」と学習させるフレームの指定方法
     1. 全ウィンドウで一斉にラベリングする場合
-        Learnの引数でstack_appearおよびstack_disappearを[s]で指定する。
+        SPM2Learnの引数でstack_appearおよびstack_disappearを[s]で指定する。
     2. ウィンドウごとに個別にラベリングする場合
     stack_info=np.array(
         [
@@ -203,19 +205,21 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         ]
     )
     t[s]で入力すること。
-    """
-    seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
-    #seq2=Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
+"""
+"""
+    seq2=SPM2Learn(data_list_all_win,label_list_all_win,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
+    #seq2=SPM2Learn(data_list_all_win,label_list_all_win,fps=30,stack_info=stack_info)
     model_master,label_list_all_win,scaler_master=seq2.get_data()
 
     spm_path = os.getcwd()
     for test_code in test_codes:
         test_dir=f"/b_spm1/b-data/bcca_secondinput/bcc{test_code}/*"
-        print('test data mov code : ',test_code)
         test_files = sorted(glob.glob(spm_path+test_dir))
+        print('test data mov code : ',test_code)
         ### デバッグ用
         #psize_('005', '005')-ncom_001-tcoef_001-mxiter_001.npz
-        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/psize_(5, 5)-n_com_3-t_coef_2-mxiter_1507-09_13-07-34.npz"]
+        debug_dir=f"/b_spm1/b-data/bczz_h_param/*"
+        test_files=[spm_path+"/b_spm1/b-data/bcca_secondinput/psize_(5, 5)-n_com_3-t_coef_2-mxiter_15.npz"]
         ###
         seq3=Open_npz(test_files)
         test_data_list_all_win,test_label_list_all_win=seq3.get_data()
@@ -224,6 +228,62 @@ for train_code,stack_start,stack_end in zip(train_codes,stack_starts,stack_ends)
         print(seq4.get_score())
         del seq3
         del seq4
+"""
+
+
+for alpha in np.arange(0,10,0.1):
+    stack_start=9
+    stack_end=16
+
+    spm_path = os.getcwd()
+    train_files = sorted(glob.glob(spm_path+f"/b_spm1/b-data/bcca_secondinput/bccc/*"))
+
+    seq1=SPM2Open_npz()
+    seq1.unpack(train_files)
+    data_list_all_win,label_list_all_win=seq1.get_data()
+
+    seq2=SPM2Learn()
+    seq2.start(data_list_all_win,label_list_all_win,alpha=alpha,fps=30,stack_appear=stack_start,stack_disappear=stack_end,stack_info=None)
+    model_master,label_list_all_win,scaler_master=seq2.get_data()
+
+    end_flg=False
+    for patch in range(60,101,10):
+        for n_components in range(1,patch+1,4):
+            for transform_n_nonzero_coefs in range(1,n_components+1,4):
+                patch=str(patch).zfill(3)
+                n_components=str(n_components).zfill(3)
+                transform_n_nonzero_coefs=str(transform_n_nonzero_coefs).zfill(3)
+                filepath=spm_path+f"/b_spm1/b-data/bczz_h_param/psize_('{patch}', '{patch}')-ncom_{n_components}-tcoef_{transform_n_nonzero_coefs}-mxiter_001.npz"
+                print(filepath)
+                test_files=[filepath]
+                try:
+                    seq3=SPM2Open_npz()
+                    seq3.unpack(test_files)
+                except FileNotFoundError:
+                    end_flg=True
+                    print("here")
+                    break
+                test_data_list_all_win,test_label_list_all_win=seq3.get_data()
+        
+                seq4=SPM2Evaluate()
+                seq4.start(model_master,test_data_list_all_win,test_label_list_all_win,scaler_master)#,train_code,test_code)
+                scores=seq4.get_score()
+                print(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   alpha : {alpha}")
+                plt.bar(np.arange(6),np.array(scores).reshape(-1))
+                plt.title(f"patch : {patch}  n_components : {n_components}    alpha : {alpha}")
+                # plt.title(f"patch : {patch}  n_components : {n_components}  transform_n_nonzero_coefs : {transform_n_nonzero_coefs}   alpha : {alpha}")
+                plt.draw()
+                plt.pause(0.0001)
+                print(scores)
+                del seq3
+                del seq4
+        #     if end_flg:
+        #         break    
+        # if end_flg:
+        #     break    
+
+
+plt.cla()
 
 
 
@@ -246,12 +306,12 @@ print("###########################  HERE 2  ###########################")
 
 # import numpy as np
 # import matplotlib.pyplot as plt
-# from sklearn.linear_model import Lasso
+# from skSPM2learn.linear_model import Lasso
 # import os
 # import glob
 # import pickle
 # from pprint import pprint
-# from sklearn.preprocessing import StandardScaler
+# from skSPM2learn.preprocessing import StandardScaler
 
 
 
